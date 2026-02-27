@@ -1,0 +1,12 @@
+<%- include('header', locals) -%>
+    <h2>Hello <%= name %>,</h2>
+    <p>Congratulations! You have successfully completed <strong>
+            <%= courseTitle %>
+        </strong>.</p>
+    <p>Your certificate of completion is now available.</p>
+    <p>You can view and download your certificate by clicking the button below:</p>
+    <br>
+    <a href="<%= certificateUrl %>" class="button">View Certificate</a>
+    <p>We are very proud of your achievement!</p>
+    <p>Best regards,<br>The <%= brandName %> Team</p>
+    <%- include('footer', locals) -%>

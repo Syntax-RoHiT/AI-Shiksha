@@ -45,6 +45,20 @@ export const useCreateUser = () => {
     });
 };
 
+export const useBulkCreateUsers = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (payload: { users: CreateUserData[] }) => {
+            const { data } = await api.post(`/users/bulk`, payload);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
+    });
+};
+
 export const useDeleteUser = () => {
     const queryClient = useQueryClient();
 

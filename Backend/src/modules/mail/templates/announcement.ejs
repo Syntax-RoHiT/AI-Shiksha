@@ -1,0 +1,12 @@
+<%- include('header', locals) -%>
+    <h2>Hello <%= name %>,</h2>
+    <p><strong>
+            <%= title %>
+        </strong></p>
+    <p>An announcement has been published by <%= authorName %>.</p>
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid <%= primaryColor %>; margin: 20px 0;">
+        <%- content %>
+    </div>
+    <a href="<%= dashboardUrl %>" class="button">Go to Dashboard</a>
+    <p>Best regards,<br>The <%= brandName %> Team</p>
+    <%- include('footer', locals) -%>

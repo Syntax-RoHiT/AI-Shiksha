@@ -598,6 +598,17 @@ export const Settings = {
     }
 };
 
+export const EmailTemplates = {
+    getAll: async () => {
+        const { data } = await api.get('/mail/templates');
+        return data;
+    },
+    update: async (type: string, payload: { subject: string; body: string }) => {
+        const { data } = await api.put(`/mail/templates/${type}`, payload);
+        return data;
+    }
+};
+
 export const AdminSettings = {
     getAiSettings: async () => {
         const { data } = await api.get('/admin/ai-settings');

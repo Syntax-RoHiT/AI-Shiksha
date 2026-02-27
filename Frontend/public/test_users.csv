@@ -1,0 +1,4 @@
+name,email,role,password
+"Alice Smith",alice.smith.test@experttrainersacademy.cloud,student,password123
+"Bob Teacher",bob.teacher.test@experttrainersacademy.cloud,teacher,securedPass!
+"Charlie Admin",charlie.admin.test@experttrainersacademy.cloud,admin,adminstratorKey

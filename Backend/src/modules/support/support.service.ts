@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AddMessageDto } from './dto/add-message.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class SupportService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private mailService: MailService,
+    ) { }
 
     async createTicket(studentId: string, franchiseId: string | null, createTicketDto: CreateTicketDto) {
         if (!studentId) {
@@ -31,6 +35,22 @@ export class SupportService {
                 is_admin: false,
             },
         });
+
+        const student = await this.prisma.user.findUnique({ where: { id: studentId } });
+        if (student) {
+            this.mailService.sendSupportTicketEmail(
+                { email: student.email, name: student.name, franchise_id: franchiseId },
+                ticket.id,
+                ticket.subject
+            );
+
+            this.mailService.sendSupportTicketNotificationToAdmin(
+                { email: student.email, name: student.name, franchise_id: franchiseId },
+                ticket.id,
+                ticket.subject,
+                ticket.description
+            );
+        }
 
         return ticket;
     }

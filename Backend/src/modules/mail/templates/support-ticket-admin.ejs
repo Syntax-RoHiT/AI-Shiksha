@@ -1,0 +1,22 @@
+<%- include('header', locals) -%>
+    <h2>New Support Ticket</h2>
+    <p>A new support ticket has been created on <strong>
+            <%= brandName %>
+        </strong>.</p>
+    <ul>
+        <li><strong>Ticket ID:</strong> [<%= ticketId %>]</li>
+        <li><strong>User:</strong>
+            <%= userName %> (<%= userEmail %>)
+        </li>
+        <li><strong>Subject:</strong>
+            <%= ticketSubject %>
+        </li>
+    </ul>
+    <div style="background-color: #f4f4f4; padding: 15px; border-left: 4px solid <%= primaryColor %>; margin: 20px 0;">
+        <p><strong>Description:</strong></p>
+        <p>
+            <%= ticketDescription %>
+        </p>
+    </div>
+    <a href="#" class="button">View Ticket</a>
+    <%- include('footer', locals) -%>

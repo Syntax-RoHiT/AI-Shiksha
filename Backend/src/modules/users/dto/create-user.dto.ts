@@ -5,8 +5,10 @@ import {
   MinLength,
   IsEnum,
   IsOptional,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export enum UserRole {
   STUDENT = 'STUDENT',
@@ -37,4 +39,11 @@ export class CreateUserDto {
     return value;
   })
   role?: UserRole;
+}
+
+export class BulkCreateUserDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateUserDto)
+  users: CreateUserDto[];
 }

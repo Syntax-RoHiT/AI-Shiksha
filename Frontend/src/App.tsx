@@ -113,7 +113,7 @@ const MaintenanceWrapper = () => {
   }
 
   // Allow admins, super_admins, and franchise_admins to bypass maintenance mode
-  const canBypass = user && ['admin', 'super_admin', 'franchise_admin'].includes(user.role);
+  const canBypass = user && ['admin', 'super_admin', 'franchise_admin'].includes(user.role.toLowerCase());
 
   if (branding.maintenance_mode && !canBypass) {
     return <MaintenancePage />;

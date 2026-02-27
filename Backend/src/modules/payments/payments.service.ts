@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/com
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class PaymentsService {
@@ -10,6 +11,7 @@ export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private mailService: MailService,
   ) {
     this.stripe = new Stripe(
       this.configService.get<string>('STRIPE_SECRET_KEY') || '',
@@ -108,11 +110,14 @@ export class PaymentsService {
 
     // Fetch Course to ensure we have the correct franchise context
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     // Use course's franchise_id if available, otherwise fallback to session metadata (user's franchise)
     const targetFranchiseId = (course && course.franchise_id) ? course.franchise_id : franchiseId;
 
     // Create Payment Record
+    const amountStr = session.amount_total ? `${session.currency?.toUpperCase() || 'USD'} ${(session.amount_total / 100).toFixed(2)}` : 'Free';
+
     await this.prisma.payment.create({
       data: {
         user_id: userId,
@@ -140,5 +145,19 @@ export class PaymentsService {
         total_learning_time: 0,
       },
     });
+
+    if (user && course) {
+      this.mailService.sendCoursePurchaseEmail({
+        email: user.email,
+        name: user.name,
+        franchise_id: targetFranchiseId,
+      }, course.title, amountStr);
+
+      this.mailService.sendCourseEnrollmentEmail({
+        email: user.email,
+        name: user.name,
+        franchise_id: targetFranchiseId,
+      }, course.title);
+    }
   }
 }

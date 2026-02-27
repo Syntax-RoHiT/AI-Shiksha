@@ -3,15 +3,19 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { User, Role } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) { }
 
-  async create(createUserDto: CreateUserDto, franchiseId?: string | null): Promise<User> {
+  async create(createUserDto: CreateUserDto, franchiseId?: string | null, isAdminAction: boolean = false, loginUrl: string = ''): Promise<User> {
     const { password, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...rest,
         password_hash: hashedPassword,
@@ -19,6 +23,63 @@ export class UsersService {
         franchise_id: franchiseId || null,
       },
     });
+
+    if (isAdminAction) {
+      this.mailService.sendAdminAddedUserEmail(
+        { email: user.email, name: user.name, plainToken: password, franchise_id: user.franchise_id },
+        loginUrl || 'https://experttrainersacademy.cloud', // Default fallback
+      );
+    }
+
+    return user;
+  }
+
+  async createBulk(bulkDto: { users: CreateUserDto[] }, franchiseId?: string | null, loginUrl: string = '') {
+    const { users } = bulkDto;
+
+    // Process passwords securely
+    const usersData = await Promise.all(
+      users.map(async (userDto) => {
+        const { password, ...rest } = userDto;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        return {
+          ...rest,
+          password_hash: hashedPassword,
+          role: (rest.role || 'STUDENT') as Role,
+          franchise_id: franchiseId || null,
+        };
+      })
+    );
+
+    // Create the users (createMany doesn't return the full objects in Postgres reliably, so we'll just ignore the return value and rely on raw counts)
+    const result = await this.prisma.user.createMany({
+      data: usersData,
+      skipDuplicates: true, // Prevent complete failure if one email exists
+    });
+
+    // We need to fetch the newly created users to get their DB IDs (or we can just send emails based on the DTO directly)
+    // Actually, sending emails doesn't strictly require the DB ID for Franchise isolation (we have the franchise_id and plain text password in the DTO)
+
+    // Dispatch emails asynchronously in the background so it doesn't block the request.
+    // Using Promise.allSettled to ensure that even if one email fails, the rest are attempted.
+    Promise.allSettled(
+      users.map((userDto) =>
+        this.mailService.sendAdminAddedUserEmail(
+          {
+            email: userDto.email,
+            name: userDto.name,
+            plainToken: userDto.password,
+            franchise_id: franchiseId || null
+          },
+          loginUrl || 'https://experttrainersacademy.cloud'
+        ).catch(e => console.error(`Failed to send bulk welcome email to ${userDto.email}:`, e))
+      )
+    );
+
+    return {
+      message: 'Bulk import completed',
+      insertedCount: result.count
+    };
   }
 
   async updateProfile(userId: string, data: { name?: string; bio?: string; avatar_url?: string }) {

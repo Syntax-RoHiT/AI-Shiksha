@@ -17,9 +17,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Settings, Uploads } from "@/lib/api";
+import { Settings, Uploads, EmailTemplates } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { useFranchise } from "@/contexts/FranchiseContext";
+import { EmailTemplateEditor } from "@/components/admin/EmailTemplateEditor";
 
 export default function PlatformSettingsPage() {
   const { toast } = useToast();
@@ -41,9 +42,24 @@ export default function PlatformSettingsPage() {
   const [faviconUrl, setFaviconUrl] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#6366f1");
 
+  // Email Templates State
+  const [customTemplates, setCustomTemplates] = useState<Record<string, { subject: string; body: string }>>({});
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [activeTemplateType, setActiveTemplateType] = useState("");
+
   useEffect(() => {
     loadSettings();
+    loadTemplates();
   }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const data = await EmailTemplates.getAll();
+      setCustomTemplates(data || {});
+    } catch (error) {
+      console.error("Failed to load email templates", error);
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -289,17 +305,48 @@ export default function PlatformSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {["Welcome Email", "Password Reset", "Course Enrollment", "Payment Receipt", "Course Completion"].map((template) => (
-                  <div key={template} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{template}</p>
-                      <p className="text-sm text-muted-foreground">Customize the {template.toLowerCase()} template</p>
+                {[
+                  { name: "Welcome Email", type: "WELCOME" },
+                  { name: "Admin Added User", type: "ADMIN_ADDED_USER" },
+                  { name: "Course Enrollment", type: "ENROLLMENT" },
+                  { name: "Course Purchase (User)", type: "PURCHASE_USER" },
+                  { name: "Password Reset", type: "PASSWORD_RESET" },
+                  { name: "Course Certificate", type: "CERTIFICATE" }
+                ].map((template) => {
+                  const isCustomized = !!customTemplates[template.type];
+
+                  return (
+                    <div key={template.type} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{template.name}</p>
+                          {isCustomized && (
+                            <Badge variant="secondary" className="text-[10px] bg-green-100 text-green-700 hover:bg-green-100 border-none">
+                              Customized
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">Customize the {template.name.toLowerCase()} template</p>
+                      </div>
+                      <Button variant="outline" onClick={() => {
+                        setActiveTemplateType(template.type);
+                        setEditorOpen(true);
+                      }}>
+                        {isCustomized ? "Edit Custom" : "Customize"}
+                      </Button>
                     </div>
-                    <Button variant="outline">Edit Template</Button>
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
+
+            <EmailTemplateEditor
+              open={editorOpen}
+              onOpenChange={setEditorOpen}
+              templateType={activeTemplateType}
+              onSaved={loadTemplates}
+              initialData={customTemplates[activeTemplateType] || null}
+            />
           </TabsContent>
         </Tabs>
       </div>

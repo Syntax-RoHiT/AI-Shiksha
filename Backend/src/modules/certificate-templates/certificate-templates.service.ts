@@ -7,8 +7,9 @@ import { UpdateCertificateTemplateDto } from './dto/update-certificate-template.
 export class CertificateTemplatesService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll() {
+    async findAll(franchiseId: string) {
         return this.prisma.certificateTemplate.findMany({
+            where: { franchise_id: franchiseId },
             include: {
                 creator: {
                     select: {
@@ -30,9 +31,9 @@ export class CertificateTemplatesService {
         });
     }
 
-    async findOne(id: string) {
-        const template = await this.prisma.certificateTemplate.findUnique({
-            where: { id },
+    async findOne(id: string, franchiseId: string) {
+        const template = await this.prisma.certificateTemplate.findFirst({
+            where: { id, franchise_id: franchiseId },
             include: {
                 creator: {
                     select: {
@@ -57,9 +58,9 @@ export class CertificateTemplatesService {
         return template;
     }
 
-    async getDefault() {
+    async getDefault(franchiseId: string) {
         const defaultTemplate = await this.prisma.certificateTemplate.findFirst({
-            where: { is_default: true },
+            where: { is_default: true, franchise_id: franchiseId },
             include: {
                 creator: {
                     select: {
@@ -97,11 +98,11 @@ export class CertificateTemplatesService {
         return defaultTemplate;
     }
 
-    async create(dto: CreateCertificateTemplateDto, userId?: string) {
-        // If this is set as default, unset all other defaults
+    async create(dto: CreateCertificateTemplateDto, userId: string, franchiseId: string) {
+        // If this is set as default, unset all other defaults for this franchise
         if (dto.is_default) {
             await this.prisma.certificateTemplate.updateMany({
-                where: { is_default: true },
+                where: { is_default: true, franchise_id: franchiseId },
                 data: { is_default: false },
             });
         }
@@ -114,6 +115,7 @@ export class CertificateTemplatesService {
                 preview_image_url: dto.preview_image_url,
                 is_default: dto.is_default || false,
                 created_by: userId,
+                franchise_id: franchiseId,
             },
             include: {
                 creator: {
@@ -127,15 +129,16 @@ export class CertificateTemplatesService {
         });
     }
 
-    async update(id: string, dto: UpdateCertificateTemplateDto) {
-        const template = await this.findOne(id);
+    async update(id: string, dto: UpdateCertificateTemplateDto, franchiseId: string) {
+        const template = await this.findOne(id, franchiseId);
 
-        // If setting as default, unset all other defaults
+        // If setting as default, unset all other defaults in this franchise
         if (dto.is_default) {
             await this.prisma.certificateTemplate.updateMany({
                 where: {
                     id: { not: id },
                     is_default: true,
+                    franchise_id: franchiseId
                 },
                 data: { is_default: false },
             });
@@ -162,12 +165,12 @@ export class CertificateTemplatesService {
         });
     }
 
-    async delete(id: string) {
-        const template = await this.findOne(id);
+    async delete(id: string, franchiseId: string) {
+        const template = await this.findOne(id, franchiseId);
 
         // Check if template is in use
         const coursesUsingTemplate = await this.prisma.course.count({
-            where: { certificate_template_id: id },
+            where: { certificate_template_id: id, franchise_id: franchiseId },
         });
 
         if (coursesUsingTemplate > 0) {
@@ -183,14 +186,15 @@ export class CertificateTemplatesService {
         return { message: 'Template deleted successfully' };
     }
 
-    async setDefault(id: string) {
-        const template = await this.findOne(id);
+    async setDefault(id: string, franchiseId: string) {
+        const template = await this.findOne(id, franchiseId);
 
-        // Unset all other defaults
+        // Unset all other defaults in this franchise
         await this.prisma.certificateTemplate.updateMany({
             where: {
                 id: { not: id },
                 is_default: true,
+                franchise_id: franchiseId
             },
             data: { is_default: false },
         });

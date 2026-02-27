@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class CompletionsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private mailService: MailService,
+    ) { }
 
     // Get all course completions with student and course info
     async findAll(search?: string, franchiseId?: string) {
@@ -356,7 +360,7 @@ export class CompletionsService {
         // Get course slug for QR URL
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
-            select: { slug: true, franchise_id: true },
+            select: { slug: true, franchise_id: true, title: true },
         });
 
         // Generate QR validation URL
@@ -374,7 +378,15 @@ export class CompletionsService {
                 certificate_url: `/api/certificates/${studentId}/${courseId}.pdf`,
                 franchise_id: course?.franchise_id, // Inherit franchise from course
             },
+            include: { user: true },
         });
+
+        // Send certificate email
+        this.mailService.sendCertificateEmail(
+            { email: certificate.user.email, name: certificate.user.name, franchise_id: certificate.user.franchise_id },
+            course?.title || 'Your Course',
+            `${baseUrl}${certificate.certificate_url}`
+        );
 
         return {
             certificate,
@@ -594,6 +606,7 @@ export class CompletionsService {
                 select: {
                     certificate_enabled: true,
                     slug: true,
+                    title: true,
                 },
             });
 
@@ -623,7 +636,7 @@ export class CompletionsService {
             const qrValidationUrl = `${baseUrl}/courses/${course.slug}/validation/${studentId}`;
 
             // Create certificate
-            await this.prisma.certificate.create({
+            const certificate = await this.prisma.certificate.create({
                 data: {
                     student_id: studentId,
                     course_id: courseId,
@@ -632,7 +645,15 @@ export class CompletionsService {
                     certificate_url: `/api/certificates/${studentId}/${courseId}.pdf`,
                     issued_at: new Date(),
                 },
+                include: { user: true },
             });
+
+            // Send certificate email
+            this.mailService.sendCertificateEmail(
+                { email: certificate.user.email, name: certificate.user.name, franchise_id: certificate.user.franchise_id },
+                course.title,
+                `${baseUrl}${certificate.certificate_url}`
+            );
         } catch (error) {
             console.error('Error generating certificate on completion:', error);
             // Don't throw - certificate generation shouldn't block completion

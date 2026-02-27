@@ -3,12 +3,14 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -75,7 +77,21 @@ export class AuthService {
     if (existingUser) {
       throw new UnauthorizedException('User already exists'); // Or ConflictException
     }
-    return this.usersService.create(createUserDto);
+    const user = await this.usersService.create(createUserDto);
+
+    // Send emails
+    this.mailService.sendWelcomeEmail({
+      email: user.email,
+      name: user.name,
+      franchise_id: user.franchise_id || null,
+    });
+    this.mailService.sendNewRegistrationNotificationToAdmin({
+      email: user.email,
+      name: user.name,
+      franchise_id: user.franchise_id || null,
+    });
+
+    return user;
   }
 
   async getUserProfile(userId: string) {

@@ -56,7 +56,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-import { useUsers, useCreateUser, useDeleteUser, useUpdateUserRole } from "@/hooks/useUsers";
+import Papa from "papaparse";
+import { useUsers, useCreateUser, useBulkCreateUsers, useDeleteUser, useUpdateUserRole } from "@/hooks/useUsers";
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,12 +72,14 @@ export default function UsersPage() {
     role: "student",
     password: "",
   });
+  const [isUploadingCSV, setIsUploadingCSV] = useState(false);
   const { toast } = useToast();
 
   // Fetch all users to ensure correct stats counts
   const { users: allUsers = [], isLoading } = useUsers();
 
   const createUserMutation = useCreateUser();
+  const bulkCreateUsersMutation = useBulkCreateUsers();
   const deleteUserMutation = useDeleteUser();
   const updateUserRoleMutation = useUpdateUserRole();
 
@@ -135,24 +138,89 @@ export default function UsersPage() {
 
   const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      toast({
-        title: "CSV Uploaded",
-        description: `Processing ${file.name}...`,
-      });
-      setIsCSVUploadOpen(false);
-    }
+    if (!file) return;
+
+    setIsUploadingCSV(true);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const { data, meta } = results;
+          const requiredFields = ['name', 'email', 'role', 'password'];
+          const missingFields = requiredFields.filter(f => !meta.fields?.includes(f));
+
+          if (missingFields.length > 0) {
+            toast({
+              title: "Invalid Format",
+              description: `Missing columns: ${missingFields.join(", ")}`,
+              variant: "destructive",
+            });
+            setIsUploadingCSV(false);
+            return;
+          }
+
+          // Validate row data loosely before sending to backend
+          const validUsers = data.filter((row: any) =>
+            row.name && row.email && row.role && row.password &&
+            row.password.length >= 6
+          ) as any[];
+
+          if (validUsers.length === 0) {
+            toast({
+              title: "No Valid Users",
+              description: "Could not find any fully fleshed out rows (name, email, role, password).",
+              variant: "destructive",
+            });
+            setIsUploadingCSV(false);
+            return;
+          }
+
+          if (validUsers.length > 500) {
+            toast({
+              title: "File Too Large",
+              description: "Maximum 500 users can be imported at once.",
+              variant: "destructive",
+            });
+            setIsUploadingCSV(false);
+            return;
+          }
+
+          await bulkCreateUsersMutation.mutateAsync({ users: validUsers });
+
+          toast({
+            title: "Import Successful",
+            description: `${validUsers.length} users have been imported. They will receive welcome emails shortly.`,
+          });
+
+          setIsCSVUploadOpen(false);
+        } catch (error: any) {
+          toast({
+            title: "Import Failed",
+            description: error.response?.data?.message || "An error occurred during import.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsUploadingCSV(false);
+          if (e.target) e.target.value = ''; // Reset input
+        }
+      },
+      error: (error) => {
+        toast({
+          title: "Parsing Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsUploadingCSV(false);
+      }
+    });
   };
 
   const downloadCSVTemplate = () => {
-    const csvContent = "name,email,role,password\nJohn Doe,john@example.com,student,password123\nJane Smith,jane@example.com,teacher,password456";
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "users_template.csv";
+    a.href = "/test_users.csv";
+    a.download = "test_users.csv";
     a.click();
-    window.URL.revokeObjectURL(url);
   };
 
   const handleSelectAll = () => {
@@ -334,18 +402,21 @@ export default function UsersPage() {
                   </div>
 
                   {/* Upload Area */}
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+                  <div className={`border-2 border-dashed border-border rounded-lg p-8 text-center transition-colors ${isUploadingCSV ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'}`}>
                     <input
                       type="file"
                       accept=".csv"
                       onChange={handleCSVUpload}
                       className="hidden"
                       id="csv-upload"
+                      disabled={isUploadingCSV}
                     />
                     <label htmlFor="csv-upload" className="cursor-pointer">
                       <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-sm font-medium">Click to upload or drag and drop</p>
-                      <p className="text-xs text-muted-foreground mt-1">CSV files only (max 5MB)</p>
+                      <p className="text-sm font-medium">
+                        {isUploadingCSV ? "Processing CSV... Please wait." : "Click to upload or drag and drop"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">CSV files only (max 500 rows)</p>
                     </label>
                   </div>
                 </div>

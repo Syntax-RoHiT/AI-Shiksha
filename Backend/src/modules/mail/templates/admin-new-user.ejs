@@ -1,0 +1,16 @@
+<%- include('header', locals) -%>
+    <h2>New User Registration</h2>
+    <p>A new user has just registered on <strong>
+            <%= brandName %>
+        </strong>.</p>
+    <ul>
+        <li><strong>Name:</strong>
+            <%= userName %>
+        </li>
+        <li><strong>Email:</strong>
+            <%= userEmail %>
+        </li>
+    </ul>
+    <p>You can manage this user from your Admin Dashboard.</p>
+    <a href="#" class="button">Go to Dashboard</a>
+    <%- include('footer', locals) -%>

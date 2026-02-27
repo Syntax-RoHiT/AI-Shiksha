@@ -1,0 +1,22 @@
+<%- include('header', locals) -%>
+    <h2>New Course Purchase</h2>
+    <p>A new course purchase has been completed on <strong>
+            <%= brandName %>
+        </strong>.</p>
+    <ul>
+        <li><strong>User Name:</strong>
+            <%= userName %>
+        </li>
+        <li><strong>User Email:</strong>
+            <%= userEmail %>
+        </li>
+        <li><strong>Course:</strong>
+            <%= courseTitle %>
+        </li>
+        <li><strong>Amount:</strong>
+            <%= amount %>
+        </li>
+    </ul>
+    <p>The transaction has been recorded and the user has been enrolled.</p>
+    <a href="#" class="button">View Transaction</a>
+    <%- include('footer', locals) -%>

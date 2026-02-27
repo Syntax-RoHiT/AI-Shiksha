@@ -1,0 +1,14 @@
+<%- include('header', locals) -%>
+    <h2>Hello <%= name %>,</h2>
+    <p>We have received your support ticket request on <strong>
+            <%= brandName %>
+        </strong>.</p>
+    <ul>
+        <li><strong>Ticket ID:</strong> [<%= ticketId %>]</li>
+        <li><strong>Subject:</strong>
+            <%= ticketSubject %>
+        </li>
+    </ul>
+    <p>Our support team will review your request and get back to you shortly.</p>
+    <p>Thank you for your patience,<br>The <%= brandName %> Support Team</p>
+    <%- include('footer', locals) -%>

@@ -197,6 +197,9 @@ export class FranchisesService {
                         domain_verified: true,
                     }
                 });
+
+                // Auto-generate default certificates for system franchise
+                await this.generateDefaultCertificates(systemFranchise.id, this.prisma);
             }
 
             return this.prisma.franchise.update({
@@ -259,6 +262,9 @@ export class FranchisesService {
                     domain_verified: false,
                 },
             });
+
+            // Auto-generate default certificates
+            await this.generateDefaultCertificates(franchise.id, tx as any);
 
             // Create franchise admin user
             const adminUser = await tx.user.create({
@@ -350,5 +356,210 @@ export class FranchisesService {
             password += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return password;
+    }
+
+    private async generateDefaultCertificates(franchise_id: string, txClient: any) {
+        const modernTemplate = {
+            name: 'Modern Minimalist',
+            description: 'Clean, contemporary design with geometric elements',
+            is_default: true,
+            franchise_id,
+            template_config: {
+                canvas: {
+                    width: 1122,
+                    height: 793,
+                    backgroundColor: '#FFFFFF',
+                },
+                elements: [
+                    {
+                        id: 'title',
+                        type: 'text',
+                        x: 100,
+                        y: 120,
+                        content: 'CERTIFICATE',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 42,
+                            fontWeight: 'bold',
+                            color: '#0891B2',
+                            textAlign: 'left',
+                            letterSpacing: 4,
+                            textTransform: 'uppercase',
+                        },
+                    },
+                    {
+                        id: 'subtitle',
+                        type: 'text',
+                        x: 100,
+                        y: 170,
+                        content: 'OF COMPLETION',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 24,
+                            fontWeight: 'normal',
+                            color: '#475569',
+                            textAlign: 'left',
+                            letterSpacing: 2,
+                        },
+                    },
+                    {
+                        id: 'student-name',
+                        type: 'variable',
+                        x: 100,
+                        y: 320,
+                        content: '{student_name}',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 48,
+                            fontWeight: 'bold',
+                            color: '#0F172A',
+                            textAlign: 'left',
+                        },
+                    },
+                    {
+                        id: 'course-name',
+                        type: 'variable',
+                        x: 100,
+                        y: 450,
+                        content: '{course_name}',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 28,
+                            fontWeight: '600',
+                            color: '#1E293B',
+                            textAlign: 'left',
+                        },
+                    },
+                    {
+                        id: 'completion-date-label',
+                        type: 'variable',
+                        x: 100,
+                        y: 650,
+                        content: 'Completed on {completion_date}',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 14,
+                            color: '#64748B',
+                            textAlign: 'left',
+                        },
+                    },
+                    {
+                        id: 'instructor-label',
+                        type: 'variable',
+                        x: 100,
+                        y: 680,
+                        content: 'Instructor: {instructor_name}',
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: 14,
+                            color: '#64748B',
+                            textAlign: 'left',
+                        },
+                    },
+                    {
+                        id: 'qr-code',
+                        type: 'qrcode',
+                        x: 950,
+                        y: 400,
+                        width: 140,
+                        height: 140,
+                        content: '{qr_validation_url}',
+                        style: {
+                            opacity: 1,
+                        },
+                    },
+                ],
+            },
+        };
+
+        const corporateTemplate = {
+            name: 'Corporate Professional',
+            description: 'Professional business-style certificate',
+            is_default: false,
+            franchise_id,
+            template_config: {
+                canvas: {
+                    width: 1122,
+                    height: 793,
+                    backgroundColor: '#F8FAFC',
+                },
+                elements: [
+                    {
+                        id: 'title',
+                        type: 'text',
+                        x: 561,
+                        y: 100,
+                        content: 'CERTIFICATE OF COMPLETION',
+                        style: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: 36,
+                            fontWeight: 'bold',
+                            color: '#1E40AF',
+                            textAlign: 'center',
+                            letterSpacing: 3,
+                        },
+                    },
+                    {
+                        id: 'student-name',
+                        type: 'variable',
+                        x: 561,
+                        y: 340,
+                        content: '{student_name}',
+                        style: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: 48,
+                            fontWeight: 'bold',
+                            color: '#1E40AF',
+                            textAlign: 'center',
+                        },
+                    },
+                    {
+                        id: 'course-name',
+                        type: 'variable',
+                        x: 561,
+                        y: 480,
+                        content: '{course_name}',
+                        style: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: 30,
+                            fontWeight: '600',
+                            color: '#0F172A',
+                            textAlign: 'center',
+                        },
+                    },
+                    {
+                        id: 'completion-date',
+                        type: 'variable',
+                        x: 300,
+                        y: 620,
+                        content: '{completion_date}',
+                        style: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: 14,
+                            color: '#475569',
+                            textAlign: 'center',
+                        },
+                    },
+                    {
+                        id: 'instructor-name',
+                        type: 'variable',
+                        x: 561,
+                        y: 620,
+                        content: '{instructor_name}',
+                        style: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: 14,
+                            fontWeight: '600',
+                            color: '#475569',
+                            textAlign: 'center',
+                        },
+                    },
+                ],
+            },
+        };
+
+        await txClient.certificateTemplate.createMany({
+            data: [modernTemplate, corporateTemplate],
+        });
     }
 }

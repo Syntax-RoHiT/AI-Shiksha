@@ -6,12 +6,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CompletionsService } from '../completions/completions.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
     private prisma: PrismaService,
     private completionsService: CompletionsService,
+    private mailService: MailService,
   ) { }
 
   async findOne(studentId: string, courseId: string) {
@@ -72,15 +74,23 @@ export class EnrollmentsService {
     const existing = await this.findOne(userId, courseId);
     if (existing) {
       if (existing.status !== 'active') {
-        return this.prisma.enrollment.update({
+        const updated = await this.prisma.enrollment.update({
           where: { id: existing.id },
           data: { status: 'active', enrolled_at: new Date() },
+          include: { user: true },
         });
+
+        this.mailService.sendCourseEnrollmentEmail(
+          { email: updated.user.email, name: updated.user.name, franchise_id: updated.user.franchise_id },
+          course.title
+        );
+
+        return updated;
       }
       return existing;
     }
 
-    return this.prisma.enrollment.create({
+    const enrollment = await this.prisma.enrollment.create({
       data: {
         student_id: userId,
         course_id: courseId,
@@ -89,7 +99,15 @@ export class EnrollmentsService {
         // Fallback to user's franchise if course is global (though typically courses belong to franchise or null).
         franchise_id: course.franchise_id || franchiseId,
       },
+      include: { user: true },
     });
+
+    this.mailService.sendCourseEnrollmentEmail(
+      { email: enrollment.user.email, name: enrollment.user.name, franchise_id: enrollment.user.franchise_id },
+      course.title
+    );
+
+    return enrollment;
   }
 
   async acceptTerms(studentId: string, courseId: string) {

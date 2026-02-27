@@ -1,0 +1,19 @@
+<%- include('header', locals) -%>
+    <h2>Hello <%= name %>,</h2>
+    <p>An administrator has created an account for you on <strong>
+            <%= brandName %>
+        </strong>.</p>
+    <p>Here are your login details:</p>
+    <ul>
+        <li><strong>Email:</strong>
+            <%= email %>
+        </li>
+        <li><strong>Temporary Password:</strong>
+            <%= password %>
+        </li>
+    </ul>
+    <p>Please log in using the button below and change your password immediately.</p>
+    <a href="<%= loginUrl %>" class="button">Log In Now</a>
+    <p>If you have any questions, feel free to reply directly to this email.</p>
+    <p>Best regards,<br>The <%= brandName %> Team</p>
+    <%- include('footer', locals) -%>

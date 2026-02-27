@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AnnouncementsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private mailService: MailService,
+    ) { }
 
     async create(userId: string, franchiseId: string | null, createAnnouncementDto: CreateAnnouncementDto) {
-        return this.prisma.announcement.create({
+        const announcement = await this.prisma.announcement.create({
             data: {
                 title: createAnnouncementDto.title,
                 content: createAnnouncementDto.content,
@@ -16,6 +20,32 @@ export class AnnouncementsService {
                 franchise_id: franchiseId,
             },
         });
+
+        // Broadcast to specific franchise if defined, else to ALL users
+        const whereUsers: any = {};
+        if (franchiseId) {
+            whereUsers.franchise_id = franchiseId;
+        }
+
+        const usersToNotify = await this.prisma.user.findMany({
+            where: whereUsers,
+            select: { email: true, name: true, franchise_id: true }
+        });
+
+        const author = await this.prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
+
+        // Fire and forget email delivery to avoid holding up the request
+        Promise.all(usersToNotify.map(user =>
+            this.mailService.sendAnnouncementEmail(
+                { email: user.email, name: user.name, franchise_id: user.franchise_id },
+                announcement.title,
+                announcement.content,
+                author?.name || 'Admin',
+                `${process.env.FRONTEND_URL || 'https://experttrainersacademy.cloud'}/dashboard`
+            )
+        )).catch(err => console.error("Error broadcasting announcement emails:", err));
+
+        return announcement;
     }
 
     async findAllForAdmin(franchiseId: string | null) {

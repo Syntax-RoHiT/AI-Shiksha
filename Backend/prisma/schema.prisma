@@ -47,8 +47,10 @@ model Franchise {
   certificates    Certificate[]
   categories      Category[]
   tags            Tag[]
-  support_tickets SupportTicket[]
-  announcements   Announcement[]
+  support_tickets     SupportTicket[]
+  announcements       Announcement[]
+  email_templates     EmailTemplate[]
+  certificate_templates CertificateTemplate[] @relation("FranchiseCertificateTemplates")
 
   @@map("franchises")
 }
@@ -439,6 +441,10 @@ model CertificateTemplate {
   preview_image_url String?
   created_by        String?
   creator           User?    @relation("CreatedCertificateTemplates", fields: [created_by], references: [id], onDelete: SetNull)
+  
+  franchise_id      String?
+  franchise         Franchise? @relation("FranchiseCertificateTemplates", fields: [franchise_id], references: [id], onDelete: Cascade)
+
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
@@ -777,4 +783,26 @@ model Announcement {
   updated_at DateTime @updatedAt
 
   @@map("announcements")
+}
+
+// ============================================
+// EMAIL TEMPLATES
+// ============================================
+
+model EmailTemplate {
+  id           String     @id @default(uuid())
+  name         String     // e.g., "Welcome Email", "Password Reset"
+  type         String     // e.g., "WELCOME", "PASSWORD_RESET", "ENROLLMENT", "PURCHASE"
+  subject      String
+  body         String     @db.Text
+  
+  // Multi-tenant franchise constraints
+  franchise_id String?
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+
+  @@unique([type, franchise_id])
+  @@map("email_templates")
 }

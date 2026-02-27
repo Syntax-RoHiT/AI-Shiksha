@@ -18,7 +18,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../enums/role.enum';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, BulkCreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto, ChangePasswordDto } from './dto/update-profile.dto';
 
 @ApiTags('Users')
@@ -111,7 +111,23 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto, @Request() req) {
     const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
     const franchiseId = isSuperAdmin ? null : (req.user?.franchise_id || null);
-    return this.usersService.create(createUserDto, franchiseId);
+    const domain = req.headers.origin || req.headers.host || 'https://experttrainersacademy.cloud';
+    // Ensure we construct a proper URL
+    const loginUrl = domain.startsWith('http') ? `${domain}/login` : `https://${domain}/login`;
+    return this.usersService.create(createUserDto, franchiseId, true, loginUrl);
+  }
+
+  @Post('bulk')
+  @Roles(Role.ADMIN, Role.FRANCHISE_ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create multiple users in bulk (Admin only)' })
+  createBulk(@Body() bulkCreateUserDto: BulkCreateUserDto, @Request() req) {
+    const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
+    const franchiseId = isSuperAdmin ? null : (req.user?.franchise_id || null);
+    const domain = req.headers.origin || req.headers.host || 'https://experttrainersacademy.cloud';
+    // Ensure we construct a proper URL
+    const loginUrl = domain.startsWith('http') ? `${domain}/login` : `https://${domain}/login`;
+    return this.usersService.createBulk(bulkCreateUserDto, franchiseId, loginUrl);
   }
 
   @Delete(':id')
