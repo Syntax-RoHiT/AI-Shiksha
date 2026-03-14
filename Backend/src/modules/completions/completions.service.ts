@@ -418,7 +418,7 @@ export class CompletionsService {
             },
         });
 
-        if (!enrollment || enrollment.status !== 'active') {
+        if (!enrollment || !['active', 'completed'].includes(enrollment.status)) {
             throw new BadRequestException('Student is not enrolled in this course');
         }
 
@@ -471,7 +471,7 @@ export class CompletionsService {
             },
         });
 
-        if (!enrollment || enrollment.status !== 'active') {
+        if (!enrollment || !['active', 'completed'].includes(enrollment.status)) {
             throw new BadRequestException('Student is not enrolled in this course');
         }
 
@@ -576,7 +576,7 @@ export class CompletionsService {
             },
         });
 
-        // Update Enrollment progress
+        // Update Enrollment progress + status
         await this.prisma.enrollment.update({
             where: {
                 student_id_course_id: {
@@ -586,8 +586,10 @@ export class CompletionsService {
             },
             data: {
                 progress_percentage: Math.round(percentage),
-                completed_at: isComplete ? new Date() : null,
+                completed_at: isComplete ? new Date() : undefined,
                 last_activity_at: new Date(),
+                // KEY FIX: set status to 'completed' when 100% reached
+                ...(isComplete ? { status: 'completed' } : {}),
             },
         });
 
@@ -600,13 +602,14 @@ export class CompletionsService {
 
     private async generateCertificateOnCompletion(studentId: string, courseId: string) {
         try {
-            // Check if course has certificates enabled
+            // Get course details including franchise_id for isolation
             const course = await this.prisma.course.findUnique({
                 where: { id: courseId },
                 select: {
                     certificate_enabled: true,
                     slug: true,
                     title: true,
+                    franchise_id: true,
                 },
             });
 
@@ -635,7 +638,7 @@ export class CompletionsService {
             const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             const qrValidationUrl = `${baseUrl}/courses/${course.slug}/validation/${studentId}`;
 
-            // Create certificate
+            // Create certificate — KEY FIX: include franchise_id for proper isolation
             const certificate = await this.prisma.certificate.create({
                 data: {
                     student_id: studentId,
@@ -644,6 +647,7 @@ export class CompletionsService {
                     qr_validation_url: qrValidationUrl,
                     certificate_url: `/api/certificates/${studentId}/${courseId}.pdf`,
                     issued_at: new Date(),
+                    franchise_id: course.franchise_id,
                 },
                 include: { user: true },
             });
@@ -671,7 +675,7 @@ export class CompletionsService {
             },
         });
 
-        if (!enrollment || enrollment.status !== 'active') {
+        if (!enrollment || !['active', 'completed'].includes(enrollment.status)) {
             throw new BadRequestException('Student is not enrolled in this course');
         }
 

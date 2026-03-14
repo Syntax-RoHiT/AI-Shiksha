@@ -51,6 +51,9 @@ model Franchise {
   announcements       Announcement[]
   email_templates     EmailTemplate[]
   certificate_templates CertificateTemplate[] @relation("FranchiseCertificateTemplates")
+  qa_questions        CourseQA[]
+  razorpay_setting    RazorpaySetting?
+  coupons             Coupon[]
 
   @@map("franchises")
 }
@@ -99,6 +102,8 @@ model User {
   support_tickets       SupportTicket[]        @relation("StudentTickets")
   support_messages      SupportTicketMessage[]
   announcements         Announcement[]         @relation("AnnouncementAuthor")
+  qa_questions          CourseQA[]             @relation("StudentQA")
+  qa_replies            CourseQAReply[]        @relation("AdminQAReplies")
 
   @@map("users")
 }
@@ -212,6 +217,8 @@ model Course {
   prerequisites        CoursePrerequisite[] @relation("CoursePrerequisites")
   prerequisite_for     CoursePrerequisite[] @relation("PrerequisiteFor")
   cart_items           CartItem[] // Shopping cart
+  qa_questions         CourseQA[]
+  coupons              Coupon[]
 
   @@map("courses")
 }
@@ -330,16 +337,50 @@ model Payment {
   course_id        String
   course           Course  @relation(fields: [course_id], references: [id])
   amount           Float
-  payment_provider String // stripe
-  payment_status   String // pending, completed, failed, refunded
-  transaction_id   String?
+  currency         String  @default("USD")
+  payment_provider String // stripe, razorpay
+  payment_status   String // payment_pending, success, failed, refunded
+  transaction_id   String? // Razorpay Payment ID or Stripe Charge ID
+  order_id         String? // Razorpay Order ID
 
   // Multi-tenant franchise
   franchise_id String?
   franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  
+  coupon_id        String?
+  coupon           Coupon?  @relation(fields: [coupon_id], references: [id], onDelete: SetNull)
+
+  // Billing Details
+  billing_name     String?
+  billing_email    String?
+  billing_address  String?
+  billing_city     String?
+  billing_state    String?
+  billing_zip      String?
+  billing_country  String?
+
+
   created_at   DateTime   @default(now())
+  updated_at   DateTime   @default(now()) @updatedAt
 
   @@map("payments")
+}
+
+model RazorpaySetting {
+  id              String   @id @default(uuid())
+  key_id          String
+  key_secret      String   @db.Text
+  webhook_secret  String?  @db.Text
+  currency        String   @default("INR") // INR, USD
+  is_enabled      Boolean  @default(false)
+  
+  franchise_id    String   @unique
+  franchise       Franchise @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
+  
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@map("razorpay_settings")
 }
 
 model VendorPayout {
@@ -540,6 +581,7 @@ model SectionItem {
 
   assignment            Assignment?
   sectionItemProgresses SectionItemProgress[]
+  qa_questions          CourseQA[]
 
   @@unique([section_id, slug]) // Slug must be unique within a section
   @@map("section_items")
@@ -798,11 +840,86 @@ model EmailTemplate {
   
   // Multi-tenant franchise constraints
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
   
   created_at   DateTime   @default(now())
   updated_at   DateTime   @updatedAt
 
   @@unique([type, franchise_id])
   @@map("email_templates")
+}
+
+// ============================================
+// Q/A MODELS
+// ============================================
+
+model CourseQA {
+  id           String      @id @default(uuid())
+  course_id    String
+  course       Course      @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  lesson_id    String
+  lesson       SectionItem @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  student_id   String
+  student      User        @relation("StudentQA", fields: [student_id], references: [id], onDelete: Cascade)
+  
+  question     String      @db.Text
+  status       String      @default("OPEN") // OPEN, ANSWERED, RESOLVED
+
+  franchise_id String?
+  franchise    Franchise?  @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
+  
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  replies      CourseQAReply[]
+
+  @@map("course_qa")
+}
+
+model CourseQAReply {
+  id           String    @id @default(uuid())
+  qa_id        String
+  qa           CourseQA  @relation(fields: [qa_id], references: [id], onDelete: Cascade)
+  user_id      String
+  user         User      @relation("AdminQAReplies", fields: [user_id], references: [id], onDelete: Cascade)
+  
+  reply        String    @db.Text
+  is_admin     Boolean   @default(true) // Whether the reply is from an admin/instructor
+  
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  @@map("course_qa_replies")
+}
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String
+  description     String?  @db.Text
+  discount_type   String   @default("PERCENTAGE") // PERCENTAGE or FIXED_AMOUNT
+  discount_value  Float
+  min_order_value Float?
+  max_discount    Float?   // Useful for percentage discounts
+  
+  start_date      DateTime?
+  end_date        DateTime?
+  is_active       Boolean  @default(true)
+  usage_limit     Int?     @default(100)
+  times_used      Int      @default(0)
+
+  // Multi-tenant franchise (strict isolation)
+  franchise_id    String
+  franchise       Franchise @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
+
+  // Optional: Restrict to specific course
+  course_id       String?
+  course          Course?  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  payments        Payment[]
+
+  @@unique([code, franchise_id])
+  @@map("coupons")
 }

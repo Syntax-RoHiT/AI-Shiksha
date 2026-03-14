@@ -414,6 +414,63 @@ ${customTemplate.body}
         }
     }
 
+    async sendQAAskedNotificationToAdmin(student: any, course: any, lesson: any, question: string, franchiseId: string | null) {
+        try {
+            const context = await this.getFranchiseContext(franchiseId);
+
+            if (!context.supportEmail) return;
+
+            const fullContext = {
+                studentName: student.name,
+                courseTitle: course.title,
+                lessonTitle: lesson.title,
+                question,
+                franchise_id: franchiseId,
+                ...context,
+            };
+
+            const renderOptions = await this.renderTemplate('QA_ASKED', './qa-asked', fullContext);
+
+            await this.mailerService.sendMail({
+                to: context.supportEmail, // Send to Admin
+                subject: renderOptions.subject || `New Q/A Question in ${course.title}`,
+                ...(renderOptions.html ? { html: renderOptions.html } : { template: renderOptions.template }),
+                context: fullContext,
+            });
+            this.logger.log(`Admin notification sent for QA question in ${course.title}`);
+        } catch (error) {
+            this.logger.error(`Failed to send admin notification for QA`, error.stack);
+        }
+    }
+
+    async sendQAReplyEmailToStudent(student: any, course: any, question: string, reply: string, franchiseId: string | null) {
+        try {
+            const context = await this.getFranchiseContext(franchiseId);
+
+            const fullContext = {
+                studentName: student.name,
+                courseTitle: course.title,
+                question,
+                reply,
+                franchise_id: franchiseId,
+                ...context,
+            };
+
+            const renderOptions = await this.renderTemplate('QA_REPLY', './qa-reply', fullContext);
+
+            await this.mailerService.sendMail({
+                to: student.email,
+                replyTo: context.supportEmail,
+                subject: renderOptions.subject || `Reply to your question in ${course.title}`,
+                ...(renderOptions.html ? { html: renderOptions.html } : { template: renderOptions.template }),
+                context: fullContext,
+            });
+            this.logger.log(`QA Reply email sent to ${student.email}`);
+        } catch (error) {
+            this.logger.error(`Failed to send QA reply email to ${student.email}`, error.stack);
+        }
+    }
+
     // ==========================================
     // Custom Email Templates API Methods
     // ==========================================

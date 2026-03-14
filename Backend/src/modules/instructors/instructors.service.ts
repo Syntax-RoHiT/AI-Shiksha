@@ -62,10 +62,42 @@ export class InstructorsService {
     });
   }
 
-  async update(id: string, updateInstructorDto: UpdateInstructorDto) {
-    return this.prisma.instructorProfile.update({
+  async update(id: string, updateInstructorDto: UpdateInstructorDto, userId: string) {
+    const instructor = await this.prisma.instructorProfile.findUnique({
       where: { id },
-      data: updateInstructorDto,
+      include: { user: true }
+    });
+
+    if (!instructor) {
+      throw new NotFoundException('Instructor profile not found');
+    }
+
+    if (instructor.user_id !== userId) {
+      throw new BadRequestException('You do not own this profile');
+    }
+
+    const { name, avatar_url, bio, ...profileData } = updateInstructorDto;
+
+    return this.prisma.$transaction(async (prisma) => {
+      // Update instructor profile
+      const updatedProfile = await prisma.instructorProfile.update({
+        where: { id },
+        data: profileData,
+      });
+
+      // Update user details if provided
+      if (name !== undefined || avatar_url !== undefined || bio !== undefined) {
+        await prisma.user.update({
+          where: { id: instructor.user_id },
+          data: {
+            name: name !== undefined ? name : instructor.user.name,
+            avatar_url: avatar_url !== undefined ? avatar_url : instructor.user.avatar_url,
+            bio: bio !== undefined ? bio : instructor.user.bio,
+          },
+        });
+      }
+
+      return updatedProfile;
     });
   }
 
@@ -85,16 +117,15 @@ export class InstructorsService {
       where: { course_id: { in: courseIds } },
     });
 
-    const totalRevenue = await this.prisma.payment.aggregate({
-      where: {
-        course_id: { in: courseIds },
-        payment_status: 'completed',
-      },
-      _sum: { amount: true },
+    const draftCoursesCount = await this.prisma.course.count({
+      where: { instructor_id: instructor.id, status: 'DRAFT' }
+    });
+    
+    const publishedCoursesCount = await this.prisma.course.count({
+      where: { instructor_id: instructor.id, status: 'PUBLISHED' }
     });
 
     // Calculate rating
-    // This requires aggregation on reviews for these courses
     const reviews = await this.prisma.review.aggregate({
       where: { course_id: { in: courseIds } },
       _avg: { rating: true },
@@ -102,47 +133,50 @@ export class InstructorsService {
 
     // Top Courses
     const courses = await this.prisma.course.findMany({
-      where: { instructor_id: instructor.id },
+      where: { instructor_id: instructor.id, status: 'PUBLISHED' },
       include: {
         _count: { select: { enrollments: true } },
-        payments: true,
       },
       take: 5,
     });
 
     const topCourses = courses
       .map((c) => {
-        const revenue = c.payments.reduce((sum, p) => sum + p.amount, 0);
         return {
           title: c.title,
           students: c._count.enrollments,
-          revenue: `$${revenue.toLocaleString()}`,
-          rating: 4.8, // Mocking rating per course for now as aggregation is complex here
+          slug: c.slug,
+          rating: 0, // Real rating calculation per course is more complex, keeping simple or 0 for now
         };
       })
       .sort((a, b) => b.students - a.students)
-      .slice(0, 3);
+      .slice(0, 5);
 
-    // Recent Activity (Mocked for now as we need a unified activity log)
-    const recentActivity = [
-      {
-        action: 'New enrollment',
-        course: courses[0]?.title || 'Course',
-        time: '2 hours ago',
+    // Recently Enrolled Students
+    const recentEnrollments = await this.prisma.enrollment.findMany({
+      where: { course_id: { in: courseIds } },
+      include: {
+        user: {
+          select: { name: true, email: true, avatar_url: true }
+        },
+        course: {
+          select: { title: true }
+        }
       },
-      { action: 'Payout processed', course: '$450.00', time: '1 day ago' },
-    ];
+      orderBy: { enrolled_at: 'desc' },
+      take: 5
+    });
+
+    const recentStudents = recentEnrollments.map(e => ({
+      name: e.user.name,
+      email: e.user.email,
+      avatar_url: e.user.avatar_url,
+      course: e.course.title,
+      enrolled_at: e.enrolled_at,
+    }));
 
     return {
       stats: [
-        {
-          label: 'Total Revenue',
-          value: `$${(totalRevenue._sum.amount || 0).toLocaleString()}`,
-          change: '+0%',
-          icon: 'DollarSign',
-          gradient: 'from-primary/15 to-primary/5',
-          iconColor: 'text-primary',
-        },
         {
           label: 'Total Students',
           value: totalStudents.toString(),
@@ -152,11 +186,18 @@ export class InstructorsService {
           iconColor: 'text-accent',
         },
         {
-          label: 'Active Courses',
-          value: instructor.courses.length.toString(),
+          label: 'Published Courses',
+          value: publishedCoursesCount.toString(),
           icon: 'BookOpen',
           gradient: 'from-chart-3/15 to-chart-3/5',
           iconColor: 'text-chart-3',
+        },
+        {
+          label: 'Draft Courses',
+          value: draftCoursesCount.toString(),
+          icon: 'FileText',
+          gradient: 'from-primary/15 to-primary/5',
+          iconColor: 'text-primary',
         },
         {
           label: 'Avg. Rating',
@@ -167,7 +208,7 @@ export class InstructorsService {
         },
       ],
       topCourses,
-      recentActivity,
+      recentStudents,
     };
   }
 
@@ -225,6 +266,102 @@ export class InstructorsService {
         status: 'verified', // Mocking status
         avatar: instructor.user.avatar_url,
       };
+    });
+  }
+
+  async getStudents(userId: string) {
+    const instructor = await this.prisma.instructorProfile.findUnique({
+      where: { user_id: userId },
+      include: { courses: true },
+    });
+
+    if (!instructor) {
+      throw new BadRequestException('Instructor profile not found');
+    }
+
+    const courseIds = instructor.courses.map((c) => c.id);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { course_id: { in: courseIds } },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatar_url: true }
+        },
+        course: {
+          select: { title: true }
+        }
+      },
+      orderBy: { enrolled_at: 'desc' },
+    });
+
+    return enrollments.map(e => ({
+      id: e.user.id,
+      name: e.user.name,
+      email: e.user.email,
+      avatar_url: e.user.avatar_url,
+      course_title: e.course.title,
+      enrolled_at: e.enrolled_at,
+      progress_percentage: e.progress_percentage
+    }));
+  }
+
+  async getReviews(userId: string) {
+    const instructor = await this.prisma.instructorProfile.findUnique({
+      where: { user_id: userId },
+      include: { courses: true },
+    });
+
+    if (!instructor) {
+      throw new BadRequestException('Instructor profile not found');
+    }
+
+    const courseIds = instructor.courses.map((c) => c.id);
+
+    return this.prisma.review.findMany({
+      where: { course_id: { in: courseIds } },
+      include: {
+        user: {
+          select: { name: true, avatar_url: true }
+        },
+        course: {
+          select: { title: true }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+  }
+
+  async getQA(userId: string) {
+    const instructor = await this.prisma.instructorProfile.findUnique({
+      where: { user_id: userId },
+      include: { courses: true },
+    });
+
+    if (!instructor) {
+      throw new BadRequestException('Instructor profile not found');
+    }
+
+    const courseIds = instructor.courses.map((c) => c.id);
+
+    return this.prisma.courseQA.findMany({
+      where: { course_id: { in: courseIds } },
+      include: {
+        student: {
+          select: { name: true, avatar_url: true }
+        },
+        course: {
+          select: { title: true }
+        },
+        replies: {
+          include: {
+            user: {
+              select: { name: true, avatar_url: true }
+            }
+          },
+          orderBy: { created_at: 'asc' }
+        }
+      },
+      orderBy: { created_at: 'desc' }
     });
   }
 }

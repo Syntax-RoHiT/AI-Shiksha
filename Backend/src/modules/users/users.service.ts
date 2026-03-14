@@ -166,6 +166,31 @@ export class UsersService {
       }),
     );
 
+    const completedProgresses = await this.prisma.courseProgress.findMany({
+      where: {
+        student_id: userId,
+        progress_percentage: { gte: 100 },
+      },
+      include: {
+        course: {
+          include: {
+            instructor: { include: { user: true } },
+            reviews: {
+              where: { student_id: userId },
+            }
+          }
+        }
+      }
+    });
+
+    const completedCourses = completedProgresses.map((p) => ({
+      id: p.course.id,
+      title: p.course.title,
+      instructor: p.course.instructor.user.name,
+      image: p.course.thumbnail_url || 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=120&h=80&fit=crop',
+      has_reviewed: p.course.reviews.length > 0,
+    }));
+
     return {
       stats: [
         {
@@ -190,7 +215,8 @@ export class UsersService {
           iconColor: 'text-chart-3',
         },
       ],
-      inProgressCourses: progressList,
+      inProgressCourses: progressList.filter(c => c.progress < 100),
+      completedCourses,
       upcomingDeadlines: [
         { title: 'Complete Profile', course: 'Onboarding', dueIn: 'Soon' },
       ],

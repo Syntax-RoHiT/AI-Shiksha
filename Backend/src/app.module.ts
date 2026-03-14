@@ -32,7 +32,13 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { FranchisesModule } from './modules/franchises/franchises.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { QaModule } from './modules/qa/qa.module';
+import { RazorpayModule } from './modules/razorpay/razorpay.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
+import { InvoicesService } from './modules/invoices/invoices.service';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -70,9 +76,14 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
     SystemSettingsModule,
     FranchisesModule,
     AnnouncementsModule,
+    ReviewsModule,
+    QaModule,
+    RazorpayModule,
+    CouponsModule,
+    InvoicesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, InvoicesService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

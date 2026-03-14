@@ -1,32 +1,48 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { InvoicesService } from '../invoices/invoices.service';
 
 @Injectable()
 export class TransactionsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private invoicesService: InvoicesService
+    ) { }
 
-    async createTransaction(userId: string, data: { courseIds: string[], amount: number, paymentMethod: string }) {
+    async createTransaction(userId: string, data: { 
+        courseIds: string[], 
+        amount: number, 
+        paymentMethod: string,
+        billingDetails?: {
+            billing_name: string;
+            billing_email: string;
+            billing_address: string;
+            billing_city: string;
+            billing_state: string;
+            billing_zip: string;
+            billing_country: string;
+        } 
+    }) {
         return this.prisma.$transaction(async (tx) => {
             // 1. Create Payment Record (Transaction)
             const payment = await tx.payment.create({
                 data: {
                     user_id: userId,
                     course_id: data.courseIds[0], // Linking to first course for now as Payment model has single course_id relation based on schema. 
-                    // TODO: If Payment supports multiple courses, we need to adjust schema or create multiple payments. 
-                    // Checking schema: Payment has `course_id String`. It implies 1 payment = 1 course? 
-                    // Or maybe we create multiple payment records? 
-                    // For a cart checkout, usually we create one Transaction/Order and multiple OrderItems.
-                    // But here schema says Payment -> Course. 
-                    // I will create one payment record per course to be safe with current schema, OR just one for the first one and others implied.
-                    // Better: Create multiple payments (one per course) or update schema. 
-                    // For quick fix: I'll iterate and create enrollment. 
-                    // Wait, `Payment` model is: user_id, course_id, amount.
-                    // If I buy 2 courses, I should probably create 2 payment records?
-                    // Let's create `Enrollment` for ALL courses.
                     amount: data.amount,
-                    payment_provider: 'stripe', // Mock
+                    payment_provider: data.paymentMethod || 'stripe', // Passed dynamic or fallback
                     payment_status: 'completed',
                     transaction_id: `TXN-${Date.now()}`,
+                    // Inject Billing Details if present
+                    ...(data.billingDetails && {
+                        billing_name: data.billingDetails.billing_name,
+                        billing_email: data.billingDetails.billing_email,
+                        billing_address: data.billingDetails.billing_address,
+                        billing_city: data.billingDetails.billing_city,
+                        billing_state: data.billingDetails.billing_state,
+                        billing_zip: data.billingDetails.billing_zip,
+                        billing_country: data.billingDetails.billing_country,
+                    })
                 }
             });
 
@@ -56,6 +72,11 @@ export class TransactionsService {
                     enrollments.push(enrollment);
                 }
             }
+
+            // 3. Fire-and-forget Email Generation
+            this.invoicesService.sendInvoiceEmail(payment.id).catch(err => {
+                console.error('Failed to send invoice email after payment', err);
+            });
 
             return { success: true, payment, enrollments };
         });

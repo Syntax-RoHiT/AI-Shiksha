@@ -40,7 +40,10 @@ export class EnrollmentsService {
       where: whereClause,
       include: {
         course: {
-          include: { instructor: { include: { user: true } } },
+          include: {
+            instructor: { include: { user: true } },
+            reviews: { where: { student_id: studentId }, select: { id: true } }
+          },
         },
       },
     });
@@ -48,7 +51,7 @@ export class EnrollmentsService {
 
   async checkEnrollment(studentId: string, courseId: string): Promise<boolean> {
     const enrollment = await this.findOne(studentId, courseId);
-    return !!enrollment && enrollment.status === 'active';
+    return !!enrollment && ['active', 'completed'].includes(enrollment.status);
   }
 
   async create(userId: string, courseId: string, franchiseId?: string | null) {

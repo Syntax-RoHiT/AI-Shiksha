@@ -57,6 +57,33 @@ export class InstructorsController {
     return this.instructorsService.getDashboardStats(req.user.userId);
   }
 
+  @Get('dashboard/students')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.INSTRUCTOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get instructor dashboard students list' })
+  getStudents(@Request() req) {
+    return this.instructorsService.getStudents(req.user.userId);
+  }
+
+  @Get('dashboard/reviews')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.INSTRUCTOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get instructor dashboard course reviews' })
+  getReviews(@Request() req) {
+    return this.instructorsService.getReviews(req.user.userId);
+  }
+
+  @Get('dashboard/qa')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.INSTRUCTOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get instructor dashboard course Q/A' })
+  getQA(@Request() req) {
+    return this.instructorsService.getQA(req.user.userId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get instructor details' })
   findOne(@Param('id') id: string) {
@@ -69,10 +96,10 @@ export class InstructorsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update instructor profile' })
   update(
+    @Request() req,
     @Param('id') id: string,
     @Body() updateInstructorDto: UpdateInstructorDto,
   ) {
-    // TODO: Verify that the user owns this profile or is admin
-    return this.instructorsService.update(id, updateInstructorDto);
+    return this.instructorsService.update(id, updateInstructorDto, req.user.userId);
   }
 }

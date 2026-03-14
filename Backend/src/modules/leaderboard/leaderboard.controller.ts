@@ -12,8 +12,9 @@ export class LeaderboardController {
     @UseGuards(AuthGuard('jwt'))
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get leaderboard rankings' })
-    getLeaderboard(@Query('period') period?: 'weekly' | 'monthly' | 'all-time') {
-        return this.leaderboardService.getLeaderboard(period || 'all-time');
+    getLeaderboard(@Request() req, @Query('period') period?: 'weekly' | 'monthly' | 'all-time') {
+        const franchiseId = req.user?.franchise_id;
+        return this.leaderboardService.getLeaderboard(franchiseId, period || 'all-time');
     }
 
     @Get('my-rank')
@@ -21,7 +22,8 @@ export class LeaderboardController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user rank' })
     getMyRank(@Request() req) {
-        const userId = req.user?.id || 1;
-        return this.leaderboardService.getUserRank(userId);
+        const userId = req.user?.id;
+        const franchiseId = req.user?.franchise_id;
+        return this.leaderboardService.getUserRank(franchiseId, userId);
     }
 }

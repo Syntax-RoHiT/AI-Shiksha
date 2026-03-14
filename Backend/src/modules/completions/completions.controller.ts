@@ -36,7 +36,7 @@ export class CompletionsController {
         @Body('course_id') courseId: string,
         @Request() req: any,
     ) {
-        return this.completionsService.markComplete(studentId, courseId, req.user.id);
+        return this.completionsService.markComplete(studentId, courseId, req.user.userId);
     }
 
     @Post('issue-certificate')
