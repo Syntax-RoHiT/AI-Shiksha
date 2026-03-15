@@ -52,7 +52,7 @@ export class FranchisesService {
         // Normalize domain (strip port for local dev)
         const normalizedDomain = domain.split(':')[0];
 
-        const franchise = await this.prisma.franchise.findFirst({
+        let franchise = await this.prisma.franchise.findFirst({
             where: {
                 OR: [
                     { domain: normalizedDomain },
@@ -76,6 +76,32 @@ export class FranchisesService {
                 seo_keywords: true,
             },
         });
+
+        // If not found, it is likely the master system domain (e.g., iconsafetyinstitute.com)
+        // Master settings are stored under the 'localhost' domain record.
+        if (!franchise) {
+            franchise = await this.prisma.franchise.findFirst({
+                where: {
+                    domain: 'localhost',
+                    is_active: true,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    lms_name: true,
+                    logo_url: true,
+                    favicon_url: true,
+                    primary_color: true,
+                    support_email: true,
+                    domain_verified: true,
+                    maintenance_mode: true,
+                    description: true,
+                    seo_title: true,
+                    seo_description: true,
+                    seo_keywords: true,
+                },
+            });
+        }
 
         if (!franchise) {
             // Return default branding if no franchise found
