@@ -15,31 +15,31 @@ export class MailService {
     ) { }
 
     private async getFranchiseContext(franchiseId: string | null) {
-        if (!franchiseId) {
-            return {
-                brandName: 'Expert Trainers Academy',
-                brandLogo: 'https://experttrainersacademy.cloud/logo.png', // Fallback defaults
-                primaryColor: '#4f46e5',
-                supportEmail: 'support@experttrainersacademy.cloud',
-            };
-        }
+        // Determine which franchise to load — if null (Super Admin / master domain),
+        // fall back to the 'localhost' master franchise record in the database.
+        const franchise = franchiseId
+            ? await this.prisma.franchise.findUnique({
+                where: { id: franchiseId },
+                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true },
+            })
+            : await this.prisma.franchise.findFirst({
+                where: { domain: 'localhost' },
+                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true },
+            });
 
-        const franchise = await this.prisma.franchise.findUnique({
-            where: { id: franchiseId },
-            select: {
-                name: true,
-                logo_url: true,
-                primary_color: true,
-                support_email: true,
-                lms_name: true,
-            },
-        });
+        const apiBase = (process.env.API_URL || process.env.FRONTEND_URL || 'https://iconsafetyinstitute.com').replace(/\/$/, '');
+
+        // Ensure logo URL is absolute so it loads in email clients
+        const rawLogoUrl = franchise?.logo_url || null;
+        const brandLogo = rawLogoUrl
+            ? (rawLogoUrl.startsWith('http') ? rawLogoUrl : `${apiBase}${rawLogoUrl}`)
+            : null;
 
         return {
-            brandName: franchise?.lms_name || franchise?.name || 'Expert Trainers Academy',
-            brandLogo: franchise?.logo_url || 'https://experttrainersacademy.cloud/logo.png',
+            brandName: franchise?.lms_name || franchise?.name || 'AI Shiksha',
+            brandLogo,
             primaryColor: franchise?.primary_color || '#4f46e5',
-            supportEmail: franchise?.support_email || 'support@experttrainersacademy.cloud',
+            supportEmail: franchise?.support_email || undefined,
         };
     }
 
