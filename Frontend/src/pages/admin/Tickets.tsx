@@ -161,7 +161,7 @@ export default function TicketsPage() {
     <AdminDashboardLayout title="Support Tickets" subtitle="Handle user support requests">
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -243,7 +243,8 @@ export default function TicketsPage() {
                 <p>No tickets found</p>
               </div>
             ) : (
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[700px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
@@ -296,6 +297,7 @@ export default function TicketsPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

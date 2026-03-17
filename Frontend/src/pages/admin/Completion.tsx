@@ -382,8 +382,8 @@ export default function CompletionPage() {
             )}
 
             {/* Table */}
-            <div className="rounded-md border overflow-hidden">
-              <Table>
+            <div className="rounded-md border overflow-x-auto">
+              <Table className="min-w-[700px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">

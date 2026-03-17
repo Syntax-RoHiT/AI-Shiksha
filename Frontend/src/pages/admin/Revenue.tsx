@@ -44,7 +44,7 @@ export default function RevenuePage() {
   const content = (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -162,7 +162,8 @@ export default function RevenuePage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Transaction ID</TableHead>
@@ -193,6 +194,7 @@ export default function RevenuePage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
