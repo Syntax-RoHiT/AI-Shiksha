@@ -490,12 +490,18 @@ export const AI = {
 };
 
 export const Uploads = {
-    upload: async (file: File) => {
+    upload: async (file: File, onProgress?: (progress: number) => void) => {
         const formData = new FormData();
         formData.append('file', file);
         const { data } = await api.post('/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
+            },
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    onProgress(progress);
+                }
             },
         });
         return data;

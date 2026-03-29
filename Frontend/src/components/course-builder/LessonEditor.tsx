@@ -15,7 +15,7 @@ import {
 import { RichTextEditor } from '@/components/editors/RichTextEditor';
 import { Video, FileText, Link as LinkIcon, Type, Clock, CheckCircle2, Eye, Save, X, UploadCloud, Loader2, BookOpen } from 'lucide-react';
 import type { SectionItem, LectureContentType } from '@/types/courseBuilder';
-import { Videos } from '@/lib/api';
+
 
 interface LessonEditorProps {
     open: boolean;
@@ -102,58 +102,26 @@ export function LessonEditor({
         setUploadStatus('uploading');
 
         try {
+            const { Uploads } = await import('@/lib/api');
+            
+            const response = await Uploads.upload(file, (progress) => {
+                setUploadProgress(progress);
+            });
+
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const url = response.url.startsWith('http') ? response.url : `${API_URL}${response.url}`;
+
             if (type === 'VIDEO') {
-                // 1. Upload to Microservice
-                const videoId = crypto.randomUUID();
-                const organizationId = 'default-org';
-
-                await Videos.uploadToMicroservice(file, videoId, organizationId, (progress) => {
-                    setUploadProgress(progress);
-                });
-
-                setUploadStatus('processing');
-
-                // 2. Poll Backend for completion
-                const maxAttempts = 60;
-                let attempts = 0;
-
-                const pollInterval = setInterval(async () => {
-                    attempts++;
-                    try {
-                        const status = await Videos.checkStatus(videoId);
-                        if (status && status.status === 'completed') {
-                            clearInterval(pollInterval);
-                            setVideoUrl(status.url);
-                            setUploadStatus('completed');
-                            setIsUploading(false);
-                        } else if (attempts >= maxAttempts) {
-                            clearInterval(pollInterval);
-                            setUploadStatus('error');
-                            setIsUploading(false);
-                            // toast.error('Video processing timed out');
-                        }
-                    } catch (e) {
-                        console.warn("Polling error", e);
-                    }
-                }, 2000);
-
+                setVideoUrl(url);
+            } else if (type === 'PDF') {
+                setPdfUrl(url);
             } else {
-                // Standard upload for other files
-                // We need to import Uploads dynamically or from api.ts
-                const { Uploads } = await import('@/lib/api');
-                const response = await Uploads.upload(file);
-
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-                const url = response.url.startsWith('http') ? response.url : `${API_URL}${response.url}`;
-
-                if (type === 'PDF') {
-                    setPdfUrl(url);
-                } else {
-                    setAttachmentUrl(url);
-                }
-                setUploadStatus('completed');
-                setIsUploading(false);
+                setAttachmentUrl(url);
             }
+            
+            setUploadStatus('completed');
+            setIsUploading(false);
+            
         } catch (error) {
             console.error(error);
             setUploadStatus('error');
