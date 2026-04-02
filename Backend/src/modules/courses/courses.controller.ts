@@ -124,7 +124,7 @@ export class CoursesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete course' })
   remove(@Request() req, @Param('id') id: string) {
-    return this.coursesService.remove(id, req.user.userId, req.user.franchise_id);
+    return this.coursesService.remove(id, req.user.userId, req.user.role, req.user.franchise_id);
   }
 
   // ========== APPROVAL WORKFLOW ==========

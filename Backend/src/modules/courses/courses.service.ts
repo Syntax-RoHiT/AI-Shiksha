@@ -373,8 +373,8 @@ export class CoursesService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    // Verify ownership (skip for Admin/SuperAdmin)
-    if (userRole !== 'SUPER_ADMIN' && userRole !== 'ADMIN' && course.instructor.user_id !== userId) {
+    // Verify ownership (skip for Admin/SuperAdmin/FranchiseAdmin)
+    if (userRole !== 'SUPER_ADMIN' && userRole !== 'ADMIN' && userRole !== 'FRANCHISE_ADMIN' && course.instructor.user_id !== userId) {
       throw new BadRequestException('You do not own this course'); // Or ForbiddenException
     }
 
@@ -532,7 +532,7 @@ export class CoursesService {
     });
   }
 
-  async remove(id: string, userId: string, franchiseId?: string | null) {
+  async remove(id: string, userId: string, userRole?: string, franchiseId?: string | null) {
     const whereClause: any = { id };
     if (franchiseId) {
       whereClause.franchise_id = franchiseId;
@@ -545,8 +545,8 @@ export class CoursesService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    // Verify ownership
-    if (course.instructor.user_id !== userId) {
+    // Verify ownership (skip for Admin/SuperAdmin/FranchiseAdmin)
+    if (userRole !== 'SUPER_ADMIN' && userRole !== 'ADMIN' && userRole !== 'FRANCHISE_ADMIN' && course.instructor.user_id !== userId) {
       throw new BadRequestException('You do not own this course');
     }
 
