@@ -177,6 +177,7 @@ export interface Assignment {
     submission_type: AssignmentSubmissionType;
     max_file_size_mb: number;
     allowed_file_types?: string[]; // JSON array
+    assignment_url?: string; // Optional PDF file link
 
     rubric?: string; // JSON
     enable_peer_review: boolean;
@@ -301,6 +302,7 @@ export interface CreateAssignmentDTO {
     submission_type: AssignmentSubmissionType;
     max_file_size_mb?: number;
     allowed_file_types?: string[];
+    assignment_url?: string;
     rubric?: string;
     enable_peer_review?: boolean;
     deadline?: string;

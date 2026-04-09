@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, UploadCloud, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, UploadCloud, FileText, CheckCircle2, Download } from "lucide-react";
 import { Assignments, Uploads } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -181,6 +181,16 @@ export default function AssignmentPlayer({ assignmentId, onComplete }: Assignmen
                             </>
                         )}
                     </div>
+                    {assignment?.assignment_url && (
+                        <div className="mb-6 pl-14">
+                            <a href={assignment.assignment_url} target="_blank" rel="noopener noreferrer">
+                                <Button variant="outline" className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50">
+                                    <Download className="w-4 h-4" />
+                                    Download Assignment reference
+                                </Button>
+                            </a>
+                        </div>
+                    )}
                     <div className="border-t border-gray-200" />
                 </div>
 

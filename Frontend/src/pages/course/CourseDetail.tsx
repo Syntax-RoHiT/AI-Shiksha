@@ -443,7 +443,7 @@ export default function CourseDetail() {
               </div>
 
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">{course.title}</h1>
-              <p className="text-lg text-white/80 max-w-2xl">{course.subtitle || course.description}</p>
+              <p className="text-lg text-white/80 max-w-2xl">{course.subtitle || (course.description ? course.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...' : '')}</p>
 
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <div className="flex items-center gap-1">

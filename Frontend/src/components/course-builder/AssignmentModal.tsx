@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { SectionItem } from '@/types/courseBuilder';
 import { RichTextEditor } from '@/components/editors/RichTextEditor';
+import { Uploads } from '@/lib/api';
 
 interface AssignmentModalProps {
     open: boolean;
@@ -42,6 +43,8 @@ export function AssignmentModal({
     const [description, setDescription] = useState(item.description || '');
 
     // Assignment specific settings
+    const [assignmentUrl, setAssignmentUrl] = useState('');
+    const [uploadingAssignment, setUploadingAssignment] = useState(false);
     const [deadline, setDeadline] = useState<Date | undefined>(undefined);
     const [maxFileSize, setMaxFileSize] = useState(10);
     const [allowedTypes, setAllowedTypes] = useState('pdf, docx, zip');
@@ -55,6 +58,7 @@ export function AssignmentModal({
 
             // Load backend details if assignment exists
             if (item.assignment) {
+                if (item.assignment.assignment_url) setAssignmentUrl(item.assignment.assignment_url);
                 if (item.assignment.deadline) setDeadline(new Date(item.assignment.deadline));
                 if (item.assignment.max_file_size_mb) setMaxFileSize(item.assignment.max_file_size_mb);
 
@@ -92,6 +96,7 @@ export function AssignmentModal({
                 max_file_size_mb: maxFileSize,
                 allowed_file_types: allowedTypes.split(',').map(t => t.trim()).filter(Boolean),
                 submission_type: submissionType,
+                assignment_url: assignmentUrl || null,
             };
 
             if (item.assignment?.id) {
@@ -105,6 +110,23 @@ export function AssignmentModal({
             console.error("Failed to save assignment", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingAssignment(true);
+        try {
+            const result = await Uploads.upload(file);
+            if (result && result.url) {
+                setAssignmentUrl(result.url);
+            }
+        } catch (error) {
+            console.error("Failed to upload assignment file", error);
+        } finally {
+            setUploadingAssignment(false);
         }
     };
 
@@ -128,6 +150,28 @@ export function AssignmentModal({
                             onChange={setDescription}
                             placeholder="Describe the assignment task..."
                         />
+                    </div>
+
+                    <div className="space-y-2 p-4 border rounded-lg bg-slate-50">
+                        <Label>Assignment Reference File (Optional)</Label>
+                        <div className="flex items-center gap-4">
+                            <Input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleFileUpload}
+                                disabled={uploadingAssignment}
+                                className="cursor-pointer"
+                            />
+                            {uploadingAssignment && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                        </div>
+                        {assignmentUrl && (
+                            <p className="text-sm text-green-600 font-medium">
+                                File uploaded successfully: <a href={assignmentUrl} target="_blank" rel="noopener noreferrer" className="underline text-blue-500">View File</a>
+                            </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                            Upload a PDF or document that students can download (e.g., assignment brief).
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

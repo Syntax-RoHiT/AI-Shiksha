@@ -9,6 +9,7 @@ import {
   IsArray,
   IsIn,
   ValidateNested,
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -213,7 +214,9 @@ export class ReorderQuestionsDto {
 
 // Quiz Submission DTOs
 export class SubmitQuizDto {
-  answers: Record<string, any>; // { questionId: answer }
+  @IsObject()
+  @IsOptional()
+  answers?: Record<string, any>; // { questionId: answer }
 
   @IsInt()
   @IsOptional()

@@ -280,12 +280,27 @@ export class QuizzesService {
     };
 
     // Filter questions for the active set and parse answers
-    const questions = quiz.questions
+    let questions = quiz.questions
       .filter(q => (q.set_number || 1) === currentSet)
       .map(q => ({
         ...q,
         correct_answers: safeParse(q.correct_answers)
       }));
+
+    if (questions.length === 0) {
+      questions = quiz.questions
+        .filter(q => (q.set_number || 1) === 1)
+        .map(q => ({
+          ...q,
+          correct_answers: safeParse(q.correct_answers)
+        }));
+      if (questions.length === 0) {
+        questions = quiz.questions.map(q => ({
+          ...q,
+          correct_answers: safeParse(q.correct_answers)
+        }));
+      }
+    }
 
     // Auto-grade if enabled
     let score: number | null = null;

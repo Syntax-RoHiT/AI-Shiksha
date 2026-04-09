@@ -5,6 +5,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class AdminService {
   constructor(private prisma: PrismaService) { }
 
+  async getFirstFranchise() {
+    return this.prisma.franchise.findFirst();
+  }
+
   async getPlatformStats(franchiseId?: string) {
     // Build where clause for franchise scoping
     const franchiseWhere = franchiseId ? { franchise_id: franchiseId } : {};

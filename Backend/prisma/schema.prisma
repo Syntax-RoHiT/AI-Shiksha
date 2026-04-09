@@ -710,6 +710,8 @@ model Assignment {
   deadline                DateTime?
   late_penalty_percentage Int       @default(0)
 
+  assignment_url     String? // URL for attached assignment file
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

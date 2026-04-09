@@ -51,7 +51,7 @@ const Hero: React.FC<HeroProps> = ({ course }) => {
           {/* Title & Description */}
           <div className="flex flex-col gap-4">
             <h1 className="text-white text-3xl md:text-4xl font-bold leading-tight">{course.title}</h1>
-            <p className="text-lg text-white">{course.subtitle || course.description}</p>
+            <p className="text-lg text-white">{course.subtitle || (course.description ? course.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...' : '')}</p>
 
             {/* Ratings */}
             <div className="flex flex-wrap items-center gap-3">

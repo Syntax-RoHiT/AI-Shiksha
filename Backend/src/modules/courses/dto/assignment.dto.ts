@@ -43,6 +43,10 @@ export class CreateAssignmentDto {
   @Max(100)
   @IsOptional()
   late_penalty_percentage?: number; // Default 0
+
+  @IsString()
+  @IsOptional()
+  assignment_url?: string;
 }
 
 export class UpdateAssignmentDto {
@@ -77,6 +81,10 @@ export class UpdateAssignmentDto {
   @Max(100)
   @IsOptional()
   late_penalty_percentage?: number;
+
+  @IsString()
+  @IsOptional()
+  assignment_url?: string;
 }
 
 // Assignment Submission DTOs

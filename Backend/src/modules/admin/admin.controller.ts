@@ -60,7 +60,13 @@ export class AdminController {
     franchiseId = franchiseId || req.tenantId || req.tenantBranding?.id;
 
     if (!franchiseId) {
-      throw new BadRequestException('Cannot update AI settings without a franchise context.');
+      // Fallback to the first franchise (usually the master franchise) for local/super admin context
+      const defaultFranchise = await this.adminService.getFirstFranchise();
+      if (defaultFranchise) {
+          franchiseId = defaultFranchise.id;
+      } else {
+          throw new BadRequestException('Cannot update AI settings without a franchise context.');
+      }
     }
 
     return this.adminService.updateAiSettings(

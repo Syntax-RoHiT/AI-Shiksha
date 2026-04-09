@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error("Signup failed", error);
-      return false;
+      throw error;
     }
   };
 
