@@ -41,15 +41,21 @@ export class AdminController {
   }
 
   @Get('ai-settings')
-  getAiSettings(@Request() req) {
+  async getAiSettings(@Request() req) {
     const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
-    const franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
+    let franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
 
     // Fallback to tenantId from middleware if no explicit franchise is set on user
-    // Also fallback to req.tenantBranding.id mapping (which is preserved even for localhost)
-    const finalFranchiseId = franchiseId || req.tenantId || req.tenantBranding?.id;
+    franchiseId = franchiseId || req.tenantId || req.tenantBranding?.id;
 
-    return this.adminService.getAiSettings(finalFranchiseId);
+    if (!franchiseId) {
+      const defaultFranchise = await this.adminService.getFirstFranchise();
+      if (defaultFranchise) {
+        franchiseId = defaultFranchise.id;
+      }
+    }
+
+    return this.adminService.getAiSettings(franchiseId);
   }
 
   @Put('ai-settings')

@@ -10,6 +10,7 @@ import { QA, Courses } from '@/lib/api';
 import { Loader2, Reply } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UnifiedDashboard } from '@/components/layout/UnifiedDashboard';
+import { AdminDashboardLayout } from '@/components/layout/AdminDashboardLayout';
 
 export default function QAManagement() {
     const [courses, setCourses] = useState<any[]>([]);
@@ -109,14 +110,6 @@ export default function QAManagement() {
 
     const content = (
         <div className={user?.role === 'teacher' ? "p-6 max-w-7xl mx-auto space-y-6 font-sans" : "space-y-6 animate-in fade-in duration-500"}>
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className={user?.role === 'teacher' ? "text-2xl font-light text-[#1F1F1F]" : "text-3xl font-bold tracking-tight"}>Q/A Management</h2>
-                    <p className={user?.role === 'teacher' ? "text-sm text-[#555555] mt-1" : "text-muted-foreground mt-2"}>
-                        Answer student questions from {user?.role === 'teacher' ? "your courses" : "franchise courses"}.
-                    </p>
-                </div>
-            </div>
 
             <Card>
                 <CardHeader>
@@ -224,5 +217,9 @@ export default function QAManagement() {
         );
     }
 
-    return content;
+    return (
+        <AdminDashboardLayout title="Q/A Management" subtitle="Answer student questions from franchise courses.">
+            {content}
+        </AdminDashboardLayout>
+    );
 }

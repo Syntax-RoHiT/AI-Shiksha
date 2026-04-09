@@ -41,6 +41,28 @@ export class AssistantService {
       let conversation;
       let chunks: string[] = [];
 
+      // 0.5 Fetch Franchise AI Settings First!
+      let customApiKey: string | undefined = undefined;
+      let userFranchiseId: string | null | undefined = null;
+
+      let u = await this.prisma.user.findUnique({ where: { id: userId }, select: { franchise_id: true } });
+      userFranchiseId = u?.franchise_id;
+
+      if (!userFranchiseId && tenantId) {
+        userFranchiseId = tenantId;
+      }
+
+      if (userFranchiseId) {
+        const franchise = await this.prisma.franchise.findUnique({
+          where: { id: userFranchiseId },
+          select: { gemini_api_key: true } as any
+        }) as any;
+        if (!franchise?.gemini_api_key) {
+          throw new HttpException('Ask the Admin to Configure Gemini Key', HttpStatus.NOT_IMPLEMENTED);
+        }
+        customApiKey = franchise.gemini_api_key as string;
+      }
+
       // 1. Course Specific Logic (if courseId provided)
       if (courseId) {
         // 1a. Validate Course & Get User's Franchise
@@ -94,8 +116,8 @@ export class AssistantService {
           });
         }
 
-        // 1d. Retrieve Relevant Content (RAG)
-        chunks = await this.retrievalService.retrieveRelevantChunks(courseId, message);
+        // 1d. Retrieve Relevant Content (RAG) using Custom API Key
+        chunks = await this.retrievalService.retrieveRelevantChunks(courseId, message, customApiKey);
         const fullContent = chunks.join('\n\n---\n\n');
         contextContent = fullContent.slice(0, 4000);
 
@@ -148,31 +170,7 @@ export class AssistantService {
         message,
       );
 
-      // 5.5 Fetch Franchise AI Settings
-      let customApiKey: string | undefined = undefined;
-      let userFranchiseId: string | null | undefined = null;
-
-      // Get user's franchise to fetch settings
-      let u = await this.prisma.user.findUnique({ where: { id: userId }, select: { franchise_id: true } });
-      userFranchiseId = u?.franchise_id;
-
-      // Fallback to active tenant session context (crucial for Super Admins on localhost)
-      if (!userFranchiseId && tenantId) {
-        userFranchiseId = tenantId;
-      }
-
-      if (userFranchiseId) {
-        const franchise = await this.prisma.franchise.findUnique({
-          where: { id: userFranchiseId },
-          select: { gemini_api_key: true } as any
-        }) as any;
-        if (!franchise?.gemini_api_key) {
-          throw new HttpException('Ask the Admin to Configure Gemini Key', HttpStatus.NOT_IMPLEMENTED);
-        }
-        customApiKey = franchise.gemini_api_key as string;
-      }
-
-      // 6. Call Gemini
+      // 6. Call Gemini using custom API key
       const responseText = await this.geminiService.generateText(prompt, customApiKey);
 
       // 7. Save ASSISTANT Message

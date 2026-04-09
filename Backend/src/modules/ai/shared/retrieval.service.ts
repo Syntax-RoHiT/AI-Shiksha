@@ -14,11 +14,11 @@ export class RetrievalService {
   /**
    * Retrieves the top 5 most relevant content chunks for a given query within a course.
    */
-  async retrieveRelevantChunks(courseId: string, query: string): Promise<string[]> {
+  async retrieveRelevantChunks(courseId: string, query: string, customApiKey?: string): Promise<string[]> {
     if (!query || !query.trim()) return [];
 
     // 1. Generate Embedding for the query
-    const embedding = await this.embeddingService.generateEmbedding(query);
+    const embedding = await this.embeddingService.generateEmbedding(query, customApiKey);
     
     // If embedding API fails, return empty array (fallback to no context)
     // We cannot do semantic search without a query vector.

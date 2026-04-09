@@ -124,12 +124,9 @@ export class CoursesService {
       whereClause.franchise_id = null;
     }
 
-    // If not admin request, only show published courses
     if (!adminRequest) {
       whereClause.status = 'PUBLISHED';
     }
-
-    console.log('Finding courses with where clause:', whereClause);
 
     const courses = await this.prisma.course.findMany({
       where: whereClause,
@@ -156,11 +153,6 @@ export class CoursesService {
       },
       orderBy: { created_at: 'desc' },
     });
-
-    console.log('Found courses:', courses.length);
-    if (courses.length > 0) {
-      console.log('First course status:', courses[0].status);
-    }
 
     return (courses as any[]).map((course) => ({
       id: course.id,

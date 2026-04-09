@@ -13,7 +13,7 @@ export class EmbeddingService {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY') || '';
     
     if (!this.apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined in environment variables');
+      this.logger.log('No system-level GEMINI_API_KEY detected. Dynamic keys will be required.');
     }
 
     this.client = axios.create({
@@ -28,8 +28,9 @@ export class EmbeddingService {
    * Generates a 768-dimensional vector embedding for the given text.
    * Returns null on failure to allow graceful degradation.
    */
-  async generateEmbedding(text: string): Promise<number[] | null> {
-    if (!this.apiKey) {
+  async generateEmbedding(text: string, customApiKey?: string): Promise<number[] | null> {
+    const keyToUse = customApiKey || this.apiKey;
+    if (!keyToUse) {
       this.logger.warn('Skipping embedding generation: API Key missing');
       return null;
     }
@@ -39,7 +40,7 @@ export class EmbeddingService {
 
     try {
       const response = await this.client.post(
-        `${this.baseUrl}?key=${this.apiKey}`,
+        `${this.baseUrl}?key=${keyToUse}`,
         {
           content: {
             parts: [{ text }],

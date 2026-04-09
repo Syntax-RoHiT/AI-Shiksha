@@ -13,7 +13,7 @@ export class GeminiService {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY') || '';
 
     if (!this.apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined in environment variables');
+      this.logger.log('No system-level GEMINI_API_KEY detected. Dynamic keys will be required.');
     }
 
     this.client = axios.create({
