@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,13 +24,12 @@ import {
   Music,
   Globe,
   Briefcase,
-  School,
-  MessageCircle
+  School
 } from "lucide-react";
 import UnifiedNavbar from "@/components/layout/UnifiedNavbar";
 import Footer from "@/components/marketing/Footer";
-import { Chatbot } from "@/components/ai/Chatbot";
 import { Courses as CoursesAPI, Categories as CategoriesAPI } from "@/lib/api";
+import { InteractiveHoverButton } from "@/components/ui/InteractiveHoverButton";
 
 // --- Types & Data ---
 
@@ -126,107 +125,71 @@ const testimonials = [
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-white pt-10 pb-24 lg:pt-16">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-        {/* Left Content */}
-        <div className="flex flex-col gap-8 relative z-10 items-center lg:items-start text-center lg:text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+    <main 
+      className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden bg-transparent"
+    >
+      
+      <div className="max-w-6xl mx-auto px-8 text-center relative z-10">
+        {/* Decorative Accent */}
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 0.3, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider w-fit"
-          >
-            <Sparkles className="h-4 w-4" />
-            AI-Powered Learning Platform
-          </motion.div>
-
-          <motion.h1
+            className="mb-10 flex justify-center transform -rotate-12"
+        >
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v7" />
+          </svg>
+        </motion.div>
+        
+        {/* Breadcrumb Label */}
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-text-main text-3xl sm:text-4xl lg:text-6xl font-black leading-[1.1] tracking-tight"
-          >
-            Learn Smarter.<br />
-            Build Faster.<br />
-            <span className="text-primary">Grow Limitlessly.</span>
-          </motion.h1>
-
-          <motion.p
+            className="mb-8 inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase"
+        >
+          India's Premier AI Learning Platform
+        </motion.div>
+        
+        {/* Main Headline */}
+        <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-text-muted text-lg lg:text-xl leading-relaxed max-w-lg"
-          >
-            Personalized learning paths designed to help you master new skills and build your career faster than ever before with our AI Tutor.
-          </motion.p>
-
-          <motion.div
+            className="headline-serif text-5xl md:text-8xl text-text-main font-light leading-[1.05] mb-8 max-w-4xl mx-auto"
+        >
+          Mastering Safety Through <br/>
+          <span className="italic text-primary font-normal">Intelligence</span>
+        </motion.h1>
+        
+        {/* Subtext */}
+        <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap gap-4 justify-center lg:justify-start"
-          >
-            <Link to="/courses">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-primary text-white font-bold rounded-xl shadow-xl shadow-primary/20 flex items-center gap-2"
-              >
-                Start Learning <ArrowRight className="h-5 w-5" />
-              </motion.button>
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="max-w-xl mx-auto text-text-muted text-lg md:text-xl leading-relaxed mb-12 font-medium opacity-80"
+        >
+          Built on sovereign compute. Powered by frontier-class models. Delivering population-scale safety impact.
+        </motion.p>
+        
+        {/* Hero CTA */}
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex items-center gap-4 pt-4 border-t border-[#f0f2f4]"
-          >
-            <div className="flex -space-x-2">
-              <img alt="User" className="h-8 w-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCp-naEXxCFyQyeQuGpWLkvmvGC_q-QXXCzmA4M8fJaLDH2SmanU-VyI2rHk0fGc6jSPAEgQOhZytxLX4DDjMbXPW7vL66DujunwBAUU5CLnBkc0psPNHA3Y8lUQbRViknIL-vlR9nogVgco2-eIhTOt1RRKSR30jp5y5-IopstxeSRp_NXwgKRp6PFr3tqX7NM8YBCcIr0mbqEgZOHhnAhrijo2K9IMDYjlmO62SfNQ7n7xlnYQT9Xk8jjbwOMo0V76AMmB9DSNSw" />
-              <img alt="User" className="h-8 w-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5s0ynfMBoMfY1MetsIuVEhq8tXHPhramGrt5qP_5Et9z-kPm60iD3ZGyU-iXOqwiKHrgE2124I7LtR9-o0jjgEq8qfWXyLNlI5fXZbvKrxT8ksqAt8c2OB3oRVYyxqUNSYsoHoyImgmUPd5BNUaXtSYjMS8fcQxrVXP8Ph9w9lbL01HuzmtubldIF003fzuNdzM-lf3wsquXYd3IbE0luxgbPnhF2hb_nBSFK3MQmhuSvCc6MZIRONFRG93VXATOEz505zr7yJOA" />
-              <img alt="User" className="h-8 w-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBDD-i67YzZcd6s5_b98b24QFHp_fRuXu5G-LToIewBPJj3KWWsbjhUxtfHN3NpL4cdXJho4dIAh0ONWOk_pUVXbD9bbdT7EHgxZ91T1LaV6pQVCYKMy7XCK0QaeMr_0_buMYfWzDlkG8wbGMcEbBGsWf9Q8nPXmr_fs3nweYCBGPb1ZYDTrzIRFU6QdPehoaCv-fPVs0nLBItAAFQ5hG_RE2euvRrZGT44uTv1iLS_-ytaNE37iZZbmfiuDYdl7yoW4gMPM81AWw" />
-            </div>
-            <p className="text-sm text-text-muted font-medium">Joined by 10,000+ students globally</p>
-          </motion.div>
-        </div>
-
-        {/* Right 3D Mockup */}
-        <div className="relative z-0 hidden lg:block">
-          <motion.div
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.1, 0.2, 0.1]
-            }}
-            transition={{ duration: 5, repeat: Infinity }}
-            className="absolute -top-12 -left-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.2, 0.1, 0.2]
-            }}
-            transition={{ duration: 7, repeat: Infinity }}
-            className="absolute -bottom-12 -right-12 w-64 h-64 bg-primary/20 rounded-full blur-3xl"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1.25 }}
-            transition={{ duration: 0.8, type: "spring" }}
-            className="relative z-10 origin-center"
-          >
-            <img
-              src="/hero-dashboard.png"
-              alt="Dashboard Preview"
-              className="w-full h-auto object-contain drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500"
-            />
-          </motion.div>
-        </div>
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+        >
+          <Link to="/courses">
+            <InteractiveHoverButton className="px-12 py-5 font-bold text-lg bg-gradient-to-r from-gray-900 to-black text-white hover:text-black">
+              Browse Courses <ArrowRight className="h-5 w-5" />
+            </InteractiveHoverButton>
+          </Link>
+        </motion.div>
       </div>
-    </section>
+    </main>
   );
 };
 
@@ -238,61 +201,48 @@ const Categories = () => {
   }, []);
 
   const styles = [
-    { icon: Code, color: "text-blue-600", bg: "bg-blue-50", border: "group-hover:border-blue-200", shadow: "group-hover:shadow-blue-100" },
-    { icon: Brain, color: "text-purple-600", bg: "bg-purple-50", border: "group-hover:border-purple-200", shadow: "group-hover:shadow-purple-100" },
-    { icon: Palette, color: "text-pink-600", bg: "bg-pink-50", border: "group-hover:border-pink-200", shadow: "group-hover:shadow-pink-100" },
-    { icon: TrendingUp, color: "text-orange-600", bg: "bg-orange-50", border: "group-hover:border-orange-200", shadow: "group-hover:shadow-orange-100" },
-    { icon: Camera, color: "text-yellow-600", bg: "bg-yellow-50", border: "group-hover:border-yellow-200", shadow: "group-hover:shadow-yellow-100" },
-    { icon: Music, color: "text-red-600", bg: "bg-red-50", border: "group-hover:border-red-200", shadow: "group-hover:shadow-red-100" },
-    { icon: Globe, color: "text-teal-600", bg: "bg-teal-50", border: "group-hover:border-teal-200", shadow: "group-hover:shadow-teal-100" },
-    { icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50", border: "group-hover:border-indigo-200", shadow: "group-hover:shadow-indigo-100" },
+    { icon: "leaderboard", color: "text-primary", bg: "bg-primary/5", shadow: "hover:shadow-primary/5" },
+    { icon: "engineering", color: "text-[#4648d4]", bg: "bg-[#4648d4]/5", shadow: "hover:shadow-[#4648d4]/10" },
+    { icon: "security_update_good", color: "text-[#a12e70]", bg: "bg-[#a12e70]/5", shadow: "hover:shadow-[#a12e70]/10" },
+    { icon: "eco", color: "text-[#0051d5]", bg: "bg-[#0051d5]/5", shadow: "hover:shadow-[#0051d5]/10" },
   ];
 
   const defaultCategories = [
-    { name: "Programming", count: "150+ Courses" },
-    { name: "AI & Data Science", count: "80+ Courses" },
-    { name: "Design", count: "120+ Courses" },
-    { name: "Business", count: "95+ Courses" },
+    { name: "Executive Leadership" },
+    { name: "Technical Safety" },
+    { name: "Risk Management" },
+    { name: "Environmental Compliance" },
   ];
 
   const displayCategories = dbCategories.length > 0
     ? dbCategories.slice(0, 4).map((c, i) => ({ name: c.name, count: "Explore Courses", ...styles[i % styles.length] }))
-    : defaultCategories.map((c, i) => ({ ...c, ...styles[i % styles.length] }));
+    : defaultCategories.map((c, i) => ({ ...c, count: "Explore Courses", ...styles[i % styles.length] }));
 
   return (
-    <section className="bg-background-light py-20 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between mb-12 text-center lg:text-left gap-4">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-3xl font-bold tracking-tight text-text-main">Explore Top Categories</h2>
-            <p className="text-text-muted">Whatever your goal, we have a path for you.</p>
-          </div>
-          <Link to="/courses" className="text-primary font-bold flex items-center gap-1 hover:underline group">
-            View All <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayCategories.map((cat, idx) => (
-            <Link to={`/courses?category=${encodeURIComponent(cat.name)}`} key={idx}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className={`p-6 rounded-2xl border border-transparent bg-white shadow-sm transition-all cursor-pointer group hover:shadow-xl ${cat.border} ${cat.shadow}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <cat.icon className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-text-main group-hover:text-primary transition-colors">{cat.name}</h3>
-                    <p className="text-sm text-text-muted">{cat.count}</p>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
+    <div id="categories-section" className="relative px-6 pt-16 pb-32 max-w-7xl mx-auto">
+      {/* Section Header */}
+      <div className="text-center mb-20 relative z-10">
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4 block">IOSH Accredited Excellence</span>
+        <h2 className="headline-serif text-5xl md:text-7xl font-light tracking-tight text-text-main mb-6">Course Categories</h2>
+        <p className="max-w-2xl mx-auto text-text-muted text-lg leading-relaxed">
+            Explore our specialized domains of expertise, tailored for every level of professional growth.
+        </p>
       </div>
-    </section>
+      
+      {/* Course Categories Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 relative z-10">
+        {displayCategories.map((cat, idx) => (
+          <Link to={`/courses?category=${encodeURIComponent(cat.name)}`} key={idx}>
+            <div className={`glass-card group p-6 rounded-xl border border-gray-100/50 text-center hover:-translate-y-1 transition-all duration-300 hover:shadow-xl ${cat.shadow} cursor-pointer h-full`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform ${cat.bg}`}>
+                <span className={`material-symbols-outlined ${cat.color}`}>{cat.icon}</span>
+              </div>
+              <h3 className="headline-serif text-lg text-text-main group-hover:text-primary transition-colors">{cat.name}</h3>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -324,137 +274,122 @@ const FeaturedCourses = () => {
       });
   }, []);
 
-  const displayCourses = dbCourses.slice(0, 6).map(c => ({
-    slug: c.slug,
-    title: c.title,
-    author: c.instructor,
-    rating: c.rating || "4.5",
-    reviews: c.students ? c.students.toString() : "0",
-    price: c.price > 0 ? `₹${c.price.toLocaleString('en-IN')}` : "Free",
-    tag: c.level || "Popular",
-    thumbnail: c.thumbnail || "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?q=80"
-  }));
+  const hardcodedCourses = [
+    {
+      slug: "behavioral-safety",
+      title: "Behavioral Safety Leadership",
+      description: "Harness advanced psychological frameworks to foster a culture of proactive safety beyond compliance and regulation.",
+      tag: "Executive",
+      tagColor: "bg-primary/10 text-primary",
+      thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuAaKe_7gU_yWz-RiwZVoj-TlpUl7blaNFjq9uUQX33q0PoGujkfcfYpqcncFt9GomBkD1NCKW1dEi257IPdVl8sgYm3LIA2QrIb5joPjWrbOhNqomFhhr4XlHgtnzwSSlcVMHjmLJRoNFi-unWpZMJ7or2MATWFKwquOOCr-pIhe9jks2HTsjMjqNkr13aoOIJ8WpJs_TuduGmYTOv3Q86SlUhCXWlb8tnM1RuEYZX3_jbbSee28KW54JSlIE3G50VOUFBJb_WOWb4"
+    },
+    {
+      slug: "risk-assessment",
+      title: "Risk Assessment AI",
+      description: "Deploying predictive modeling and machine learning to identify workplace hazards before they materialize into incidents.",
+      tag: "Intermediate",
+      tagColor: "bg-[#4648d4]/10 text-[#4648d4]",
+      thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuARuUtDP1EiihisGEasi1GEXRMJNLZMpxiNy_kg5xsTTgcgP9Fo3oHlJ2FjEVxS6DhtJz85scwvykxWm947zHYIMFeBHFsJWinhEZdRyVAmhRc6pluxZlBZ09pd50zKqVjAjZm9z9J9y42SbBcRW2Zj0i0_NgDA7mfc-BW34dqU3GoJuX7rFlRCw2-ieSf1uGMkarcInE3l1VGfASU8MVCU7QMgYde7l3C17tQqWLVBuye9f_794xKi5UO-SVFVq-ZAS8bL_YiY97k"
+    },
+    {
+      slug: "global-compliance",
+      title: "Global Compliance Framework",
+      description: "A comprehensive guide to navigating international occupational health standards across diverse legal jurisdictions.",
+      tag: "Advanced",
+      tagColor: "bg-[#a12e70]/10 text-[#a12e70]",
+      thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuDc7J5fcCZQBcbZkpkC9m7DHVYui3wPxu0i1KDOE27hAdzW3-93r2jr_BOyLxkfiFaOhICXs3UWJQWnDYri-8cT3iGwic2HeKwrfeXwOd0suEIhKFUxZH1xTznHhDk-eF5ilW6fGVoy169apCWzd6-fBmVExTVIkJlYzMJtLg7qwppYuh0oKdW6TyL48xT4TNQHTED0frYeX1Y5TM3j9957EUcAr863-hUdHm8UccEFWmozu5_Lo5BlyRkVUTIyqeeLzF0XEdgu4y4"
+    }
+  ];
+
+  const displayCourses = dbCourses.length > 0 
+    ? dbCourses.slice(0, 6).map(c => ({
+        slug: c.slug,
+        title: c.title,
+        description: `Taught by ${c.instructor}`,
+        tag: c.level || "Popular",
+        tagColor: "bg-primary/10 text-primary",
+        thumbnail: c.thumbnail || "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?q=80"
+      }))
+    : hardcodedCourses;
 
   return (
-    <section className="py-24 px-4 sm:px-6 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight text-text-main">Featured Courses</h2>
-          <p className="text-text-muted mt-2">Hand-picked courses to get you started on your journey.</p>
-        </div>
-
-        {isLoading ? (
-          <div className="flex justify-center items-center py-24">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : displayCourses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayCourses.map((course, idx) => (
-              <Link to={course.slug ? `/courses/${course.slug}` : "/courses"} key={idx}>
-                <motion.div
-                  whileHover={{ y: -8 }}
-                  className="group bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden hover:shadow-card-hover transition-all duration-300 flex flex-col h-full"
-                >
-                  <div className="relative h-48 overflow-hidden bg-gray-100 flex items-center justify-center">
-                    {course.tag && (
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-text-main shadow-sm z-10">
-                        {course.tag}
-                      </div>
-                    )}
-                    {course.thumbnail ? (
-                      <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <Code className="h-10 w-10 text-gray-300" />
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                  </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-lg font-bold text-text-main mb-2 line-clamp-2 leading-snug group-hover:text-primary transition-colors">{course.title}</h3>
-                    <p className="text-sm text-text-muted mb-4">{course.author}</p>
-
-                    <div className="mt-auto pt-4 border-t border-[#f0f2f4] flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="font-bold text-amber-500 flex items-center gap-0.5">
-                          {course.rating} <Star className="h-4 w-4 fill-current" />
-                        </span>
-                        <span className="text-xs text-text-muted">({course.reviews} students)</span>
-                      </div>
-                      <p className="font-black text-text-main">{course.price}</p>
-                    </div>
-                    <button className="mt-4 w-full py-2.5 bg-primary text-white text-sm font-bold rounded-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">Enroll Now</button>
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-500">
-            <Code className="h-12 w-12 mx-auto mb-4 opacity-20" />
-            <p>Courses are being updated. Check back soon!</p>
-          </div>
-        )}
+    <section className="py-24 px-6 relative z-10 max-w-7xl mx-auto">
+      {/* Subtle Background Accent */}
+      <div className="absolute bottom-[-10%] -left-64 w-[600px] h-[600px] bg-[#a12e70] opacity-[0.07] rounded-full blur-[120px] mix-blend-multiply pointer-events-none -z-10"></div>
+      
+      {/* Featured Mastery Paths Header */}
+      <div className="text-center mb-16">
+        <h2 className="headline-serif text-4xl md:text-5xl font-light tracking-tight text-text-main mb-6">Featured Mastery Paths</h2>
+        <div className="h-1 w-20 bg-primary/20 mx-auto rounded-full"></div>
       </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center py-24">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+          {displayCourses.map((course, idx) => (
+            <div key={idx} className="glass-card rounded-xl p-8 flex flex-col h-full border border-gray-100/50 shadow-sm group hover:-translate-y-2 transition-transform duration-500">
+              <div className="mb-8 aspect-video rounded-lg overflow-hidden bg-gray-100">
+                <img 
+                  src={course.thumbnail} 
+                  alt={course.title} 
+                  className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" 
+                />
+              </div>
+              <div className="mb-4">
+                <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${course.tagColor}`}>
+                  {course.tag}
+                </span>
+              </div>
+              <h3 className="headline-serif text-2xl font-light mb-4 line-clamp-2">{course.title}</h3>
+              <p className="text-text-muted text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                {course.description}
+              </p>
+              <Link to={course.slug ? `/courses/${course.slug}` : "/courses"} className="flex items-center gap-2 text-primary text-sm font-bold group/link mt-auto">
+                Discover Path 
+                <span className="material-symbols-outlined text-sm group-hover/link:translate-x-1 transition-transform">arrow_forward</span>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };
 
 const WhyChooseUs = () => {
   return (
-    <section className="bg-background-light py-24 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight text-text-main">Why Learners Choose Us</h2>
-          <p className="text-text-muted mt-4 max-w-2xl mx-auto">We don't just provide courses; we provide a complete ecosystem for your growth.</p>
+    <section className="mt-32 relative z-10 px-6 max-w-7xl mx-auto pb-24">
+      {/* Ambient Depth Graphic */}
+      <div className="absolute top-[20%] -right-32 w-[700px] h-[700px] bg-[#4648d4] opacity-[0.06] rounded-full blur-[120px] mix-blend-multiply pointer-events-none -z-10"></div>
+
+      <div className="text-center mb-16">
+        <h2 className="headline-serif text-4xl md:text-5xl font-light tracking-tight text-text-main mb-4">The Intellectual Advantage</h2>
+        <div className="h-1 w-20 bg-primary/20 mx-auto rounded-full"></div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="glass-card p-8 rounded-xl border border-gray-100/50 text-center flex flex-col items-center group hover:bg-white/60 transition-colors">
+          <div className="w-14 h-14 rounded-full bg-primary/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+          </div>
+          <h4 className="headline-serif text-xl font-light mb-4">AI-Driven Curriculum</h4>
+          <p className="text-text-muted text-sm leading-relaxed">Personalized learning paths that adapt in real-time to the shifting landscape of modern safety technologies.</p>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Feature - Bento Grid Style */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-[#0f172a] to-[#1e293b] p-8 md:p-12 rounded-3xl text-white relative overflow-hidden flex flex-col justify-center min-h-[300px]">
-            <div className="absolute top-0 right-0 p-12 opacity-10">
-              <Sparkles className="w-64 h-64" />
-            </div>
-            <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-primary/20 backdrop-blur-md flex items-center justify-center mb-6 border border-white/10">
-                <Wand2 className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">AI-Powered Personalized Learning</h3>
-              <p className="text-gray-300 text-lg leading-relaxed max-w-lg">
-                Stop wasting time on one-size-fits-all content. Our AI analyzes your skills and adapts the curriculum in real-time to your pace.
-              </p>
-              <button className="mt-8 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold backdrop-blur-sm transition-colors border border-white/5 w-fit">
-                Try AI Demo
-              </button>
-            </div>
+        <div className="glass-card p-8 rounded-xl border border-gray-100/50 text-center flex flex-col items-center group hover:bg-white/60 transition-colors">
+          <div className="w-14 h-14 rounded-full bg-[#4648d4]/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-[#4648d4] text-3xl">verified_user</span>
           </div>
-
-          {/* Secondary Features Stacked */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-white p-8 rounded-3xl border border-[#e2e8f0] shadow-sm hover:shadow-md transition-shadow flex-1 flex flex-col justify-center group">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BarChart3 className="h-6 w-6" />
-                </div>
-                <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                  Live
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-text-main mb-2">Real-time Analytics</h3>
-              <p className="text-text-muted text-sm leading-relaxed">Visualize your growth daily. Set goals, track streaks, and see your progress.</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-3xl border border-[#e2e8f0] shadow-sm hover:shadow-md transition-shadow flex-1 flex flex-col justify-center group">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BadgeCheck className="h-6 w-6" />
-                </div>
-                <div className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
-                  Global
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-text-main mb-2">Verified Certificates</h3>
-              <p className="text-text-muted text-sm leading-relaxed">Earn credentials recognized by top companies and boost your LinkedIn profile.</p>
-            </div>
+          <h4 className="headline-serif text-xl font-light mb-4">IOSH Accredited</h4>
+          <p className="text-text-muted text-sm leading-relaxed">Globally recognized certification that ensures your expertise meets the highest professional standards.</p>
+        </div>
+        <div className="glass-card p-8 rounded-xl border border-gray-100/50 text-center flex flex-col items-center group hover:bg-white/60 transition-colors">
+          <div className="w-14 h-14 rounded-full bg-[#a12e70]/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-[#a12e70] text-3xl">diversity_3</span>
           </div>
+          <h4 className="headline-serif text-xl font-light mb-4">Expert Mentors</h4>
+          <p className="text-text-muted text-sm leading-relaxed">Direct access to industry veterans who have shaped international health and safety protocols.</p>
         </div>
       </div>
     </section>
@@ -462,75 +397,70 @@ const WhyChooseUs = () => {
 };
 
 
-const TestimonialsMarquee = () => {
-  return (
-    <section className="bg-white py-24 px-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight text-text-main">What our students say</h2>
-        </div>
+const Testimonials = () => {
+  const testimonials = [
+    {
+      id: 1,
+      text: "The integration of AI into risk assessment training completely shifted my perspective on proactive safety. This isn't just a course; it's a career evolution.",
+      name: "Elena Moretti",
+      role: "Safety Director, Eni Global",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4Csd6VutR-7JgWAymcasxrmTbFCtAeT6yDHK4gpT2s1tHW5aPFTKYNRVZF-qPGnuO3RYTrFreJXCOVOYS1YlUjOamZAQg91wQIcJGpAwiHRAbTTAEqm-9jMA618IVKq8H5N7upLxaa4k_XEQYIquwfQEZRBjYtgzXLRCTVmlAyvc0aOQaY3ptbY2-3keHMevq4JfUqIirxKc7R0a3OIOSP9V5BKuNk1XdtL9Q7mSHwIFiVgEiV7kUxPMiLXf-XeT4y7G0nbetj5Q",
+      quoteColor: "text-primary/20"
+    },
+    {
+      id: 2,
+      text: "Navigating international compliance used to be a nightmare of paperwork. The framework taught here simplified our global operations overnight.",
+      name: "Marcus Thorne",
+      role: "HSE Lead, TechLogistics",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCdvNtXepxSQkoATwM4y9fehrrCGdkjARg2DmHkXhgFX4JPC3Fmi1ccHsSwjoo1dI_83BDyrV1Y0Ev0EKbh7SeHkAV9FNvbZKZmC_IYHV_FbYkjNN5slLDWbfVAcwEF05QD-hLyl5Y8KiX7FmHz2uWZOQRioaPwqwXGu5ldzE_umK_N-o8szU9HLrm6jKFBz27T7DdUN8wQKpF2ZQHDacCH-aqQdBu4MG-fkWjc3kLlbDdQArb5fQ5G7-3JxT5RrHrF6x89QzlouSo",
+      quoteColor: "text-[#4648d4]/20"
+    }
+  ];
 
-        <div className="relative w-full overflow-hidden mask-fade-sides">
-          <div className="flex overflow-hidden">
-            <motion.div
-              className="flex gap-8 px-4"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{
-                x: {
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  duration: 30, // Adjust speed here
-                  ease: "linear",
-                },
-              }}
-              style={{ width: "fit-content" }}
-            >
-              {[...testimonials, ...testimonials, ...testimonials].map((testimonial, idx) => (
-                <div
-                  key={`${testimonial.id} -${idx} `}
-                  className="bg-background-light p-8 rounded-2xl relative w-[350px] md:w-[400px] flex-shrink-0"
-                >
-                  <Quote className="text-primary/20 h-10 w-10 absolute top-6 right-6 fill-current" />
-                  <p className="text-text-muted mb-8 relative z-10 italic">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-4">
-                    <img alt="Student" className="w-12 h-12 rounded-full object-cover" src={testimonial.image} />
-                    <div>
-                      <h4 className="font-bold text-text-main">{testimonial.name}</h4>
-                      <p className="text-xs text-text-muted">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
+  return (
+    <section className="mt-32 pb-24 relative z-10 px-6">
+      {/* Atmospheric Tie-in Graphic */}
+      <div className="absolute top-[40%] left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-primary opacity-[0.05] rounded-[100%] blur-[120px] mix-blend-multiply pointer-events-none -z-10"></div>
+
+      <div className="text-center mb-16">
+        <h2 className="headline-serif text-4xl md:text-5xl font-light tracking-tight text-text-main mb-4">Voice of the Academy</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        {testimonials.map((t) => (
+          <div key={t.id} className="glass-card p-10 rounded-xl border border-gray-100/50 shadow-lg relative bg-white/70">
+            <span className={`material-symbols-outlined ${t.quoteColor} text-6xl absolute top-6 right-8 select-none`}>format_quote</span>
+            <p className="headline-serif text-lg text-text-main mb-8 relative z-10 italic">"{t.text}"</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden">
+                <img alt="Student" className="w-full h-full object-cover grayscale" src={t.image} />
+              </div>
+              <div>
+                <div className="font-bold text-sm tracking-tight text-text-main">{t.name}</div>
+                <div className="text-[10px] uppercase tracking-widest text-text-muted">{t.role}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Professional Standards Anchor */}
+      <div className="mt-32 pt-12 border-t border-gray-200/50 text-center max-w-4xl mx-auto">
+        <h2 className="headline-serif text-3xl font-light text-text-muted mb-8">Professional Standards</h2>
+        <div className="flex flex-wrap justify-center gap-6 md:gap-12 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-500">
+          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-tighter text-text-main">
+            <span className="material-symbols-outlined">verified</span>
+            IOSH Certified
+          </div>
+          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-tighter text-text-main">
+            <span className="material-symbols-outlined">psychology</span>
+            AI Assisted
+          </div>
+          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-tighter text-text-main">
+            <span className="material-symbols-outlined">workspace_premium</span>
+            ISO 45001
           </div>
         </div>
       </div>
-    </section>
-  );
-};
-
-const FinalCTA = () => {
-  return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        className="bg-primary rounded-[2.5rem] p-12 lg:p-20 text-center relative overflow-hidden"
-      >
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-black/10 rounded-full blur-3xl"></div>
-        <div className="relative z-10">
-          <h2 className="text-white text-4xl lg:text-5xl font-black mb-6">Ready to transform your career?</h2>
-          <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">Join thousands of students and start your personalized learning journey today. Get 20% off your first 3 months with code <span className="text-white font-bold">SMARTER20</span>.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <button className="px-10 py-5 bg-white text-primary font-bold rounded-2xl hover:scale-105 transition-transform shadow-xl">Get Started Now</button>
-            </Link>
-            <Link to="/contact">
-              <button className="px-10 py-5 bg-white/10 text-white font-bold rounded-2xl border border-white/20 hover:bg-white/20 transition-colors">Book a Demo</button>
-            </Link>
-          </div>
-        </div>
-      </motion.div>
     </section>
   );
 };
@@ -538,43 +468,44 @@ const FinalCTA = () => {
 // --- Main App ---
 
 export default function Landing() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background-light font-sans text-text-main relative">
+    <div className="min-h-screen bg-surface font-sans text-text-main relative selection:bg-primary/20 bg-white">
+      {/* Global Interactive Mouse Glow */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(circle 800px at var(--mouse-x, 50vw) var(--mouse-y, 50vh), rgba(70, 72, 212, 0.08) 0%, rgba(161, 46, 112, 0.03) 40%, transparent 80%)"
+        }}
+      />
+      
+      {/* Fixed Navbar */}
       <UnifiedNavbar />
-      <div className="pt-16">
+
+      <div className="relative z-10 hidden md:block">
+        {/* Bridging Atmospheric Gradient Background between Hero & Categories */}
+        <div className="absolute top-[80vh] left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] opacity-30 pointer-events-none blur-[120px] -z-10">
+          <div className="absolute top-[0%] left-[10%] w-[500px] h-[500px] bg-primary rounded-full mix-blend-multiply"></div>
+          <div className="absolute top-[10%] right-[10%] w-[500px] h-[500px] bg-[#a12e70] rounded-full mix-blend-multiply"></div>
+        </div>
+      </div>
+
+      <div className="relative z-10 w-full overflow-x-hidden">
         <Hero />
         <Categories />
         <FeaturedCourses />
         <WhyChooseUs />
-        <TestimonialsMarquee />
-        <FinalCTA />
+        <Testimonials />
         <Footer />
       </div>
-
-      {/* Floating Chat Button */}
-      {!isChatOpen && (
-        <button
-          onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-primary hover:bg-primary/90 text-white px-4 py-3 md:px-5 md:py-4 rounded-full shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center group gap-2 md:gap-3"
-          aria-label="Ask Sentinel AI"
-        >
-          <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
-          <span className="font-semibold text-sm md:text-base whitespace-nowrap">
-            Ask Sentinel
-          </span>
-        </button>
-      )}
-
-      {/* Floating Chat Window */}
-      {isChatOpen && (
-        <Chatbot
-          endpoint="/ai/public/chat"
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-        />
-      )}
     </div>
   );
 }

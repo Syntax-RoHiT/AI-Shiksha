@@ -228,4 +228,46 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Landing Page Specific Rules */
+  .headline-serif { font-family: 'Newsreader', serif; }
+  
+  .glass-nav-pill { 
+      background: rgba(255, 255, 255, 0.7); 
+      backdrop-filter: blur(24px); 
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+  
+  .hero-gradient-new { 
+      background: #f7f9fb;
+      transition: background 0.3s ease;
+  }
+  
+  .btn-3d-hover {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-3d-hover:hover {
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-3d-hover:active {
+      transform: translateY(-1px);
+  }
+
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .glass-card {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+  }
+
+  .luminous-path {
+      background: linear-gradient(135deg, #4648d4 0%, #a12e70 100%);
+      box-shadow: 0 0 15px rgba(70, 72, 212, 0.3);
+  }
 }

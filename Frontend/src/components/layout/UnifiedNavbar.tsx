@@ -18,6 +18,7 @@ import { Categories } from "@/lib/api";
 import { useFranchise } from "@/contexts/FranchiseContext";
 import { getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { InteractiveHoverButton } from "@/components/ui/InteractiveHoverButton";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -40,7 +41,11 @@ export default function UnifiedNavbar() {
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 0);
+            if (window.location.pathname === "/") {
+                setIsScrolled(window.scrollY > window.innerHeight - 80);
+            } else {
+                setIsScrolled(window.scrollY > 0);
+            }
         };
         window.addEventListener("scroll", handleScroll);
         fetchCategories();
@@ -68,13 +73,11 @@ export default function UnifiedNavbar() {
         return "/dashboard";
     };
 
-    return (
-        <nav
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white border-b border-[#d1d7dc] ${isScrolled ? "shadow-md" : ""
-                }`}
-        >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-                {/* Left Section: Logo & Explore */}
+    const isLanding = location.pathname === "/";
+
+    const navContent = (
+        <div className={isLanding ? `w-full flex items-center justify-between gap-2 md:gap-4 transition-all duration-500 ease-in-out ${isScrolled ? 'max-w-7xl mx-auto' : ''}` : "max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 w-full"}>
+            {/* Left Section: Logo & Explore */}
                 <div className="flex items-center gap-4 md:gap-8">
                     {/* Mobile Menu Trigger */}
                     <Sheet>
@@ -228,19 +231,34 @@ export default function UnifiedNavbar() {
                     ) : (
                         <div className="flex items-center gap-2">
                             <Link to="/login">
-                                <Button variant="ghost" className="font-bold text-[#2d2f31] hover:text-[#a435f0] hover:bg-[#f7f9fa]">
+                                <Button variant="ghost" className="font-bold text-[#2d2f31] hover:text-[#a435f0] hover:bg-[#f7f9fa] rounded-full">
                                     Log in
                                 </Button>
                             </Link>
                             <Link to="/signup">
-                                <Button className="bg-[#2d2f31] hover:bg-black text-white font-bold rounded-sm h-9 px-4 hidden sm:flex">
+                                <InteractiveHoverButton className="h-9 px-6 hidden sm:flex">
                                     Sign up
-                                </Button>
+                                </InteractiveHoverButton>
                             </Link>
                         </div>
                     )}
                 </div>
+        </div>
+    );
+
+    if (isLanding) {
+        return (
+            <div className={`fixed left-0 right-0 z-50 flex justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isScrolled ? 'top-0 px-0' : 'top-4 md:top-6 px-4'}`}>
+                <nav className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${isScrolled ? 'w-full h-16 bg-white/60 backdrop-blur-xl shadow-md rounded-none px-4 md:px-8 border-b border-white/20' : 'glass-nav-pill h-16 w-full max-w-4xl rounded-full px-4 md:px-6 shadow-xl'}`}>
+                    {navContent}
+                </nav>
             </div>
+        );
+    }
+
+    return (
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white border-b border-[#d1d7dc] ${isScrolled ? "shadow-md" : ""}`}>
+            {navContent}
         </nav>
     );
 }
