@@ -248,12 +248,10 @@ export default function UnifiedNavbar() {
 
     if (isLanding) {
         return (
-            <div className={`fixed left-0 right-0 z-50 flex justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none ${isScrolled ? 'top-0' : 'top-4 md:top-6'}`}>
-                <div className={`w-full px-4 md:px-6 flex justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isScrolled ? 'px-0 md:px-0' : ''}`}>
-                    <nav className={`pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${isScrolled ? 'w-full h-16 bg-white/70 backdrop-blur-2xl shadow-sm rounded-none px-6 md:px-8 border-b border-white/20' : 'glass-nav-pill h-16 w-full max-w-5xl rounded-full px-6 shadow-xl border border-white/40'}`}>
-                        {navContent}
-                    </nav>
-                </div>
+            <div className={`fixed left-0 right-0 z-50 flex justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isScrolled ? 'top-0' : 'top-4 md:top-6'}`}>
+                <nav className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center ${isScrolled ? 'w-full h-16 bg-white/70 backdrop-blur-2xl shadow-sm rounded-none px-6 md:px-8 border-b border-white/20' : 'glass-nav-pill h-16 w-[calc(100%-2rem)] md:w-[calc(100%-3rem)] max-w-5xl rounded-full px-4 sm:px-6 shadow-xl border border-white/40'}`}>
+                    {navContent}
+                </nav>
             </div>
         );
     }
