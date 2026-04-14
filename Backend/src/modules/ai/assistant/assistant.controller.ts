@@ -16,7 +16,8 @@ export class AssistantController {
   @ApiResponse({ status: 201, description: 'AI response generated successfully.' })
   @ApiResponse({ status: 403, description: 'User not enrolled in the course.' })
   chat(@Request() req, @Body() chatDto: ChatDto) {
-    const tenantId = req.tenantId || req.tenantBranding?.id;
+    // tenantId priority: middleware domain lookup → branding id → JWT franchise claim
+    const tenantId = req.tenantId || req.tenantBranding?.id || req.user?.franchise_id || null;
     return this.assistantService.chat(req.user.userId, tenantId, chatDto);
   }
 }

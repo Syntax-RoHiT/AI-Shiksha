@@ -23,7 +23,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any, originFranchiseId?: string | null) {
+  async login(user: any, originFranchiseId?: string | null, rememberMe: boolean = false) {
     // STRICT FRANCHISE ISOLATION:
     // If request comes from a franchise domain (originFranchiseId exists),
     // user MUST belong to that franchise.
@@ -57,8 +57,13 @@ export class AuthService {
       role: user.role,
       franchise_id: user.franchise_id || null,
     };
+
+    // If rememberMe is true, token lasts 30 days; otherwise 24 hours.
+    const expiresIn = rememberMe ? '30d' : '24h';
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn }),
+      rememberMe,
       user: {
         id: user.id,
         email: user.email,

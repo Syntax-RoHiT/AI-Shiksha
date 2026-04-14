@@ -12,6 +12,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   const submitRef = useRef<HTMLButtonElement>(null);
@@ -34,8 +35,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      localStorage.removeItem("lms_token");
-      const success = await login(email, password);
+      const success = await login(email, password, rememberMe);
       if (success) {
         toast({
           title: "Welcome back!",
@@ -157,13 +157,48 @@ export default function Login() {
             </div>
           </div>
 
+          {/* Remember Me + Forgot Password row */}
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="remember-me"
+              className="flex items-center gap-2.5 cursor-pointer select-none group"
+            >
+              <div className="relative">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="sr-only peer"
+                />
+                {/* Custom checkbox track */}
+                <div
+                  className="w-9 h-5 rounded-full border transition-all duration-300 peer-checked:border-transparent"
+                  style={{
+                    backgroundColor: rememberMe ? primaryColor : 'transparent',
+                    borderColor: rememberMe ? primaryColor : '#d1d5db',
+                  }}
+                >
+                  {/* Thumb */}
+                  <div
+                    className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300"
+                    style={{ transform: rememberMe ? 'translateX(16px)' : 'translateX(0)' }}
+                  />
+                </div>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-text-muted group-hover:text-text-main transition-colors">
+                Remember Me
+              </span>
+            </label>
+          </div>
+
           {/* Interactive Form Submit Button */}
           <button
             type="submit"
             ref={submitRef}
             onMouseMove={handleButtonMouseMove}
             disabled={isLoading}
-            className="group relative w-full h-12 mt-8 rounded-xl overflow-hidden shadow-md flex items-center justify-center transition-transform hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed border border-white/10"
+            className="group relative w-full h-12 mt-2 rounded-xl overflow-hidden shadow-md flex items-center justify-center transition-transform hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed border border-white/10"
           >
             <div className="absolute inset-0 transition-colors" style={{ backgroundColor: primaryColor }}></div>
             <div 

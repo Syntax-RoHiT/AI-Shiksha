@@ -20,12 +20,38 @@ export interface User {
   } | null;
 }
 
+const TOKEN_KEY = "lms_token";
+const REMEMBER_KEY = "lms_remember";
+
+/** Reads the token from whichever storage currently holds it. */
+function readToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+}
+
+/** Persists the token. If rememberMe=true → localStorage (survives browser close). */
+function saveToken(token: string, rememberMe: boolean) {
+  if (rememberMe) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(REMEMBER_KEY, "true");
+    sessionStorage.removeItem(TOKEN_KEY);
+  } else {
+    sessionStorage.setItem(TOKEN_KEY, token);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REMEMBER_KEY);
+  }
+}
+
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REMEMBER_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
   signup: (email: string, password: string, name: string, role: string) => Promise<boolean>;
   updateUser: (data: Partial<User>) => void;
@@ -36,13 +62,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem("lms_token"));
+  const [token, setToken] = useState<string | null>(readToken);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = localStorage.getItem("lms_token");
+      const storedToken = readToken();
       if (storedToken) {
         try {
           // Verify token and get user profile
@@ -51,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(storedToken);
         } catch (error) {
           console.error("Session expired or invalid", error);
-          localStorage.removeItem("lms_token");
+          clearToken();
           setToken(null);
           setUser(null);
         }
@@ -65,12 +91,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, rememberMe = false): Promise<boolean> => {
     try {
-      const response = await api.post("/auth/login", { email, password });
+      // Clear any stale token before a fresh login
+      clearToken();
+
+      const response = await api.post("/auth/login", { email, password, rememberMe });
       const { access_token, user } = response.data;
 
-      localStorage.setItem("lms_token", access_token);
+      saveToken(access_token, rememberMe);
       setToken(access_token);
       setUser(user);
       return true;
@@ -83,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("lms_token");
+    clearToken();
     window.location.href = "/login"; // Force redirect to clear any state
   };
 
@@ -94,10 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role: string
   ): Promise<boolean> => {
     try {
-      // Role needs to be uppercase for backend if it expects enum, 
-      // but typical register might take lowercase. 
-      // Let's ensure consistency. Backend expects 'role' in body.
-      // Based on CreateUserDto, role is optional, defaults to STUDENT.
       const backendRole = role === 'teacher' ? 'INSTRUCTOR' : role.toUpperCase();
 
       const response = await api.post("/auth/register", {
@@ -107,14 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: backendRole
       });
 
-      // Auto-login after signup? Or just return true.
-      // Usually better to auto-login.
       if (response.data) {
-        // If register returns user, we might need to login separately 
-        // or if register returns token.
-        // Backend register returns User object, no token usually unless changed.
-        // Let's try to login immediately.
-        return await login(email, password);
+        // Auto-login after signup (no remember me on fresh sign-up)
+        return await login(email, password, false);
       }
       return true;
     } catch (error) {

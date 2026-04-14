@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsBoolean, IsOptional } from 'class-validator';
 
 class LoginDto {
   @IsEmail()
@@ -27,6 +27,10 @@ class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @IsBoolean()
+  @IsOptional()
+  rememberMe?: boolean;
 }
 
 @ApiTags('Auth')
@@ -52,7 +56,7 @@ export class AuthController {
     }
     // Pass the franchise ID from the domain (if any) to validation
     const originFranchiseId = (req as any).tenantId || null;
-    return this.authService.login(user, originFranchiseId);
+    return this.authService.login(user, originFranchiseId, loginDto.rememberMe ?? false);
   }
 
   @Get('profile')

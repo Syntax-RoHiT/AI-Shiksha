@@ -55,12 +55,37 @@ export class AssistantService {
       if (userFranchiseId) {
         const franchise = await this.prisma.franchise.findUnique({
           where: { id: userFranchiseId },
-          select: { gemini_api_key: true } as any
+          select: {
+            gemini_api_key: true,
+            global_ai_control: true,
+          } as any,
         }) as any;
+
+        // Check if AI is globally disabled for this franchise
+        if (franchise && franchise.global_ai_control === false) {
+          throw new HttpException(
+            'AI Assistant is currently disabled by the administrator.',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+
         if (!franchise?.gemini_api_key) {
-          throw new HttpException('Ask the Admin to Configure Gemini Key', HttpStatus.NOT_IMPLEMENTED);
+          throw new HttpException(
+            'AI is not configured for this platform. Please ask the Admin to set up the Gemini API key.',
+            HttpStatus.NOT_IMPLEMENTED,
+          );
         }
         customApiKey = franchise.gemini_api_key as string;
+      } else {
+        // No franchise context — check if a system-level key exists
+        // (GeminiService will use it as fallback, but we guard here to give a clear error)
+        const systemKey = (this.geminiService as any)['apiKey'];
+        if (!systemKey) {
+          throw new HttpException(
+            'AI is not configured for this platform. Please contact the administrator.',
+            HttpStatus.NOT_IMPLEMENTED,
+          );
+        }
       }
 
       // 1. Course Specific Logic (if courseId provided)
