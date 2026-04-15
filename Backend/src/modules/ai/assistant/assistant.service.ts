@@ -27,7 +27,7 @@ export class AssistantService {
     private readonly rateLimitService: RateLimitService,
   ) { }
 
-  async chat(userId: string, tenantId: string | null, chatDto: ChatDto) {
+  async chat(userId: string, tenantId: string | null, chatDto: ChatDto, requestDomain?: string | null) {
     const start = Date.now();
     const { courseId, message } = chatDto;
 
@@ -50,6 +50,26 @@ export class AssistantService {
 
       if (!userFranchiseId && tenantId) {
         userFranchiseId = tenantId;
+      }
+
+      // Final fallback: if still no franchise context, look up by the raw request domain.
+      // This handles legacy accounts whose franchise_id was never set in the DB.
+      if (!userFranchiseId && requestDomain) {
+        const domainOnly = requestDomain.split(':')[0]; // strip port
+        const franchiseByDomain = await this.prisma.franchise.findFirst({
+          where: {
+            OR: [
+              { domain: domainOnly },
+              { domain: requestDomain },
+            ],
+            is_active: true,
+          },
+          select: { id: true } as any,
+        }) as any;
+        if (franchiseByDomain?.id) {
+          userFranchiseId = franchiseByDomain.id;
+          this.logger.warn(`franchise_id resolved via domain fallback for user ${userId} → franchise ${franchiseByDomain.id}`);
+        }
       }
 
       if (userFranchiseId) {
@@ -78,7 +98,6 @@ export class AssistantService {
         customApiKey = franchise.gemini_api_key as string;
       } else {
         // No franchise context — check if a system-level key exists
-        // (GeminiService will use it as fallback, but we guard here to give a clear error)
         const systemKey = (this.geminiService as any)['apiKey'];
         if (!systemKey) {
           throw new HttpException(

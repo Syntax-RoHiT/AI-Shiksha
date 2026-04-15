@@ -18,6 +18,11 @@ export class AssistantController {
   chat(@Request() req, @Body() chatDto: ChatDto) {
     // tenantId priority: middleware domain lookup → branding id → JWT franchise claim
     const tenantId = req.tenantId || req.tenantBranding?.id || req.user?.franchise_id || null;
-    return this.assistantService.chat(req.user.userId, tenantId, chatDto);
+    // Raw domain header for last-resort franchise lookup in the service
+    const requestDomain = (req.headers['custom-franchise-domain'] as string)
+      || (req.headers['x-franchise-domain'] as string)
+      || req.hostname
+      || null;
+    return this.assistantService.chat(req.user.userId, tenantId, chatDto, requestDomain);
   }
 }
