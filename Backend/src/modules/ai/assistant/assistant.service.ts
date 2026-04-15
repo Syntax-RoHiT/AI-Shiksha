@@ -55,20 +55,31 @@ export class AssistantService {
       // Final fallback: if still no franchise context, look up by the raw request domain.
       // This handles legacy accounts whose franchise_id was never set in the DB.
       if (!userFranchiseId && requestDomain) {
-        const domainOnly = requestDomain.split(':')[0]; // strip port
+        const domainOnly = requestDomain.split(':')[0].toLowerCase().trim(); // strip port
+
+        // Extract root domain (e.g. "app.iconsafetyinstitute.com" → "iconsafetyinstitute.com")
+        const parts = domainOnly.split('.');
+        const rootDomain = parts.length > 2 ? parts.slice(-2).join('.') : domainOnly;
+
+        this.logger.log(`[AI] Domain fallback — received: "${domainOnly}", root: "${rootDomain}", tenantId: ${tenantId}, userDbFranchise: ${u?.franchise_id}`);
+
         const franchiseByDomain = await this.prisma.franchise.findFirst({
           where: {
             OR: [
               { domain: domainOnly },
-              { domain: requestDomain },
+              { domain: rootDomain },
+              { domain: { contains: rootDomain } } as any,
             ],
             is_active: true,
           },
-          select: { id: true } as any,
+          select: { id: true, domain: true } as any,
         }) as any;
+
+        this.logger.log(`[AI] Domain fallback result: ${JSON.stringify(franchiseByDomain)}`);
+
         if (franchiseByDomain?.id) {
           userFranchiseId = franchiseByDomain.id;
-          this.logger.warn(`franchise_id resolved via domain fallback for user ${userId} → franchise ${franchiseByDomain.id}`);
+          this.logger.warn(`franchise_id resolved via domain fallback for user ${userId} → franchise ${franchiseByDomain.id} (domain: ${franchiseByDomain.domain})`);
         }
       }
 
