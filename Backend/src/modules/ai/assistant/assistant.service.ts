@@ -63,6 +63,12 @@ export class AssistantService {
 
         this.logger.log(`[AI] Domain fallback — received: "${domainOnly}", root: "${rootDomain}", tenantId: ${tenantId}, userDbFranchise: ${u?.franchise_id}`);
 
+        // DEBUG: dump all franchises so we know what domains are stored
+        const allFranchises = await (this.prisma.franchise as any).findMany({
+          select: { id: true, domain: true, name: true, is_active: true },
+        });
+        this.logger.log(`[AI] All franchises in DB: ${JSON.stringify(allFranchises)}`);
+
         const franchiseByDomain = await this.prisma.franchise.findFirst({
           where: {
             OR: [
@@ -70,8 +76,7 @@ export class AssistantService {
               { domain: rootDomain },
               { domain: { contains: rootDomain } } as any,
             ],
-            is_active: true,
-          },
+          } as any,
           select: { id: true, domain: true } as any,
         }) as any;
 
@@ -80,6 +85,17 @@ export class AssistantService {
         if (franchiseByDomain?.id) {
           userFranchiseId = franchiseByDomain.id;
           this.logger.warn(`franchise_id resolved via domain fallback for user ${userId} → franchise ${franchiseByDomain.id} (domain: ${franchiseByDomain.domain})`);
+        } else {
+          // Last resort for single-franchise setups: use the only franchise that has a Gemini key
+          const franchiseWithKey = await (this.prisma.franchise as any).findFirst({
+            where: { gemini_api_key: { not: null } },
+            select: { id: true, domain: true, name: true },
+          });
+          this.logger.log(`[AI] Last-resort franchise with key: ${JSON.stringify(franchiseWithKey)}`);
+          if (franchiseWithKey?.id) {
+            userFranchiseId = franchiseWithKey.id;
+            this.logger.warn(`franchise_id resolved via gemini-key fallback for user ${userId} → franchise ${franchiseWithKey.id} (${franchiseWithKey.name})`);
+          }
         }
       }
 
