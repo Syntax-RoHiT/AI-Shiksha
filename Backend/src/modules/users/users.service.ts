@@ -46,48 +46,88 @@ export class UsersService {
   async createBulk(bulkDto: { users: CreateUserDto[] }, franchiseId?: string | null, loginUrl: string = '') {
     const { users } = bulkDto;
 
-    // Process passwords securely
+    // Step 1: Pre-check which emails already exist in this franchise
+    // so we only create + email the truly new users
+    const incomingEmails = users.map((u) => u.email);
+    const existingUsers = await this.prisma.user.findMany({
+      where: {
+        email: { in: incomingEmails },
+        franchise_id: franchiseId ?? null,
+      },
+      select: { email: true },
+    });
+    const existingEmailSet = new Set(existingUsers.map((u) => u.email));
+
+    // Step 2: Separate new vs. skipped
+    const newUsers = users.filter((u) => !existingEmailSet.has(u.email));
+    const skippedUsers = users.filter((u) => existingEmailSet.has(u.email));
+
+    // Step 3: Hash passwords and build insert data only for new users
     const usersData = await Promise.all(
-      users.map(async (userDto) => {
+      newUsers.map(async (userDto) => {
         const { password, ...rest } = userDto;
         const hashedPassword = await bcrypt.hash(password, 10);
         return {
           ...rest,
           password_hash: hashedPassword,
           role: (rest.role || 'STUDENT') as Role,
-          franchise_id: franchiseId || null,
+          franchise_id: franchiseId ?? null,
         };
       })
     );
 
-    // Create the users (createMany doesn't return the full objects in Postgres reliably, so we'll just ignore the return value and rely on raw counts)
-    const result = await this.prisma.user.createMany({
-      data: usersData,
-      skipDuplicates: true, // Prevent complete failure if one email exists
-    });
+    // Step 4: Bulk insert only new users
+    let insertedCount = 0;
+    const failedUsers: { email: string; reason: string }[] = [];
 
-    // We need to fetch the newly created users to get their DB IDs (or we can just send emails based on the DTO directly)
-    // Actually, sending emails doesn't strictly require the DB ID for Franchise isolation (we have the franchise_id and plain text password in the DTO)
+    if (usersData.length > 0) {
+      try {
+        const result = await this.prisma.user.createMany({
+          data: usersData,
+          skipDuplicates: true, // Safety net for race conditions
+        });
+        insertedCount = result.count;
+      } catch (error: any) {
+        // Fall back to per-user inserts to collect detailed errors
+        for (const userData of usersData) {
+          try {
+            await this.prisma.user.create({ data: userData });
+            insertedCount++;
+          } catch (err: any) {
+            failedUsers.push({ email: userData.email, reason: err?.message || 'Unknown error' });
+          }
+        }
+      }
+    }
 
-    // Dispatch emails asynchronously in the background so it doesn't block the request.
-    // Using Promise.allSettled to ensure that even if one email fails, the rest are attempted.
+    // Step 5: Send credentials ONLY to newly created users (never to skipped/existing ones)
+    const emailFallbackUrl = loginUrl || 'https://experttrainersacademy.cloud';
     Promise.allSettled(
-      users.map((userDto) =>
-        this.mailService.sendAdminAddedUserEmail(
-          {
-            email: userDto.email,
-            name: userDto.name,
-            plainToken: userDto.password,
-            franchise_id: franchiseId || null
-          },
-          loginUrl || 'https://experttrainersacademy.cloud'
-        ).catch(e => console.error(`Failed to send bulk welcome email to ${userDto.email}:`, e))
-      )
+      newUsers
+        .filter((u) => !failedUsers.some((f) => f.email === u.email))
+        .map((userDto) =>
+          this.mailService.sendAdminAddedUserEmail(
+            {
+              email: userDto.email,
+              name: userDto.name,
+              plainToken: userDto.password,
+              franchise_id: franchiseId ?? null,
+            },
+            emailFallbackUrl,
+          ).catch((e) => console.error(`Failed to send bulk welcome email to ${userDto.email}:`, e))
+        )
     );
 
     return {
       message: 'Bulk import completed',
-      insertedCount: result.count
+      summary: {
+        total: users.length,
+        created: insertedCount,
+        skipped: skippedUsers.length,
+        failed: failedUsers.length,
+      },
+      skipped: skippedUsers.map((u) => ({ email: u.email, reason: 'Already exists in this franchise' })),
+      failed: failedUsers,
     };
   }
 
