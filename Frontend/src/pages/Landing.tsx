@@ -5,41 +5,41 @@ import Footer from "@/components/marketing/Footer";
 import { Courses as CoursesAPI } from "@/lib/api";
 
 const Hero = () => {
-  return (
-    <section className="relative flex flex-col md:min-h-screen pt-16 md:pt-24 bg-black">
-        <div className="relative md:absolute md:inset-0 w-full h-[45vh] md:h-full overflow-hidden pointer-events-none">
-            <video autoPlay loop muted playsInline className="min-w-full min-h-full w-auto h-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-cover brightness-75 md:brightness-50 md:scale-110">
-            <source src="/landing_page/landing.mp4" type="video/mp4"/>
-            </video>
-        </div>
+    return (
+        <section className="relative flex flex-col md:min-h-screen pt-16 md:pt-24 bg-black">
+            <div className="relative md:absolute md:inset-0 w-full h-[45vh] md:h-full overflow-hidden pointer-events-none">
+                <video autoPlay loop muted playsInline className="min-w-full min-h-full w-auto h-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-cover brightness-75 md:brightness-50 md:scale-110">
+                    <source src="/landing_page/landing.mp4" type="video/mp4" />
+                </video>
+            </div>
 
-        <div className="relative z-10 flex-1 flex items-center px-6 md:px-12 py-10 md:py-20">
-            <div className="max-w-6xl mx-auto w-full">
-                <div className="z-10 max-w-4xl">
-                    <span className="inline-block font-body text-white uppercase tracking-[0.2em] text-[11px] mb-8 font-bold opacity-80">NEXT-GEN SAFETY LEARNING MANAGEMENT SYSTEM</span>
-                    <h1 className="font-headline text-4xl sm:text-5xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter mb-10">
-                        MASTER SAFETY <br/>
-                        EXCELLENCE WITH <span className="text-[#A3FF12] italic">AI-DRIVEN LMS.</span>
-                    </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-                        <p className="font-body text-zinc-300 text-sm leading-relaxed">
-                            Empower your workforce with our Next-Gen Enterprise LMS. From automated compliance tracking to immersive high-risk training simulations, our intelligent platform ensures every team member reaches peak industrial certification standards seamlessly.
-                        </p>
-                        <p className="font-body text-zinc-300 text-sm leading-relaxed">
-                            Our architecture tailors learning paths to individual performance, closing skill gaps before they become safety hazards. Transform passive compliance into an active, globally-applicable culture of operational mastery.
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap gap-4">
-                        <Link to="/courses" className="group border border-white text-white font-headline font-bold uppercase tracking-widest px-8 py-4 text-xs flex items-center gap-3 hover:bg-white/10 transition-all">
-                            <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
-                            EXPLORE THE COURSES
-                        </Link>
+            <div className="relative z-10 flex-1 flex items-center px-6 md:px-12 py-10 md:py-20">
+                <div className="max-w-6xl mx-auto w-full">
+                    <div className="z-10 max-w-4xl">
+                        <span className="inline-block font-body text-white uppercase tracking-[0.2em] text-[11px] mb-8 font-bold opacity-80">NEXT-GEN SAFETY LEARNING MANAGEMENT SYSTEM</span>
+                        <h1 className="font-headline text-4xl sm:text-5xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter mb-10">
+                            MASTER SAFETY <br />
+                            EXCELLENCE WITH <span className="text-[#A3FF12] italic">AI-DRIVEN LMS.</span>
+                        </h1>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+                            <p className="font-body text-zinc-300 text-sm leading-relaxed">
+                                Empower your workforce with our Next-Gen Enterprise LMS. From automated compliance tracking to immersive high-risk training simulations, our intelligent platform ensures every team member reaches peak industrial certification standards seamlessly.
+                            </p>
+                            <p className="font-body text-zinc-300 text-sm leading-relaxed">
+                                Our architecture tailors learning paths to individual performance, closing skill gaps before they become safety hazards. Transform passive compliance into an active, globally-applicable culture of operational mastery.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                            <Link to="/courses" className="group border border-white text-white font-headline font-bold uppercase tracking-widest px-8 py-4 text-xs flex items-center gap-3 hover:bg-white/10 transition-all">
+                                <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
+                                EXPLORE THE COURSES
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-  );
+        </section>
+    );
 };
 
 const LogoMarquee = () => {
@@ -53,7 +53,6 @@ const LogoMarquee = () => {
                     <div className="flex whitespace-nowrap gap-24 items-center pr-24">
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">OSHA</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">IOSH</span>
-                        <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity text-[#21e6ff]">NEBOSH</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ISO 45001</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ANSI</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ASSP</span>
@@ -62,7 +61,6 @@ const LogoMarquee = () => {
                     <div className="flex whitespace-nowrap gap-24 items-center pr-24" aria-hidden="true">
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">OSHA</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">IOSH</span>
-                        <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity text-[#21e6ff]">NEBOSH</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ISO 45001</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ANSI</span>
                         <span className="font-headline font-black text-4xl tracking-tighter opacity-40 grayscale hover:opacity-100 transition-opacity">ASSP</span>
@@ -78,7 +76,7 @@ interface ApiCourse { id: string; slug: string; title: string; instructor: strin
 const FeaturedCourses = () => {
     const [dbCourses, setDbCourses] = useState<ApiCourse[]>([]);
     useEffect(() => { CoursesAPI.getAll(false).then(setDbCourses).catch(console.error); }, []);
-    
+
     if (dbCourses.length === 0) return null;
 
     return (
@@ -120,10 +118,10 @@ const FourPaths = () => {
         <section className="py-16 md:py-32 px-6 md:px-12 bg-black">
             <div className="max-w-[1400px] mx-auto">
                 <span className="font-headline text-xs font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4 block">FOUR PATHS TO SMARTER EHS</span>
-                <h2 className="font-headline text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-16 leading-none">START WHERE YOU WANT TO <br/>MOVE <span className="italic text-[#A3FF12]">FASTER.</span></h2>
+                <h2 className="font-headline text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-16 leading-none">START WHERE YOU WANT TO <br />MOVE <span className="italic text-[#A3FF12]">FASTER.</span></h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
                     <div className="relative group overflow-hidden bg-zinc-900 aspect-square md:aspect-auto">
-                        <img alt="AI Safety Data" className="absolute inset-0 w-full h-full object-cover grayscale brightness-50 group-hover:scale-105 transition-transform duration-700" src="/landing_page/01-How-to-Become-a-Safety-Manager.jpg"/>
+                        <img alt="AI Safety Data" className="absolute inset-0 w-full h-full object-cover grayscale brightness-50 group-hover:scale-105 transition-transform duration-700" src="/landing_page/01-How-to-Become-a-Safety-Manager.jpg" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                         <div className="absolute bottom-0 left-0 p-12">
                             <h3 className="font-headline text-3xl font-black uppercase mb-4 leading-tight">TURN YOUR EHS DATA INTO EARLY WARNINGS WITH AI.</h3>
@@ -144,7 +142,7 @@ const FourPaths = () => {
                             </Link>
                         </div>
                         <div className="relative flex-1 group overflow-hidden bg-zinc-900 min-h-[400px]">
-                            <img alt="EHS Tooling" className="absolute inset-0 w-full h-full object-cover grayscale brightness-50 group-hover:scale-105 transition-transform duration-700" src="/landing_page/7-responsibility safety officer.webp"/>
+                            <img alt="EHS Tooling" className="absolute inset-0 w-full h-full object-cover grayscale brightness-50 group-hover:scale-105 transition-transform duration-700" src="/landing_page/7-responsibility safety officer.webp" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                             <div className="absolute bottom-0 left-0 p-10">
                                 <h3 className="font-headline text-2xl font-black uppercase mb-4 leading-tight">BRING EVERY CRITICAL EHS TOOL UNDER ONE ROOF.</h3>
@@ -236,7 +234,7 @@ const ExpandingSmarterTraining = () => {
                 <div className="mb-12 md:mb-20">
                     <span className="font-body text-[#A3FF12] uppercase tracking-[0.4em] text-xs mb-4 font-bold block">VELOCITYAI: THE TRAINING CORE</span>
                     <h2 className="font-headline text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-6">
-                        SMARTER TRAINING, <br/>
+                        SMARTER TRAINING, <br />
                         <span className="text-[#A3FF12] italic">FASTER COMPLIANCE.</span>
                     </h2>
                     <p className="font-body text-zinc-400 text-lg max-w-2xl leading-relaxed">
@@ -320,7 +318,7 @@ const ExpertisePartner = () => {
                     </Link>
                 </div>
                 <div className="lg:w-1/2 relative">
-                    <img alt="Safety Partners" className="w-full h-[300px] md:h-[600px] object-cover grayscale brightness-90 shadow-2xl" src="/landing_page/contact.png"/>
+                    <img alt="Safety Partners" className="w-full h-[300px] md:h-[600px] object-cover grayscale brightness-90 shadow-2xl" src="/landing_page/contact.png" />
                     <div className="absolute -bottom-10 -right-10 bg-[#A3FF12] p-12 max-w-xs hidden md:block">
                         <p className="font-headline text-xl font-black uppercase text-black leading-tight">"THEIR TEAM DIDN'T JUST SELL US A TOOL, THEY BUILT US A CULTURE."</p>
                         <p className="font-body text-black/60 text-sm mt-4">— HSE DIRECTOR, GLOBAL LOGISTICS</p>
@@ -336,7 +334,7 @@ const MobileApp = () => {
         <section className="py-16 md:py-32 px-6 md:px-12 bg-black border-t border-white/10">
             <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20">
                 <div className="lg:w-1/2">
-                    <h2 className="font-headline text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-none">PUT AWARD-WINNING <br/><span className="text-[#A3FF12] italic">MOBILE</span> TO WORK.</h2>
+                    <h2 className="font-headline text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-none">PUT AWARD-WINNING <br /><span className="text-[#A3FF12] italic">MOBILE</span> TO WORK.</h2>
                     <p className="font-body text-zinc-400 text-lg leading-relaxed mb-10">
                         Safety doesn't happen at a desk. Our mobile LMS puts certifications, hazard reporting, and skill checks in the pockets of every frontline worker. Even in offline environments, your data stays synced and your compliance stays active.
                     </p>
@@ -353,7 +351,7 @@ const MobileApp = () => {
                 </div>
                 <div className="lg:w-1/2 flex justify-center items-center">
                     <div className="relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-[9/16] overflow-hidden shadow-[0_0_100px_rgba(163,255,18,0.15)] bg-black">
-                        <img alt="Mobile App UI" className="absolute inset-0 w-full h-full object-cover grayscale brightness-90 hover:-translate-y-2 hover:grayscale-0 transition-all duration-700" src="/landing_page/mobile.png"/>
+                        <img alt="Mobile App UI" className="absolute inset-0 w-full h-full object-cover grayscale brightness-90 hover:-translate-y-2 hover:grayscale-0 transition-all duration-700" src="/landing_page/mobile.png" />
                         <div className="absolute inset-0 bg-[#A3FF12]/5 pointer-events-none mix-blend-overlay"></div>
                     </div>
                 </div>
@@ -391,7 +389,7 @@ const BottomCTA = () => {
                     <div className="w-full h-full" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, #000 1px, transparent 0)", backgroundSize: "24px 24px" }}></div>
                 </div>
                 <div className="z-10 text-center md:text-left text-[#375b00]">
-                    <h2 className="font-headline text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">START LEARNING <br/>TODAY</h2>
+                    <h2 className="font-headline text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">START LEARNING <br />TODAY</h2>
                     <p className="font-body opacity-80 text-lg max-w-md font-bold">Master industrial intelligence and elevate your safety standards with AI Shiksha.</p>
                 </div>
                 <div className="z-10">
@@ -416,16 +414,16 @@ export default function Landing() {
         <div className="min-h-screen bg-black font-body text-white selection:bg-[#d2ff9a] selection:text-[#375b00] overflow-x-hidden">
             <UnifiedNavbar />
             <main>
-               <Hero />
-               <LogoMarquee />
-               <FourPaths />
-               <FeaturedCourses />
-               <SpeedOfNow />
-               <ExpandingSmarterTraining />
-               <ExpertisePartner />
-               <MobileApp />
-               <Metrics />
-               <BottomCTA />
+                <Hero />
+                <LogoMarquee />
+                <FourPaths />
+                <FeaturedCourses />
+                <SpeedOfNow />
+                <ExpandingSmarterTraining />
+                <ExpertisePartner />
+                <MobileApp />
+                <Metrics />
+                <BottomCTA />
             </main>
             <Footer />
         </div>
