@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import UnifiedNavbar from "@/components/layout/UnifiedNavbar";
 import Footer from "@/components/marketing/Footer";
+import { LandingChatbot } from "@/components/marketing/LandingChatbot";
 import { Courses as CoursesAPI } from "@/lib/api";
 
 const Hero = () => {
@@ -426,6 +427,7 @@ export default function Landing() {
                 <BottomCTA />
             </main>
             <Footer />
+            <LandingChatbot />
         </div>
     );
 }

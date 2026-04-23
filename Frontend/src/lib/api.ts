@@ -501,6 +501,14 @@ export const AI = {
                 });
             }, 1500);
         });
+    },
+    chat: async (message: string, courseId?: string, lessonId?: string) => {
+        const { data } = await api.post('/ai/chat', { message, courseId, lessonId });
+        return data;
+    },
+    publicChat: async (message: string) => {
+        const { data } = await api.post('/ai/public/chat', { message });
+        return data;
     }
 };
 

@@ -112,6 +112,7 @@ import { Outlet } from "react-router-dom";
 import RoleProtectedRoute from "./components/common/RoleProtectedRoute";
 import AdminFeedback from "./pages/admin/AdminFeedback";
 import { StudentFeedbackWidget } from "./components/common/StudentFeedbackWidget";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -144,6 +145,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <ScrollToTop />
                 <StudentFeedbackWidget />
                 <Routes>
                   {/* Auth Routes (Never Blocked by Maintenance Mode) */}

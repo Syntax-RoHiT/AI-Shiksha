@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Courses, LectureContent, Reviews as ReviewsAPI, Enrollments } from '@/lib/api';
 import { toast } from 'sonner';
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { LessonPreviewModal } from '@/components/preview/LessonPreviewModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import Footer from "@/components/marketing/Footer";
+import { cn } from "@/lib/utils";
 
 // --- Icon Component (Material Symbols) ---
 interface IconProps {
@@ -26,9 +28,6 @@ const Icon: React.FC<IconProps> = ({ name, className = "", fill = true }) => {
   );
 };
 
-// --- Header Component ---
-// Header component removed as it is now provided by UnifiedLayout
-
 // --- Hero Component ---
 interface HeroProps {
   course: any;
@@ -38,64 +37,93 @@ const Hero: React.FC<HeroProps> = ({ course }) => {
   const averageRating = course._reviewStats?.averageRating ?? course.rating ?? 0;
 
   return (
-    <div className="bg-[#0f172a] text-white py-8 md:py-12">
-      <div className="max-w-[1184px] mx-auto px-6 relative">
-        <div className="lg:w-2/3 pr-0 lg:pr-8">
+    <div className="relative pt-24 pb-32 overflow-hidden border-b border-black/5 bg-[#f7f9fa]">
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-30 z-0 mix-blend-overlay"
+        style={{ backgroundImage: `url('/landing_page/auth_cloud_bg.png')` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/80 to-blue-50/90 z-0 backdrop-blur-[2px]"></div>
+
+      <div className="max-w-[1400px] mx-auto px-6 relative z-10 flex flex-col lg:flex-row gap-12">
+        <div className="lg:w-2/3 space-y-6">
           {/* Breadcrumbs */}
-          <nav className="flex flex-wrap gap-2 mb-4 items-center">
-            <Link className="text-[#c0c4fc] text-sm font-bold hover:underline" to="/">Home</Link>
-            <Icon name="chevron_right" className="text-white !text-sm" fill={false} />
-            <span className="text-[#c0c4fc] text-sm font-bold">{course.category?.name || 'Course'}</span>
+          <nav className="flex flex-wrap gap-2 items-center">
+            <Link className="px-3 py-1 bg-white/60 border border-black/10 rounded-full text-zinc-600 text-xs font-bold hover:text-zinc-900 hover:bg-white transition-colors uppercase tracking-widest backdrop-blur-md shadow-sm" to="/">
+              Home
+            </Link>
+            <Icon name="chevron_right" className="text-zinc-400 !text-sm" fill={false} />
+            <span className="px-3 py-1 bg-white/60 border border-black/10 rounded-full text-zinc-800 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm">
+              {course.category?.name || 'Category'}
+            </span>
           </nav>
 
           {/* Title & Description */}
-          <div className="flex flex-col gap-4">
-            <h1 className="text-white text-3xl md:text-4xl font-bold leading-tight">{course.title}</h1>
-            <p className="text-lg text-white">{course.subtitle || (course.description ? course.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...' : '')}</p>
+          <div className="space-y-4">
+            <h1 className="text-zinc-900 text-4xl sm:text-5xl md:text-6xl font-black leading-[1.1] tracking-tight">
+              {course.title}
+            </h1>
+            <p className="text-lg md:text-xl text-zinc-600 max-w-3xl leading-relaxed font-medium">
+              {course.subtitle || (course.description ? course.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...' : '')}
+            </p>
+          </div>
 
-            {/* Ratings */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center text-[#f3ca8c] gap-1">
-                <span className="font-bold text-base">{averageRating.toFixed(1)}</span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => {
-                    if (i < Math.floor(averageRating)) {
-                      return <Icon key={i} name="star" className="!text-base text-[#f3ca8c]" />;
-                    } else if (i === Math.floor(averageRating) && averageRating % 1 >= 0.5) {
-                      return <Icon key={i} name="star_half" className="!text-base text-[#f3ca8c]" />;
-                    }
-                    return <Icon key={i} name="star" className="!text-base text-[#f3ca8c]" fill={false} />;
-                  })}
-                </div>
+          {/* Badges & Stats */}
+          <div className="flex flex-wrap items-center gap-4 pt-4">
+            {averageRating >= 4.5 && (
+              <span className="bg-[#A3FF12] text-black text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
+                Highly Rated
+              </span>
+            )}
+            
+            <div className="flex items-center bg-white border border-black/10 rounded-full px-4 py-1.5 gap-2 shadow-sm">
+              <span className="font-bold text-zinc-900">{averageRating.toFixed(1)}</span>
+              <div className="flex">
+                {[...Array(5)].map((_, i) => {
+                  if (i < Math.floor(averageRating)) {
+                    return <Icon key={i} name="star" className="!text-sm text-[#eab308]" />;
+                  } else if (i === Math.floor(averageRating) && averageRating % 1 >= 0.5) {
+                    return <Icon key={i} name="star_half" className="!text-sm text-[#eab308]" />;
+                  }
+                  return <Icon key={i} name="star" className="!text-sm text-zinc-300" fill={false} />;
+                })}
               </div>
-              <a className="text-[#c0c4fc] text-sm underline font-medium hover:text-white" href="#reviews">
-                ({course._count?.reviews || 0} ratings)
+              <a className="text-zinc-500 text-xs font-bold ml-1 hover:text-zinc-900 transition-colors underline decoration-zinc-300 underline-offset-2" href="#reviews">
+                ({course._count?.reviews || 0} reviews)
               </a>
-              <span className="text-white text-sm">{course._count?.enrollments || 0} students</span>
             </div>
 
-            {/* Author & Meta */}
-            <div className="flex flex-col gap-2 mt-2">
-              <p className="text-sm text-white">
-                Created by <a className="text-[#c0c4fc] underline font-bold hover:text-white" href="#instructor">
+            <div className="flex items-center gap-2 bg-white border border-black/10 rounded-full px-4 py-1.5 shadow-sm">
+              <Icon name="group" className="!text-sm text-zinc-500" />
+              <span className="text-zinc-800 text-xs font-bold">{course._count?.enrollments || 0} students enrolled</span>
+            </div>
+          </div>
+
+          {/* Instructor & Meta */}
+          <div className="pt-6 border-t border-black/10 flex flex-col sm:flex-row gap-6 text-sm text-zinc-600">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-zinc-200 border border-black/10 flex items-center justify-center overflow-hidden shadow-inner">
+                {course.instructor?.avatar_url ? (
+                  <img src={course.instructor.avatar_url} alt="Instructor" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-zinc-600 font-bold">{course.instructor?.user?.name?.[0] || 'I'}</span>
+                )}
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-0.5">Created By</p>
+                <a className="text-zinc-900 font-bold hover:text-blue-600 transition-colors" href="#instructor">
                   {course.instructor?.user?.name || 'Instructor'}
                 </a>
-              </p>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-white">
-                <div className="flex items-center gap-1">
-                  <Icon name="new_releases" className="!text-sm" fill={false} />
-                  <span>Last updated {new Date(course.updated_at).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Icon name="language" className="!text-sm" fill={false} />
-                  <span>{course.language || 'English'}</span>
-                </div>
-                {course.subtitle && (
-                  <div className="flex items-center gap-1">
-                    <Icon name="closed_caption" className="!text-sm" fill={false} />
-                    <span>English [Auto]</span>
-                  </div>
-                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-0.5">Last Updated</p>
+                <span className="text-zinc-800 font-medium">{new Date(course.updated_at).toLocaleDateString()}</span>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-0.5">Language</p>
+                <span className="text-zinc-800 font-medium">{course.language || 'English'}</span>
               </div>
             </div>
           </div>
@@ -192,67 +220,71 @@ const Sidebar: React.FC<SidebarProps> = ({ course, isEnrolled }) => {
   };
 
   const hasDiscount = course.original_price && course.original_price > course.price;
-  const discountPercent = hasDiscount
-    ? Math.round(((course.original_price - course.price) / course.original_price) * 100)
-    : 0;
 
   return (
-    <div className="lg:-mt-[300px] lg:sticky lg:top-[88px] self-start z-20">
+    <div className="lg:-mt-[240px] lg:sticky lg:top-24 self-start z-30">
       <AuthModal
         open={showAuthModal}
         onOpenChange={(open) => { setShowAuthModal(open); if (!open) setPendingAction(null); }}
         onSuccess={handleAuthSuccess}
       />
-      <div className="bg-white border border-[#d1d7dc] shadow-xl overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-2xl border border-black/10 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-[32px] overflow-hidden p-2">
         {/* Featured Image */}
-        <div className="relative aspect-video bg-gray-100 overflow-hidden">
+        <div className="relative aspect-video rounded-3xl overflow-hidden bg-zinc-100 border border-black/5">
           <img
             alt="Course thumbnail"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
             src={course.thumbnail_url || 'https://via.placeholder.com/1280x720?text=Course+Preview'}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+             <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-lg">
+               <Icon name="play_arrow" className="text-zinc-900 !text-3xl ml-1" />
+             </div>
+          </div>
         </div>
 
         {/* Pricing Section */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 sm:p-8 space-y-6">
           {course.is_free ? (
-            <p className="text-3xl font-bold text-[#2d2f31]">Free</p>
+            <p className="text-4xl font-black text-zinc-900 tracking-tight">Free</p>
           ) : (
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-3xl font-bold text-[#2d2f31]">₹{course.price?.toLocaleString('en-IN')}</span>
+            <div className="flex flex-col gap-1">
+              <span className="text-4xl font-black text-zinc-900 tracking-tight">₹{course.price?.toLocaleString('en-IN')}</span>
               {hasDiscount && (
-                <>
-                  <span className="text-lg text-[#6a6f73] line-through">₹{course.original_price?.toLocaleString('en-IN')}</span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 font-semibold text-sm border border-green-200">
-                    {discountPercent}% off
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xl text-zinc-400 line-through font-bold">₹{course.original_price?.toLocaleString('en-IN')}</span>
+                  <span className="bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-widest">
+                    Discounted
                   </span>
-                </>
+                </div>
               )}
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {isEnrolled ? (
               <button
                 onClick={() => navigate(`/course/${course.slug || course.id}/view`)}
-                className="w-full bg-green-600 text-white font-bold py-3 px-4 hover:bg-green-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full h-14 bg-zinc-900 text-white font-bold text-[15px] rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-[0.98] tracking-wide"
               >
                 Go to Course
+                <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <>
                 <button
                   onClick={handleEnroll}
                   disabled={isEnrolling}
-                  className="w-full bg-[#a435f0] text-white font-bold py-3 px-4 hover:bg-[#7b1fa2] transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-full h-14 bg-gradient-to-r from-[#A3FF12] via-[#b5ff40] to-[#A3FF12] bg-[length:200%_auto] hover:bg-[position:right_center] text-black font-bold text-[15px] rounded-2xl transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-[0.98] tracking-wide"
                 >
-                  {isEnrolling ? <Loader2 className="w-5 h-5 animate-spin" /> : (course.is_free ? "Enroll for Free" : "Enroll Now")}
+                  {isEnrolling ? <Loader2 className="w-5 h-5 animate-spin text-black" /> : (course.is_free ? "Enroll for Free" : "Enroll Now")}
                 </button>
                 {!course.is_free && (
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className="w-full bg-white text-[#2d2f31] border border-[#2d2f31] font-bold py-3 px-4 hover:bg-[#f7f9fa] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                    className="w-full h-14 bg-white border border-black/10 text-zinc-900 font-bold text-[15px] rounded-2xl hover:bg-zinc-50 transition-all disabled:opacity-70 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-[0.98] tracking-wide shadow-sm"
                   >
                     {isAddingToCart ? <Loader2 className="w-5 h-5 animate-spin" /> : isInCart ? "Go to Cart" : "Add to Cart"}
                   </button>
@@ -261,110 +293,57 @@ const Sidebar: React.FC<SidebarProps> = ({ course, isEnrolled }) => {
             )}
           </div>
 
-          <p className="text-center text-xs text-[#6a6f73] mt-2">30-Day Money-Back Guarantee</p>
+          <p className="text-center text-xs text-zinc-500 font-bold uppercase tracking-widest">30-Day Money-Back Guarantee</p>
 
           {/* Course Includes */}
-          <div className="pt-4 border-t border-[#d1d7dc] space-y-3">
-            <p className="text-sm font-bold text-[#2d2f31]">This course includes:</p>
-            <ul className="space-y-2">
-              {/* Lectures count from sections - always show if sections exist */}
+          <div className="pt-6 border-t border-black/10 space-y-4">
+            <p className="text-xs font-bold text-zinc-900 uppercase tracking-widest">This course includes</p>
+            <ul className="space-y-3">
               {course.sections && course.sections.length > 0 && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="videocam" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>{course.sections.reduce((acc: number, section: any) => acc + (section.items?.length || 0), 0)} lectures • Self-paced</span>
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="videocam" className="!text-xl text-zinc-400" fill={false} />
+                  <span>{course.sections.reduce((acc: number, section: any) => acc + (section.items?.length || 0), 0)} lectures on-demand</span>
                 </li>
               )}
-
-              {/* Downloadable Resources - show by default if course_features is null */}
               {(course.course_features?.downloadable_resources ?? true) && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="download" className="!text-lg text-[#6a6f73]" fill={false} />
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="download" className="!text-xl text-zinc-400" fill={false} />
                   <span>Downloadable resources</span>
                 </li>
               )}
-
-              {/* Lifetime Access - show by default if course_features is null */}
               {(course.course_features?.lifetime_access ?? true) && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="all_inclusive" className="!text-lg text-[#6a6f73]" fill={false} />
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="all_inclusive" className="!text-xl text-zinc-400" fill={false} />
                   <span>Full lifetime access</span>
                 </li>
               )}
-
-              {/* Mobile & TV Access - show by default if course_features is null */}
               {(course.course_features?.mobile_tv_access ?? true) && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="devices" className="!text-lg text-[#6a6f73]" fill={false} />
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="devices" className="!text-xl text-zinc-400" fill={false} />
                   <span>Access on mobile and TV</span>
                 </li>
               )}
-
-              {/* Assignments - only show if explicitly enabled */}
               {course.course_features?.assignments && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="assignment" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>Assignments</span>
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="assignment" className="!text-xl text-zinc-400" fill={false} />
+                  <span>Assignments & projects</span>
                 </li>
               )}
-
-              {/* Quizzes - only show if explicitly enabled */}
               {course.course_features?.quizzes && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="quiz" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>Quizzes</span>
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="quiz" className="!text-xl text-zinc-400" fill={false} />
+                  <span>Knowledge checks & quizzes</span>
                 </li>
               )}
-
-              {/* Coding Exercises - only show if explicitly enabled */}
-              {course.course_features?.coding_exercises && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="code" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>Coding exercises</span>
-                </li>
-              )}
-
-              {/* Articles - only show if explicitly enabled */}
-              {course.course_features?.articles && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="article" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>Articles & resources</span>
-                </li>
-              )}
-
-              {/* Discussion Forum - only show if explicitly enabled */}
-              {course.course_features?.discussion_forum && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="forum" className="!text-lg text-[#6a6f73]" fill={false} />
-                  <span>Discussion forum</span>
-                </li>
-              )}
-
-              {/* Certificate - show if enabled */}
               {course.certificate_enabled && (
-                <li className="flex items-center gap-3 text-sm text-[#2d2f31]">
-                  <Icon name="emoji_events" className="!text-lg text-[#6a6f73]" fill={false} />
+                <li className="flex items-center gap-3 text-sm text-zinc-700 font-medium">
+                  <Icon name="emoji_events" className="!text-xl text-zinc-400" fill={false} />
                   <span>Certificate of completion</span>
                 </li>
               )}
             </ul>
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-between pt-2 font-bold text-sm underline">
-            <button className="hover:text-[#a435f0] transition-colors">Share</button>
-            <button className="hover:text-[#a435f0] transition-colors">Gift this course</button>
-            <button className="hover:text-[#a435f0] transition-colors">Apply Coupon</button>
-          </div>
         </div>
-      </div>
-
-      {/* Business Box */}
-      <div className="mt-6 border border-[#d1d7dc] p-6 space-y-4 bg-white shadow-sm">
-        <h4 className="font-bold text-lg text-[#2d2f31]">Training 5+ people?</h4>
-        <p className="text-sm text-[#6a6f73]">Get your team access to top courses anytime, anywhere.</p>
-        <button className="w-full bg-white text-[#2d2f31] border border-black font-bold py-3 px-4 hover:bg-[#f7f9fa] transition-colors">
-          Try Business Edition
-        </button>
       </div>
     </div>
   );
@@ -379,6 +358,8 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
   const [previewItem, setPreviewItem] = useState<any>(null);
   const [previewContent, setPreviewContent] = useState<any>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [expandedAll, setExpandedAll] = useState(false);
+  const [openSections, setOpenSections] = useState<number[]>([]);
 
   const handlePreviewClick = async (item: any) => {
     setPreviewItem(item);
@@ -398,8 +379,6 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
     setPreviewItem(null);
     setPreviewContent(null);
   };
-  const [expandedAll, setExpandedAll] = useState(false);
-  const [openSections, setOpenSections] = useState<number[]>([]);
 
   const toggleSection = (index: number) => {
     setOpenSections(prev =>
@@ -421,43 +400,45 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
   const totalLectures = sections.reduce((acc, curr) => acc + (curr.items?.length || 0), 0);
 
   return (
-    <section id="syllabus" className="mb-12">
-      <h2 className="text-2xl font-bold mb-4 text-[#2d2f31]">Course content</h2>
-
-      <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-[#2d2f31]">{sections.length} sections • {totalLectures} lectures</p>
+    <section id="syllabus" className="mb-16">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 gap-4">
+        <div>
+           <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-2">Syllabus</h2>
+           <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">{sections.length} sections • {totalLectures} lectures</p>
+        </div>
         <button
           onClick={handleExpandAll}
-          className="text-[#a435f0] font-bold text-sm hover:text-[#7b1fa2] transition-colors"
+          className="text-blue-600 font-bold text-sm tracking-wide hover:text-blue-700 transition-colors"
         >
-          {expandedAll ? 'Collapse all sections' : 'Expand all sections'}
+          {expandedAll ? 'Collapse All' : 'Expand All'}
         </button>
       </div>
 
-      <div className="border border-[#d1d7dc] rounded-sm overflow-hidden">
+      <div className="space-y-4">
         {sections.map((section, index) => {
           const isOpen = openSections.includes(index);
 
           return (
-            <div key={section.id} className="border-b border-[#d1d7dc] last:border-b-0">
+            <div key={section.id} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleSection(index)}
-                className="w-full bg-[#f7f9fa] p-4 flex justify-between items-center cursor-pointer hover:bg-[#e6e8eb] transition-colors text-left"
+                className="w-full bg-zinc-50 p-5 flex justify-between items-center cursor-pointer hover:bg-zinc-100 transition-colors text-left"
               >
-                <div className="flex items-center gap-3">
-                  <Icon name={isOpen ? "expand_less" : "expand_more"} className="text-[#2d2f31]" />
-                  <span className="font-bold text-[#2d2f31]">{section.title}</span>
+                <div className="flex items-center gap-4">
+                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300", isOpen ? "bg-zinc-200 border-zinc-300 text-zinc-900" : "bg-white border-black/10 text-zinc-500")}>
+                    <Icon name={isOpen ? "expand_less" : "expand_more"} className="!text-xl" />
+                  </div>
+                  <span className="font-bold text-zinc-900 text-lg">{section.title}</span>
                 </div>
-                <span className="text-sm text-[#2d2f31] hidden sm:block">
-                  {section.items?.length || 0} lectures
+                <span className="text-sm text-zinc-500 font-medium hidden sm:block tracking-wide">
+                  {section.items?.length || 0} items
                 </span>
               </button>
 
               {isOpen && (
-                <div className="bg-white p-4 space-y-4">
-                  {(section.items || []).map((item: any, lIndex: number) => {
-                    // Determine icon based on content type
-                    let iconName = 'description'; // default
+                <div className="bg-white p-5 space-y-3 border-t border-black/10">
+                  {(section.items || []).map((item: any) => {
+                    let iconName = 'description';
                     let iconFill = false;
 
                     if (item.type === 'LECTURE' && item.lecture_content) {
@@ -466,50 +447,47 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
                         iconName = item.is_preview ? 'play_circle' : 'videocam';
                         iconFill = item.is_preview;
                       } else if (contentType === 'TEXT') {
-                        iconName = 'description';
-                        iconFill = false;
+                        iconName = 'article';
                       } else if (contentType === 'LINK') {
                         iconName = 'link';
-                        iconFill = false;
                       } else if (contentType === 'FILE') {
                         iconName = 'attach_file';
-                        iconFill = false;
                       }
                     } else if (item.type === 'QUIZ') {
                       iconName = 'quiz';
-                      iconFill = false;
                     } else if (item.type === 'ASSIGNMENT') {
                       iconName = 'assignment';
-                      iconFill = false;
                     }
 
                     return (
-                      <div key={item.id} className="flex justify-between items-start text-sm group">
-                        <div className="flex gap-3 flex-1">
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl hover:bg-zinc-50 transition-colors group gap-3">
+                        <div className="flex items-center gap-3">
                           <Icon
                             name={iconName}
-                            className="text-[#6a6f73] !text-base mt-0.5"
+                            className={cn("!text-xl", item.is_preview ? "text-blue-600" : "text-zinc-400")}
                             fill={iconFill}
                           />
                           <span
                             onClick={() => item.is_preview && handlePreviewClick(item)}
-                            className={`text-[#2d2f31] ${item.is_preview ? 'cursor-pointer hover:underline text-[#a435f0]' : ''}`}
+                            className={cn("text-sm font-medium transition-colors", item.is_preview ? "text-zinc-900 cursor-pointer hover:text-blue-600" : "text-zinc-700")}
                           >
                             {item.title}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 pl-9 sm:pl-0">
                           {item.is_preview && (
                             <span
                               onClick={() => handlePreviewClick(item)}
-                              className="text-[#a435f0] underline text-xs cursor-pointer hover:text-[#7b1fa2]"
+                              className="text-blue-600 text-xs font-bold uppercase tracking-widest cursor-pointer hover:underline"
                             >
                               Preview
                             </span>
                           )}
-                          <span className="text-[#6a6f73]">
-                            {item.duration_minutes ? `${item.duration_minutes}m` : ''}
-                          </span>
+                          {item.duration_minutes && (
+                            <span className="text-zinc-500 text-xs font-medium">
+                              {item.duration_minutes}m
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
@@ -520,7 +498,6 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
           );
         })}
 
-        {/* Video Preview Modal - New Implementation */}
         <LessonPreviewModal
           open={!!previewItem}
           onOpenChange={(open) => !open && closePreview()}
@@ -533,7 +510,6 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
   );
 };
 
-
 // --- Instructor Component ---
 interface InstructorProps {
   instructor: any;
@@ -544,59 +520,57 @@ const Instructor: React.FC<InstructorProps> = ({ instructor, enrollmentCount }) 
   const [showFullBio, setShowFullBio] = useState(false);
 
   return (
-    <section className="space-y-4 mb-12" id="instructor">
-      <h2 className="text-2xl font-bold text-[#2d2f31]">Instructor</h2>
+    <section className="mb-16" id="instructor">
+      <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-6">Instructor</h2>
 
-      <div className="border border-[#d1d7dc] p-6 bg-white shadow-sm rounded-sm">
-        <div className="flex flex-col gap-1 mb-4">
-          <h3 className="text-xl font-bold text-[#a435f0] underline cursor-pointer hover:text-[#7b1fa2]">
-            {instructor?.user?.name || 'Instructor'}
-          </h3>
-          <p className="text-[#6a6f73]">{instructor?.headline || 'Course Instructor'}</p>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-6 mb-6">
+      <div className="bg-white border border-black/10 p-8 rounded-3xl shadow-sm">
+        <div className="flex flex-col md:flex-row gap-8 mb-6">
           <div className="shrink-0">
             <div
-              className="size-28 rounded-full bg-cover bg-center border border-gray-200 bg-gray-200 flex items-center justify-center text-4xl font-bold text-gray-500"
+              className="w-32 h-32 rounded-full bg-cover bg-center border border-black/5 bg-zinc-100 flex items-center justify-center text-5xl font-black text-zinc-400 shadow-inner"
               style={instructor?.avatar_url ? { backgroundImage: `url("${instructor.avatar_url}")` } : {}}
             >
               {!instructor?.avatar_url && (instructor?.user?.name?.[0] || 'I')}
             </div>
           </div>
 
-          <div className="space-y-2 py-2">
-            <div className="flex items-center gap-3 text-sm font-medium text-[#2d2f31]">
-              <Icon name="star" className="!text-base" />
-              <span>Instructor Rating</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm font-medium text-[#2d2f31]">
-              <Icon name="military_tech" className="!text-base" />
-              <span>Reviews</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm font-medium text-[#2d2f31]">
-              <Icon name="group" className="!text-base" />
-              <span>{enrollmentCount} Students</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm font-medium text-[#2d2f31]">
-              <Icon name="play_circle" className="!text-base" />
-              <span>Courses</span>
+          <div className="flex-1 space-y-4">
+             <div>
+                <h3 className="text-2xl font-bold text-zinc-900 hover:text-blue-600 transition-colors cursor-pointer tracking-tight">
+                  {instructor?.user?.name || 'Instructor'}
+                </h3>
+                <p className="text-zinc-500 font-medium text-sm mt-1">{instructor?.headline || 'Course Instructor'}</p>
+             </div>
+
+            <div className="flex flex-wrap gap-4 pt-2">
+              <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-full border border-black/5">
+                <Icon name="star" className="!text-sm text-[#eab308]" />
+                <span className="text-xs font-bold text-zinc-700 tracking-wide">Top Rated</span>
+              </div>
+              <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-full border border-black/5">
+                <Icon name="group" className="!text-sm text-blue-600" />
+                <span className="text-xs font-bold text-zinc-700 tracking-wide">{enrollmentCount} Students</span>
+              </div>
+              <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-full border border-black/5">
+                <Icon name="military_tech" className="!text-sm text-green-600" />
+                <span className="text-xs font-bold text-zinc-700 tracking-wide">Certified</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className={`text-sm text-[#2d2f31] leading-relaxed space-y-4 transition-all duration-500 overflow-hidden ${showFullBio ? 'max-h-[1000px]' : 'max-h-[150px] relative'}`}>
-          <p>{instructor?.bio || 'Experienced instructor passionate about teaching and helping students achieve their goals.'}</p>
+        <div className={`text-zinc-600 font-medium leading-relaxed space-y-4 transition-all duration-500 overflow-hidden ${showFullBio ? 'max-h-[1000px]' : 'max-h-[100px] relative'}`}>
+          <p>{instructor?.bio || 'Experienced instructor passionate about teaching and helping students achieve their goals within our next-gen LMS ecosystem.'}</p>
           {!showFullBio && (
-            <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
           )}
         </div>
 
         <button
           onClick={() => setShowFullBio(!showFullBio)}
-          className="text-sm font-bold text-[#2d2f31] hover:text-black flex items-center gap-1 mt-4"
+          className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-4 tracking-wide transition-colors"
         >
-          Show {showFullBio ? 'less' : 'more'}
+          {showFullBio ? 'Read Less' : 'Read Full Bio'}
           <Icon name={showFullBio ? "keyboard_arrow_up" : "keyboard_arrow_down"} className="!text-lg" />
         </button>
       </div>
@@ -612,72 +586,46 @@ interface DescriptionSectionProps {
 const DescriptionSection: React.FC<DescriptionSectionProps> = ({ description }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Function to truncate HTML while preserving structure
-  const truncateToWords = (html: string, wordLimit: number): { truncated: string; isTruncated: boolean } => {
-    // Strip HTML tags for word counting only
+  const truncateToWords = (html: string, wordLimit: number) => {
     const textOnly = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const words = textOnly.split(' ');
 
-    if (words.length <= wordLimit) {
-      return { truncated: html, isTruncated: false };
-    }
+    if (words.length <= wordLimit) return { truncated: html, isTruncated: false };
 
-    // Calculate approximate character position for N words
-    // Average word length + space ~ 6 characters
     const approximateCharPos = wordLimit * 6;
-
-    // Truncate HTML at approximately that position
     let truncatedHtml = html.substring(0, approximateCharPos);
-
-    // Try to end at a word boundary
     const lastSpace = truncatedHtml.lastIndexOf(' ');
-    if (lastSpace > approximateCharPos * 0.8) {
-      truncatedHtml = truncatedHtml.substring(0, lastSpace);
-    }
-
-    // Add ellipsis
-    truncatedHtml += '...';
-
-    return {
-      truncated: truncatedHtml,
-      isTruncated: true
-    };
+    if (lastSpace > approximateCharPos * 0.8) truncatedHtml = truncatedHtml.substring(0, lastSpace);
+    
+    return { truncated: truncatedHtml + '...', isTruncated: true };
   };
 
   const { truncated, isTruncated } = truncateToWords(description, 100);
   const displayContent = isExpanded ? description : truncated;
 
   return (
-    <div className="p-6">
-      <div className="relative">
+    <section className="mb-16">
+      <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-6">About This Course</h2>
+      <div className="bg-white border border-black/10 p-8 rounded-3xl shadow-sm relative">
         <div
-          className="prose prose-sm max-w-none text-[#2d2f31] leading-relaxed"
+          className="prose max-w-none text-zinc-600 font-medium leading-relaxed prose-headings:text-zinc-900 prose-a:text-blue-600"
           dangerouslySetInnerHTML={{ __html: displayContent }}
         />
-        {/* Gradient fade overlay when truncated */}
         {isTruncated && !isExpanded && (
-          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none rounded-b-3xl" />
+        )}
+        
+        {isTruncated && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="mt-6 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 tracking-wide relative z-10"
+          >
+            {isExpanded ? 'Show less' : 'Read more'}
+            <Icon name={isExpanded ? "expand_less" : "expand_more"} className="!text-lg" fill={false} />
+          </button>
         )}
       </div>
-      {isTruncated && (
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-4 text-[#a435f0] font-bold hover:text-[#7b1fa2] transition-colors flex items-center gap-1"
-        >
-          {isExpanded ? (
-            <>
-              Show less
-              <Icon name="expand_less" className="!text-xl" fill={false} />
-            </>
-          ) : (
-            <>
-              Show more
-              <Icon name="expand_more" className="!text-xl" fill={false} />
-            </>
-          )}
-        </button>
-      )}
-    </div>
+    </section>
   );
 };
 
@@ -688,12 +636,9 @@ interface ReviewsProps {
 }
 
 const Reviews: React.FC<ReviewsProps> = ({ rating, reviews }) => {
-  // Calculate rating distribution
   const ratingCounts = [0, 0, 0, 0, 0];
   reviews.forEach(review => {
-    if (review.rating >= 1 && review.rating <= 5) {
-      ratingCounts[review.rating - 1]++;
-    }
+    if (review.rating >= 1 && review.rating <= 5) ratingCounts[review.rating - 1]++;
   });
 
   const totalReviews = reviews.length || 1;
@@ -706,87 +651,70 @@ const Reviews: React.FC<ReviewsProps> = ({ rating, reviews }) => {
   ];
 
   return (
-    <section className="space-y-6 pb-20 border-b border-[#d1d7dc]" id="reviews">
-      <h2 className="text-2xl font-bold text-[#2d2f31]">Student feedback</h2>
-      <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-        <div className="text-center flex flex-col items-center min-w-[120px]">
-          <p className="text-6xl font-bold text-[#b4690e]">{rating.toFixed(1)}</p>
-          <div className="flex justify-center my-2 text-[#b4690e]">
+    <section className="mb-24" id="reviews">
+      <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-8">Student Feedback</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div className="md:col-span-4 lg:col-span-3 bg-white border border-black/10 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-sm">
+          <p className="text-7xl font-black text-zinc-900 tracking-tighter mb-2">{rating.toFixed(1)}</p>
+          <div className="flex justify-center mb-3">
             {[...Array(5)].map((_, i) => {
-              if (i < Math.floor(rating)) {
-                return <Icon key={i} name="star" className="text-[#b4690e]" />;
-              } else if (i === Math.floor(rating) && rating % 1 >= 0.5) {
-                return <Icon key={i} name="star_half" className="text-[#b4690e]" />;
-              }
-              return <Icon key={i} name="star" className="text-[#b4690e]" fill={false} />;
+              if (i < Math.floor(rating)) return <Icon key={i} name="star" className="text-[#eab308] !text-xl" />;
+              if (i === Math.floor(rating) && rating % 1 >= 0.5) return <Icon key={i} name="star_half" className="text-[#eab308] !text-xl" />;
+              return <Icon key={i} name="star" className="text-zinc-200 !text-xl" fill={false} />;
             })}
           </div>
-          <p className="text-[#b4690e] font-bold text-sm">Course Rating</p>
+          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">Course Rating</p>
         </div>
 
-        <div className="flex-1 space-y-3 w-full">
+        <div className="md:col-span-8 lg:col-span-9 bg-white border border-black/10 rounded-3xl p-6 shadow-sm flex flex-col justify-center gap-3">
           {bars.map((bar) => (
-            <div key={bar.stars} className="flex items-center gap-4 group cursor-pointer">
-              <div className="flex-1 bg-[#d1d7dc] h-2 relative">
+            <div key={bar.stars} className="flex items-center gap-4 group">
+              <div className="flex items-center gap-1 w-16">
+                <span className="text-zinc-700 font-bold text-sm">{bar.stars}</span>
+                <Icon name="star" className="!text-sm text-[#eab308]" />
+              </div>
+              <div className="flex-1 bg-zinc-100 h-3 rounded-full relative overflow-hidden border border-black/5">
                 <div
-                  className="bg-[#6a6f73] h-2 absolute top-0 left-0 transition-all duration-700 ease-out group-hover:bg-[#2d2f31]"
+                  className="bg-blue-600 h-full absolute top-0 left-0 transition-all duration-1000 ease-out"
                   style={{ width: `${bar.percent}%` }}
                 ></div>
               </div>
-              <div className="flex items-center gap-1 min-w-[120px] text-[#b4690e]">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Icon
-                      key={i}
-                      name="star"
-                      className={`!text-sm ${i < bar.stars ? 'text-[#b4690e]' : 'text-[#d1d7dc]'}`}
-                      fill={i < bar.stars}
-                    />
-                  ))}
-                </div>
-                <span className="text-[#a435f0] underline text-sm ml-2 font-medium">{bar.percent}%</span>
-              </div>
+              <span className="text-zinc-500 font-bold text-xs w-10 text-right">{bar.percent}%</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Individual Reviews */}
-      <div className="space-y-6 mt-8">
+      <div className="mt-12 space-y-4">
         {reviews.length > 0 ? (
           reviews.slice(0, 5).map((review) => (
-            <div key={review.id} className="border-b border-[#d1d7dc] pb-6 last:border-0">
+            <div key={review.id} className="bg-white border border-black/10 rounded-2xl p-6 hover:bg-zinc-50 transition-colors shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="size-12 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-500">
+                <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center text-xl font-bold text-zinc-500 border border-black/5 shrink-0">
                   {review.user?.name?.[0] || 'U'}
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-[#2d2f31]">{review.user?.name || 'Student'}</h4>
-                    <span className="text-sm text-[#6a6f73]">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-bold text-zinc-900">{review.user?.name || 'Student'}</h4>
+                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Icon
-                          key={i}
-                          name="star"
-                          className={`!text-sm ${i < review.rating ? 'text-[#b4690e]' : 'text-[#d1d7dc]'}`}
-                        />
-                      ))}
-                    </div>
+                  <div className="flex items-center mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Icon key={i} name="star" className={cn("!text-sm", i < review.rating ? "text-[#eab308]" : "text-zinc-200")} />
+                    ))}
                   </div>
-                  <p className="text-[#2d2f31] text-sm">{review.comment}</p>
+                  <p className="text-zinc-600 font-medium text-sm leading-relaxed">{review.comment}</p>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-[#6a6f73]">
-            <Icon name="chat_bubble_outline" className="!text-5xl mx-auto mb-4 opacity-50" fill={false} />
-            <p>No reviews yet. Be the first to review this course!</p>
+          <div className="bg-white border border-black/10 rounded-2xl p-12 text-center shadow-sm">
+            <Icon name="rate_review" className="!text-5xl text-zinc-300 mb-4" fill={false} />
+            <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">No reviews yet. Be the first to review!</p>
           </div>
         )}
       </div>
@@ -816,18 +744,15 @@ export default function CoursePreview() {
         }
         setCourse(courseDetails);
 
-        // Fetch real review stats
         if (courseDetails?.id) {
           try {
             const stats = await ReviewsAPI.getStats(courseDetails.id);
             setReviewStats({ averageRating: stats.averageRating ?? 0, totalReviews: stats.totalReviews ?? 0 });
-            // Attach stats to course for Hero component
             courseDetails._reviewStats = { averageRating: stats.averageRating ?? 0 };
             setCourse({ ...courseDetails });
-          } catch { /* ignore if reviews endpoint fails */ }
+          } catch { /* ignore */ }
         }
 
-        // Check if user is already enrolled — redirect to course view
         if (isAuthenticated && user && courseDetails?.id) {
           try {
             const enrollments = await Enrollments.getMyEnrollments();
@@ -840,7 +765,7 @@ export default function CoursePreview() {
               navigate(`/course/${slug}/view`, { replace: true });
               return;
             }
-          } catch { /* ignore enrollment check errors */ }
+          } catch { /* ignore */ }
         }
       } catch (error) {
         console.error("Failed to fetch course", error);
@@ -855,66 +780,66 @@ export default function CoursePreview() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#f7f9fa]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#a435f0] mx-auto mb-4" />
-          <p className="text-[#6a6f73]">Loading course...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f7f9fa]">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+        <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">Initializing Interface...</p>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f7f9fa]">
-        <h1 className="text-3xl font-bold mb-4">Course Not Found</h1>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f7f9fa] px-6 text-center">
+        <Icon name="error_outline" className="!text-6xl text-red-500 mb-6" />
+        <h1 className="text-4xl font-black text-zinc-900 tracking-tighter mb-4">Course Not Found</h1>
+        <p className="text-zinc-600 font-medium mb-8 max-w-md">The learning module you are looking for could not be found.</p>
         <Link
           to="/"
-          className="bg-[#a435f0] text-white font-bold py-3 px-6 hover:bg-[#7b1fa2] transition-colors"
+          className="bg-zinc-900 text-white font-bold py-4 px-8 rounded-2xl hover:bg-zinc-800 transition-colors tracking-wide text-sm shadow-md"
         >
-          Back to Catalog
+          Return to Catalog
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-white">
+    <div className="min-h-screen flex flex-col font-sans bg-[#f7f9fa] selection:bg-blue-100 selection:text-blue-900">
       <Hero course={course} />
 
-      <main className="relative">
-        <div className="max-w-[1184px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 relative">
+      <main className="flex-1 relative z-10">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-12 pt-16 pb-24 relative">
             {/* Main Column (Left) */}
-            <div className="lg:col-span-2 space-y-12">
-              {/* Learning Points Box */}
-              <section className="p-6 border border-[#d1d7dc] bg-white">
-                <h2 className="text-2xl font-bold mb-6 text-[#2d2f31]">What you'll learn</h2>
-                {course.learning_outcomes && course.learning_outcomes.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                    {course.learning_outcomes.map((point: string, index: number) => (
-                      <div key={index} className="flex gap-3 items-start">
-                        <Icon name="check" className="text-[#6a6f73] !text-xl mt-0.5" fill={false} />
-                        <span className="text-[#2d2f31] text-sm leading-snug">{point}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm italic">No learning outcomes specified for this course yet.</p>
-                )}
+            <div className="xl:col-span-2">
+              
+              {/* Learning Points Grid */}
+              <section className="mb-16">
+                <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-6">Key Takeaways</h2>
+                <div className="bg-white border border-black/10 p-8 rounded-3xl shadow-sm">
+                  {course.learning_outcomes && course.learning_outcomes.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {course.learning_outcomes.map((point: string, index: number) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          <div className="w-6 h-6 rounded-full bg-green-100 border border-green-200 flex items-center justify-center shrink-0 mt-0.5">
+                             <Icon name="check" className="text-green-600 !text-sm" fill={false} />
+                          </div>
+                          <span className="text-zinc-700 text-sm font-medium leading-relaxed">{point}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 text-zinc-500 italic">
+                      <Icon name="info" className="!text-lg" />
+                      <span className="text-sm">Learning outcomes are being compiled.</span>
+                    </div>
+                  )}
+                </div>
               </section>
 
+              <DescriptionSection description={course.description} />
+              
               <CourseContent sections={course.sections || []} />
-
-              {/* Description Section */}
-              {course.description && (
-                <section className="border border-[#d1d7dc] bg-white">
-                  <div className="p-6 border-b border-[#d1d7dc]">
-                    <h2 className="text-2xl font-bold text-[#2d2f31]">Description</h2>
-                  </div>
-                  <DescriptionSection description={course.description} />
-                </section>
-              )}
 
               <Instructor
                 instructor={course.instructor}
@@ -928,7 +853,7 @@ export default function CoursePreview() {
             </div>
 
             {/* Sidebar Column (Right) */}
-            <div className="lg:col-span-1">
+            <div className="xl:col-span-1">
               <Sidebar course={course} isEnrolled={isEnrolled} />
             </div>
           </div>
@@ -936,23 +861,24 @@ export default function CoursePreview() {
       </main>
 
       {/* Mobile Bottom Bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#d1d7dc] shadow-lg p-4 z-50">
-        <div className="flex items-center justify-between">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-xl border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-50">
+        <div className="flex items-center justify-between gap-4 max-w-[1400px] mx-auto">
           <div>
-            <div className="text-2xl font-bold text-[#2d2f31]">
-              ${course.price || 'Free'}
+            <div className="text-2xl font-black text-zinc-900 tracking-tighter">
+              {course.is_free ? 'FREE' : `₹${course.price?.toLocaleString('en-IN')}`}
             </div>
-            {course.sale_price && (
-              <div className="text-sm text-[#6a6f73] line-through">
-                ${course.sale_price}
-              </div>
-            )}
           </div>
-          <Link to={`/learn/${course.id}/lesson/1`}>
-            {/* Mobile bottom bar logic should also be updated ideally, but for now linking to learn page or using similar handleEnroll logic */}
-          </Link>
+          <button 
+             onClick={() => document.querySelector('.lg\\:sticky')?.scrollIntoView({ behavior: 'smooth' })}
+             className="bg-zinc-900 text-white font-bold px-6 py-3 rounded-xl tracking-wide text-sm flex items-center gap-2 shadow-md hover:bg-zinc-800"
+          >
+             Enroll Now
+             <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
