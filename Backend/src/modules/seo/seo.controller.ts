@@ -14,8 +14,9 @@ export class SeoController {
     @Headers('x-original-uri') originalUri: string,
   ) {
     const domain = host ? host.split(':')[0] : 'localhost';
-    // X-Original-URI is set by Caddy with the original request path
-    const url = originalUri || '/';
+    // X-Original-URI is set by Caddy. If rewrite fired before the header was captured,
+    // it may contain '/seo/bot-proxy' — fall back to '/' in that case.
+    const url = (originalUri && originalUri !== '/seo/bot-proxy') ? originalUri : '/';
     const html = await this.seoService.generateBotHtml(domain, url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
