@@ -28,9 +28,10 @@ iconsafetyinstitute.com, www.iconsafetyinstitute.com {
 	# Social Media Bot Proxy (WhatsApp, Facebook, Twitter, etc.)
 	@socialbot header_regexp User-Agent "facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Pinterest|SkypeUriPreview|TelegramBot|Discordbot|Slackbot"
 	handle @socialbot {
+		request_header X-Original-URI {uri}
+		rewrite * /seo/bot-proxy
 		reverse_proxy 127.0.0.1:3000 {
 			header_up Host {host}
-			header_up X-Original-URI {uri}
 		}
 	}
 
@@ -80,9 +81,10 @@ https:// {
 	# Social Media Bot Proxy (WhatsApp, Facebook, Twitter, etc.)
 	@socialbot header_regexp User-Agent "facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Pinterest|SkypeUriPreview|TelegramBot|Discordbot|Slackbot"
 	handle @socialbot {
+		request_header X-Original-URI {uri}
+		rewrite * /seo/bot-proxy
 		reverse_proxy 127.0.0.1:3000 {
 			header_up Host {host}
-			header_up X-Original-URI {uri}
 		}
 	}
 
