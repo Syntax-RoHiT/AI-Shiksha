@@ -13,7 +13,20 @@ export class PublicAiService {
         private readonly rateLimitService: RateLimitService,
     ) { }
 
-    async evaluateGlobalAi(franchiseId: string) {
+    async evaluateGlobalAi(franchiseId: string | null) {
+        if (!franchiseId) {
+            // System domain fallback
+            if (process.env.GEMINI_API_KEY) {
+                return process.env.GEMINI_API_KEY;
+            } else {
+                // Fallback to first franchise if env var not set
+                const firstFranchise = await this.prisma.franchise.findFirst({ select: { gemini_api_key: true } as any }) as any;
+                if (firstFranchise?.gemini_api_key) return firstFranchise.gemini_api_key;
+                
+                throw new HttpException('Ask the Admin to Configure Gemini Key', HttpStatus.NOT_IMPLEMENTED);
+            }
+        }
+
         const franchise = await this.prisma.franchise.findUnique({
             where: { id: franchiseId },
             select: { global_ai_control: true, gemini_api_key: true } as any
@@ -34,7 +47,7 @@ export class PublicAiService {
         return franchise.gemini_api_key as string;
     }
 
-    async publicChat(franchiseId: string, ipAddress: string, message: string) {
+    async publicChat(franchiseId: string | null, ipAddress: string, message: string) {
         // Basic IP-based rate limiting
         this.rateLimitService.checkRateLimit(`ip-${ipAddress}`);
 

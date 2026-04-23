@@ -365,7 +365,7 @@ const CourseContent: React.FC<CourseContentProps> = ({ sections }) => {
     setPreviewItem(item);
     setLoadingPreview(true);
     try {
-      const content = await LectureContent.get(item.id);
+      const content = await LectureContent.getPreview(item.id);
       setPreviewContent(content);
     } catch (error) {
       console.error('Failed to fetch preview content:', error);

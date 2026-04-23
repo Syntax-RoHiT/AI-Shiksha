@@ -719,4 +719,59 @@ export class CoursesService {
       orderBy: { submitted_for_approval_at: 'asc' },
     });
   }
+
+  async getPreviewLectureContent(itemId: string, userId?: string) {
+    const item = await this.prisma.sectionItem.findUnique({
+      where: { id: itemId },
+      include: {
+        section: {
+          include: {
+            course: true
+          }
+        }
+      }
+    });
+
+    if (!item) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    let hasAccess = item.is_preview;
+
+    if (!hasAccess && userId) {
+      const enrollment = await this.prisma.enrollment.findUnique({
+        where: {
+          student_id_course_id: {
+            student_id: userId,
+            course_id: item.section.course_id
+          }
+        }
+      });
+      if (enrollment && enrollment.status === 'active') {
+        hasAccess = true;
+      }
+    }
+
+    if (!hasAccess) {
+      throw new ForbiddenException('This lesson is not available for preview');
+    }
+
+    const content = await this.prisma.lectureContent.findUnique({
+      where: { item_id: itemId },
+    });
+
+    if (!content) {
+      throw new NotFoundException('Lecture content not found');
+    }
+
+    if (content.text_content) {
+      try {
+        (content as any).text_content = JSON.parse(content.text_content);
+      } catch (e) {
+        // Keep as string if parsing fails
+      }
+    }
+
+    return content;
+  }
 }

@@ -182,5 +182,15 @@ export class CoursesController {
   getPendingApproval(@Request() req) {
     return this.coursesService.getPendingApproval(req.user.franchise_id);
   }
+
+  @Get('public/items/:itemId/preview')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Get lecture content for preview (Public or Enrolled)' })
+  getPreviewLectureContent(
+    @Param('itemId') itemId: string,
+    @Request() req
+  ) {
+    return this.coursesService.getPreviewLectureContent(itemId, req.user?.userId);
+  }
 }
 

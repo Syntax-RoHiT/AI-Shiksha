@@ -443,7 +443,7 @@ export class UsersService {
     const whereUsers: any = { role: 'STUDENT' };
     const whereEnrollments: any = { status: 'active' };
 
-    if (franchiseId) {
+    if (franchiseId !== undefined) {
       whereUsers.franchise_id = franchiseId;
       whereEnrollments.franchise_id = franchiseId;
     }
@@ -482,7 +482,7 @@ export class UsersService {
 
     // If franchiseId is present:
     let avgCompletion = 0;
-    if (franchiseId) {
+    if (franchiseId !== undefined) {
       const studentIds = await this.prisma.user.findMany({
         where: { franchise_id: franchiseId, role: 'STUDENT' },
         select: { id: true }
@@ -523,16 +523,16 @@ export class UsersService {
   async getTeacherStats(franchiseId?: string | null) {
     // Get only instructors (not admins)
     const whereUser: any = {};
-    if (franchiseId) {
+    if (franchiseId !== undefined) {
       whereUser.franchise_id = franchiseId;
     }
 
     const instructors = await this.prisma.instructorProfile.findMany({
-      where: franchiseId ? { user: { franchise_id: franchiseId } } : {},
+      where: franchiseId !== undefined ? { user: { franchise_id: franchiseId } } : {},
       include: {
         user: true,
         courses: {
-          where: franchiseId ? { franchise_id: franchiseId } : {},
+          where: franchiseId !== undefined ? { franchise_id: franchiseId } : {},
           include: {
             _count: {
               select: { enrollments: true },

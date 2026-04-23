@@ -12,10 +12,7 @@ export class PublicAiController {
     @ApiOperation({ summary: 'Check if public AI is enabled for the franchise' })
     async checkStatus(@Req() req: Request) {
         // tenantId injected by tenant middleware, fallback to branding ID for localhost
-        const tenantId = (req as any).tenantId || (req as any).tenantBranding?.id;
-        if (!tenantId) {
-            throw new HttpException('Valid Franchise required', HttpStatus.BAD_REQUEST);
-        }
+        const tenantId = (req as any).tenantId || (req as any).tenantBranding?.id || null;
 
         try {
             // just evaluate settings
@@ -34,11 +31,7 @@ export class PublicAiController {
             throw new HttpException('Message is required', HttpStatus.BAD_REQUEST);
         }
 
-        const tenantId = (req as any).tenantId || (req as any).tenantBranding?.id;
-        if (!tenantId) {
-            // Could be localhost without active franchise
-            throw new HttpException('Valid Franchise required for AI Chat', HttpStatus.BAD_REQUEST);
-        }
+        const tenantId = (req as any).tenantId || (req as any).tenantBranding?.id || null;
 
         // Simplistic IP extraction (might need adjustment based on reverse proxy)
         const ip = req.ip || req.socket.remoteAddress || 'unknown';

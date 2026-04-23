@@ -363,6 +363,10 @@ export const LectureContent = {
         const { data } = await api.get(`/items/${itemId}/content`);
         return data;
     },
+    getPreview: async (itemId: string) => {
+        const { data } = await api.get(`/courses/public/items/${itemId}/preview`);
+        return data;
+    },
 };
 
 // Quizzes
