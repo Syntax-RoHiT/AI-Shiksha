@@ -102,4 +102,13 @@ export class InstructorsController {
   ) {
     return this.instructorsService.update(id, updateInstructorDto, req.user.userId);
   }
+
+  @Patch(':id/verify')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN, Role.FRANCHISE_ADMIN, Role.SUPER_ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Toggle instructor verification status (Admin)' })
+  toggleVerification(@Param('id') id: string) {
+    return this.instructorsService.toggleVerification(id);
+  }
 }

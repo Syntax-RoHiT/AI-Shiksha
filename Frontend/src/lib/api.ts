@@ -271,6 +271,10 @@ export const Users = {
         const { data } = await api.patch(`/users/${id}/joining-date`, { created_at: createdAt });
         return data;
     },
+    toggleInstructorVerification: async (instructorProfileId: string) => {
+        const { data } = await api.patch(`/instructors/${instructorProfileId}/verify`);
+        return data;
+    },
 };
 
 // ============================================

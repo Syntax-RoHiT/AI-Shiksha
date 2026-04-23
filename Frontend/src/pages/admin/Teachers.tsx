@@ -15,6 +15,8 @@ import {
   Star,
   CheckCircle,
   XCircle,
+  ShieldCheck,
+  ShieldOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -195,9 +197,30 @@ export default function TeachersPage() {
                           <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            // Dummy View Profile
-                          }}>View Profile</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              try {
+                                await UsersAPI.toggleInstructorVerification(teacher.id);
+                                toast.success(
+                                  teacher.status === "verified"
+                                    ? "Instructor unverified"
+                                    : "Instructor verified successfully"
+                                );
+                                refetch();
+                              } catch (error) {
+                                toast.error("Failed to update verification status");
+                              }
+                            }}
+                          >
+                            {teacher.status === "verified" ? (
+                              <><ShieldOff className="h-4 w-4 mr-2" />Unverify</>
+                            ) : (
+                              <><ShieldCheck className="h-4 w-4 mr-2" />Verify Instructor</>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {}}>
+                            View Profile
+                          </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                             onClick={async () => {

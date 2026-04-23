@@ -55,6 +55,18 @@ export class InstructorsService {
     return instructor;
   }
 
+  async toggleVerification(id: string) {
+    const instructor = await this.prisma.instructorProfile.findUnique({
+      where: { id },
+    });
+    if (!instructor) throw new NotFoundException('Instructor not found');
+
+    return this.prisma.instructorProfile.update({
+      where: { id },
+      data: { verified: !instructor.verified },
+    });
+  }
+
   async findByUserId(userId: string) {
     return this.prisma.instructorProfile.findUnique({
       where: { user_id: userId },
