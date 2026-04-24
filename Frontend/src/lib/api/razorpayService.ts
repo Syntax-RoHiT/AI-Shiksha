@@ -13,8 +13,8 @@ export const razorpayService = {
     const response = await api.put("/payments/razorpay/settings", data);
     return response.data;
   },
-  createOrder: async (courseId: string, amount: number, couponId?: string) => {
-    const response = await api.post("/payments/razorpay/create-order", { courseId, amount, couponId });
+  createOrder: async (courseIds: string[], amount: number, couponId?: string) => {
+    const response = await api.post("/payments/razorpay/create-order", { courseIds, amount, couponId });
     return response.data;
   },
   verifyPayment: async (data: { paymentId: string; orderId: string; signature: string }) => {

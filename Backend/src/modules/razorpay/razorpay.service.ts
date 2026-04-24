@@ -50,7 +50,7 @@ export class RazorpayService {
     });
   }
 
-  async createOrder(franchiseId: string, userId: string, data: { courseId: string; amount: number; couponId?: string }) {
+  async createOrder(franchiseId: string, userId: string, data: { courseIds: string[]; amount: number; couponId?: string }) {
     const settings = await this.getSettings(franchiseId);
     
     if (!settings.is_enabled || !settings.key_id || !settings.key_secret) {
@@ -63,27 +63,28 @@ export class RazorpayService {
     });
 
     const options = {
-      amount: Math.round(data.amount * 100), // convert to paise / cents
+      amount: Math.round(data.amount * 100), // paise
       currency: settings.currency,
-      receipt: `rcpt_${Date.now()}_${userId}`,
+      receipt: `rcpt_${Date.now()}_${userId.slice(0, 8)}`,
     };
 
     try {
       const order = await razorpay.orders.create(options);
-      
-      // Keep track in payments table as pending transaction
-      await this.prisma.payment.create({
-        data: {
+
+      // Create one Payment record per course, all tied to the same orderId
+      const amountPerCourse = data.amount / data.courseIds.length;
+      await this.prisma.payment.createMany({
+        data: data.courseIds.map((courseId) => ({
           user_id: userId,
-          course_id: data.courseId,
-          amount: data.amount,
+          course_id: courseId,
+          amount: amountPerCourse,
           currency: settings.currency,
           payment_provider: 'razorpay',
           payment_status: 'payment_pending',
           order_id: order.id,
           franchise_id: franchiseId,
           coupon_id: data.couponId || null,
-        }
+        })),
       });
 
       return {
@@ -93,7 +94,7 @@ export class RazorpayService {
         keyId: settings.key_id,
       };
     } catch (error) {
-      throw new BadRequestException('Failed to create Razorpay order');
+      throw new BadRequestException('Failed to create Razorpay order: ' + error?.message);
     }
   }
 
@@ -110,7 +111,6 @@ export class RazorpayService {
       .digest('hex');
 
     if (generatedSignature !== data.signature) {
-      // Find and update payment as failed
       await this.prisma.payment.updateMany({
         where: { order_id: data.orderId, franchise_id: franchiseId },
         data: { payment_status: 'failed' }
@@ -118,48 +118,50 @@ export class RazorpayService {
       throw new BadRequestException('Invalid payment signature');
     }
 
-    // Update payment to success
-    const payment = await this.prisma.payment.findFirst({
+    // Find ALL payments for this order (one per course in the cart)
+    const payments = await this.prisma.payment.findMany({
       where: { order_id: data.orderId, franchise_id: franchiseId }
     });
 
-    if (!payment) {
-      throw new NotFoundException('Payment record not found');
+    if (!payments.length) {
+      throw new NotFoundException('Payment records not found');
     }
 
+    // Mark all payments as success and enroll in all courses
     await this.prisma.$transaction([
-      this.prisma.payment.update({
-        where: { id: payment.id },
+      this.prisma.payment.updateMany({
+        where: { order_id: data.orderId, franchise_id: franchiseId },
         data: {
           payment_status: 'success',
           transaction_id: data.paymentId,
         }
       }),
-      // Create enrollment if not exists
-      this.prisma.enrollment.upsert({
-        where: {
-          student_id_course_id: {
+      ...payments.map((payment) =>
+        this.prisma.enrollment.upsert({
+          where: {
+            student_id_course_id: {
+              student_id: payment.user_id,
+              course_id: payment.course_id,
+            }
+          },
+          create: {
             student_id: payment.user_id,
-            course_id: payment.course_id
+            course_id: payment.course_id,
+            franchise_id: franchiseId,
+            payment_id: payment.id,
+            status: 'active',
+            progress_percentage: 0,
+          },
+          update: {
+            status: 'active',
+            payment_id: payment.id,
           }
-        },
-        create: {
-          student_id: payment.user_id,
-          course_id: payment.course_id,
-          franchise_id: franchiseId,
-          payment_id: payment.id,
-          status: 'active',
-          progress_percentage: 0,
-        },
-        update: {
-          status: 'active',
-          payment_id: payment.id,
-        }
-      }),
-      // Increment coupon usage if coupon exists
-      ...(payment.coupon_id ? [
+        })
+      ),
+      // Increment coupon usage once (if any payment has coupon)
+      ...(payments[0]?.coupon_id ? [
         this.prisma.coupon.update({
-          where: { id: payment.coupon_id },
+          where: { id: payments[0].coupon_id },
           data: { times_used: { increment: 1 } }
         })
       ] : [])

@@ -1,62 +1,116 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CreditCard, Lock, ShoppingBag, CheckCircle, Loader2, Tag, ArrowLeft } from "lucide-react";
+import { Lock, ShoppingBag, ArrowLeft, Loader2, CheckCircle, Tag, X } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useFranchise } from "../contexts/FranchiseContext";
+import { razorpayService } from "@/lib/api/razorpayService";
 import { toast } from "sonner";
-import { transactionsService } from "@/lib/api/transactionsService";
+
+// Extend window to hold Razorpay
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
+  const { branding } = useFranchise();
+
   const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number; id: string } | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    city: "",
-    zip: "",
-    country: "India", // Default
-  });
+  // Load Razorpay SDK on mount
+  useEffect(() => {
+    loadRazorpayScript().then(setScriptLoaded);
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const finalTotal = couponApplied ? Math.max(0, total - couponApplied.discount) : total;
 
   const handlePayment = async () => {
-    // Basic validation
-    if (!formData.firstName || !formData.email || !formData.address) {
-      toast.error("Please fill in all required fields");
+    if (!scriptLoaded) {
+      toast.error("Payment gateway is loading. Please wait.");
+      return;
+    }
+    if (!user) {
+      toast.error("Please log in to continue.");
       return;
     }
 
     setProcessing(true);
     try {
-      await transactionsService.createTransaction({
-        courseIds: items.map(item => item.course.id),
-        amount: total,
-        paymentMethod: paymentMethod, // 'card' or 'upi'
-        billingDetails: {
-          billing_name: `${formData.firstName} ${formData.lastName}`.trim(),
-          billing_email: formData.email,
-          billing_address: formData.address,
-          billing_city: formData.city,
-          billing_state: formData.city, // We didn't collect State in the minimalist form, reusing city or empty string as fallback
-          billing_zip: formData.zip || "000000",
-          billing_country: formData.country,
-        }
-      });
+      // 1. Create order on backend
+      const orderData = await razorpayService.createOrder(
+        items.map((i) => i.course.id),
+        finalTotal,
+        couponApplied?.id
+      );
 
-      clearCart();
-      toast.success("Payment successful! 🎉");
-      navigate("/order-success");
-    } catch (error) {
-      console.error(error);
-      toast.error("Payment failed. Please try again.");
-    } finally {
+      // 2. Open Razorpay checkout popup
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        order_id: orderData.orderId,
+        name: branding?.lms_name || "LMS Platform",
+        description: items.length === 1 ? items[0].course.title : `${items.length} Courses`,
+        image: branding?.logo_url || undefined,
+        prefill: {
+          name: user.name,
+          email: user.email,
+        },
+        theme: {
+          color: branding?.primary_color || "#a435f0",
+        },
+        handler: async (response: any) => {
+          try {
+            // 3. Verify payment on backend
+            await razorpayService.verifyPayment({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+            });
+
+            clearCart();
+            toast.success("Payment successful! 🎉");
+            navigate("/order-success");
+          } catch {
+            toast.error("Payment verification failed. Please contact support.");
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", () => {
+        toast.error("Payment failed. Please try again.");
+        setProcessing(false);
+      });
+      rzp.open();
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Failed to initiate payment. Check Razorpay configuration.";
+      toast.error(msg);
       setProcessing(false);
     }
   };
@@ -97,136 +151,45 @@ export default function Checkout() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Left Column - Forms */}
-          <div className="space-y-8">
-            {/* Billing Address */}
-            <div>
-              <h2 className="text-xl font-bold mb-4">Billing Address</h2>
-              <form className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold pl-1 text-[#2d2f31]">First Name</label>
-                    <input
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] text-sm"
-                      type="text" required
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold pl-1 text-[#2d2f31]">Last Name</label>
-                    <input
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] text-sm"
-                      type="text" required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold pl-1 text-[#2d2f31]">Email</label>
-                  <input
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] text-sm"
-                    type="email" required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold pl-1 text-[#2d2f31]">Address</label>
-                  <input
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] text-sm"
-                    type="text" required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold pl-1 text-[#2d2f31]">City</label>
-                    <input
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] text-sm"
-                      type="text" required
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold pl-1 text-[#2d2f31]">Country</label>
-                    <select
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      className="w-full border border-[#2d2f31] rounded-none p-3 outline-none focus:ring-1 focus:ring-[#2d2f31] bg-white text-sm"
-                    >
-                      <option value="India">India</option>
-                      <option value="USA">USA</option>
-                      <option value="UK">UK</option>
-                    </select>
-                  </div>
-                </div>
-              </form>
-            </div>
 
-            {/* Payment Method */}
+          {/* Left Column - Order Details */}
+          <div className="space-y-8">
+            {/* Course Items */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-              <div className="border border-[#d1d7dc] rounded-sm overflow-hidden">
-                <div className="p-4 flex items-center gap-3 border-b border-[#d1d7dc] bg-[#f7f9fa]">
-                  <input
-                    type="radio"
-                    name="payment"
-                    id="card"
-                    checked={paymentMethod === "card"}
-                    onChange={() => setPaymentMethod("card")}
-                    className="w-4 h-4 text-[#2d2f31] focus:ring-[#2d2f31] accent-[#2d2f31]"
-                  />
-                  <label htmlFor="card" className="flex items-center gap-2 font-bold cursor-pointer text-sm">
-                    <CreditCard className="w-5 h-5" /> Credit/Debit Card
-                  </label>
-                </div>
-                {paymentMethod === "card" && (
-                  <div className="p-6 bg-white space-y-4">
-                    <input type="text" placeholder="Name on Card" className="w-full border border-[#d1d7dc] p-3 rounded-none outline-none text-sm placeholder-gray-500" />
-                    <input type="text" placeholder="Card Number" className="w-full border border-[#d1d7dc] p-3 rounded-none outline-none text-sm placeholder-gray-500" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="MM/YY" className="w-full border border-[#d1d7dc] p-3 rounded-none outline-none text-sm placeholder-gray-500" />
-                      <input type="text" placeholder="CVC" className="w-full border border-[#d1d7dc] p-3 rounded-none outline-none text-sm placeholder-gray-500" />
+              <h2 className="text-xl font-bold mb-4">Order Details</h2>
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={item.id} className="flex gap-4 border border-[#d1d7dc] p-3">
+                    <img
+                      src={item.course.thumbnail_url || "/placeholder.png"}
+                      alt={item.course.title}
+                      className="w-20 h-14 object-cover bg-gray-100 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-sm line-clamp-2">{item.course.title}</h4>
+                      <p className="text-sm text-[#a435f0] font-bold mt-1">₹{item.course.price.toLocaleString()}</p>
                     </div>
                   </div>
-                )}
-                <div className="p-4 flex items-center gap-3 bg-[#f7f9fa] border-t border-[#d1d7dc]">
-                  <input
-                    type="radio"
-                    name="payment"
-                    id="upi"
-                    checked={paymentMethod === "upi"}
-                    onChange={() => setPaymentMethod("upi")}
-                    className="w-4 h-4 text-[#2d2f31] focus:ring-[#2d2f31] accent-[#2d2f31]"
-                  />
-                  <label htmlFor="upi" className="flex items-center gap-2 font-bold cursor-pointer text-sm">
-                    <span>UPI / NetBanking</span>
-                  </label>
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="pt-4">
-              <h2 className="text-xl font-bold mb-4">Order Details</h2>
-              {items.map((item) => (
-                <div key={item.id} className="flex gap-4 mb-4">
-                  <img src={item.course.thumbnail_url} alt="" className="w-16 h-16 object-cover bg-gray-100 border border-[#d1d7dc]" />
-                  <div>
-                    <h4 className="font-bold text-sm line-clamp-2">{item.course.title}</h4>
-                    <p className="text-xs text-[#6a6f73]">₹{item.course.price.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
+            {/* Billing Info (display only - pre-filled from account) */}
+            <div className="bg-[#f7f9fa] border border-[#d1d7dc] p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="font-bold text-sm">Billing to your account</span>
+              </div>
+              <p className="text-sm text-[#6a6f73]">{user?.name}</p>
+              <p className="text-sm text-[#6a6f73]">{user?.email}</p>
+            </div>
+
+            {/* Payment Info */}
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded">
+              <p className="text-sm text-blue-700 font-semibold">💳 Powered by Razorpay</p>
+              <p className="text-xs text-blue-600 mt-1">
+                You'll be redirected to Razorpay's secure payment page. Supports UPI, Cards, Net Banking, Wallets & more.
+              </p>
             </div>
           </div>
 
@@ -234,39 +197,83 @@ export default function Checkout() {
           <div>
             <div className="bg-[#f7f9fa] p-6 border border-[#d1d7dc] sticky top-24">
               <h2 className="text-xl font-bold mb-6">Summary</h2>
+
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-[#2d2f31] text-sm">
                   <span className="font-bold">Original Price:</span>
                   <span>₹{total.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-[#2d2f31] text-sm">
-                  <span className="font-bold">Discounts:</span>
-                  <span>-₹0</span>
-                </div>
-                <div className="h-px bg-[#d1d7dc] my-2"></div>
+                {couponApplied && (
+                  <div className="flex justify-between text-green-600 text-sm">
+                    <span className="font-bold">Coupon ({couponApplied.code}):</span>
+                    <span>-₹{couponApplied.discount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="h-px bg-[#d1d7dc] my-2" />
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total:</span>
-                  <span>₹{total.toLocaleString()}</span>
+                  <span>₹{finalTotal.toLocaleString()}</span>
                 </div>
               </div>
 
+              {/* Coupon Code */}
+              {!couponApplied && (
+                <div className="mb-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="flex-1 border border-[#d1d7dc] p-2 text-sm outline-none focus:border-[#2d2f31]"
+                    />
+                    <button
+                      onClick={() => toast.info("Coupon support coming soon!")}
+                      className="px-3 py-2 bg-white border border-[#2d2f31] text-sm font-bold hover:bg-gray-50 flex items-center gap-1"
+                    >
+                      <Tag className="w-3 h-3" /> Apply
+                    </button>
+                  </div>
+                </div>
+              )}
+              {couponApplied && (
+                <div className="mb-4 flex items-center justify-between bg-green-50 border border-green-200 p-2 text-sm">
+                  <span className="text-green-700 font-bold">{couponApplied.code} applied ✓</span>
+                  <button onClick={() => setCouponApplied(null)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="text-xs text-[#6a6f73] mb-6 text-center px-4">
-                By completing your purchase you agree to these <a href="#" className="underline text-[#a435f0]">Terms of Service</a>.
+                By completing your purchase you agree to our{" "}
+                <Link to="/terms" className="underline text-[#a435f0]">Terms of Service</Link>.
               </div>
 
               <button
                 onClick={handlePayment}
-                disabled={processing}
-                className="w-full py-3 bg-[#a435f0] text-white font-bold text-md hover:bg-[#8710d8] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                disabled={processing || !scriptLoaded}
+                className="w-full py-4 bg-[#a435f0] text-white font-bold text-md hover:bg-[#8710d8] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
               >
                 {processing ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Opening Payment...
+                  </>
+                ) : !scriptLoaded ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading...
                   </>
                 ) : (
-                  "Complete Checkout"
+                  `Pay ₹${finalTotal.toLocaleString()} with Razorpay`
                 )}
               </button>
+
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#6a6f73]">
+                <Lock className="w-3 h-3" />
+                <span>256-bit SSL secured</span>
+              </div>
             </div>
           </div>
         </div>
