@@ -119,7 +119,7 @@ export class PdfGeneratorService {
             const certData: CertificateData = {
                 studentName: certificate.user.name,
                 courseName: certificate.course.title,
-                instructorName: certificate.course.instructor.user.name,
+                instructorName: certificate.course.instructor?.user?.name || 'Instructor',
                 completionDate: new Date(certificate.issued_at).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -131,10 +131,24 @@ export class PdfGeneratorService {
             };
 
             // Get template config
-            const templateConfig = certificate.course.certificate_template?.template_config as any as TemplateConfig;
+            let templateConfig = certificate.course.certificate_template?.template_config as any as TemplateConfig;
 
-            if (!templateConfig) {
-                throw new Error('Certificate template not found');
+            if (!templateConfig || !templateConfig.elements || templateConfig.elements.length === 0) {
+                // Provide a default template if none is configured
+                templateConfig = {
+                    canvas: { width: 800, height: 600, backgroundColor: '#ffffff' },
+                    elements: [
+                        { id: '1', type: 'text', x: 400, y: 100, content: 'CERTIFICATE OF COMPLETION', style: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', color: '#1a365d' } },
+                        { id: '2', type: 'text', x: 400, y: 180, content: 'This is proudly presented to', style: { fontSize: 16, textAlign: 'center', color: '#4a5568' } },
+                        { id: '3', type: 'variable', x: 400, y: 250, content: '{student_name}', style: { fontSize: 40, fontWeight: 'bold', textAlign: 'center', color: '#a435f0', fontFamily: 'Georgia, serif' } },
+                        { id: '4', type: 'text', x: 400, y: 320, content: 'For successfully completing the course', style: { fontSize: 16, textAlign: 'center', color: '#4a5568' } },
+                        { id: '5', type: 'variable', x: 400, y: 380, content: '{course_name}', style: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: '#2d3748' } },
+                        { id: '6', type: 'variable', x: 400, y: 440, content: 'By {instructor_name}', style: { fontSize: 16, textAlign: 'center', color: '#4a5568' } },
+                        { id: '7', type: 'variable', x: 200, y: 520, content: 'Date: {completion_date}', style: { fontSize: 14, textAlign: 'left', color: '#718096' } },
+                        { id: '8', type: 'variable', x: 600, y: 520, content: 'ID: {certificate_number}', style: { fontSize: 14, textAlign: 'right', color: '#718096' } },
+                        { id: '9', type: 'qrcode', x: 400, y: 520, width: 80, height: 80, content: '{qr_validation_url}', style: {} }
+                    ]
+                };
             }
 
             // Generate HTML for certificate
@@ -292,8 +306,14 @@ export class PdfGeneratorService {
         try {
             // Launch browser
             browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                headless: 'new',
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
+                    '--disable-software-rasterizer'
+                ],
             });
 
             const page = await browser.newPage();
