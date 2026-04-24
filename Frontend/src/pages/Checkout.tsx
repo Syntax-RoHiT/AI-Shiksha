@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Lock, ShoppingBag, ArrowLeft, Loader2, CheckCircle, Tag, X } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Lock, ShoppingBag, ArrowLeft, Loader2, CheckCircle,
+  Tag, X, Shield, CreditCard, Smartphone, ArrowRight
+} from "lucide-react";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useFranchise } from "../contexts/FranchiseContext";
 import { razorpayService } from "@/lib/api/razorpayService";
 import { toast } from "sonner";
+import Footer from "@/components/marketing/Footer";
 
-// Extend window to hold Razorpay
 declare global {
-  interface Window {
-    Razorpay: any;
-  }
+  interface Window { Razorpay: any; }
 }
 
 function loadRazorpayScript(): Promise<boolean> {
@@ -36,7 +37,6 @@ export default function Checkout() {
   const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number; id: string } | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // Load Razorpay SDK on mount
   useEffect(() => {
     loadRazorpayScript().then(setScriptLoaded);
   }, []);
@@ -44,25 +44,17 @@ export default function Checkout() {
   const finalTotal = couponApplied ? Math.max(0, total - couponApplied.discount) : total;
 
   const handlePayment = async () => {
-    if (!scriptLoaded) {
-      toast.error("Payment gateway is loading. Please wait.");
-      return;
-    }
-    if (!user) {
-      toast.error("Please log in to continue.");
-      return;
-    }
+    if (!scriptLoaded) { toast.error("Payment gateway is loading. Please wait."); return; }
+    if (!user) { toast.error("Please log in to continue."); return; }
 
     setProcessing(true);
     try {
-      // 1. Create order on backend
       const orderData = await razorpayService.createOrder(
         items.map((i) => i.course.id),
         finalTotal,
         couponApplied?.id
       );
 
-      // 2. Open Razorpay checkout popup
       const options = {
         key: orderData.keyId,
         amount: orderData.amount,
@@ -71,22 +63,15 @@ export default function Checkout() {
         name: branding?.lms_name || "LMS Platform",
         description: items.length === 1 ? items[0].course.title : `${items.length} Courses`,
         image: branding?.logo_url || undefined,
-        prefill: {
-          name: user.name,
-          email: user.email,
-        },
-        theme: {
-          color: branding?.primary_color || "#a435f0",
-        },
+        prefill: { name: user.name, email: user.email },
+        theme: { color: branding?.primary_color || "#a435f0" },
         handler: async (response: any) => {
           try {
-            // 3. Verify payment on backend
             await razorpayService.verifyPayment({
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
             });
-
             clearCart();
             toast.success("Payment successful! 🎉");
             navigate("/order-success");
@@ -117,167 +102,236 @@ export default function Checkout() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-[#2d2f31]">
-        <div className="w-24 h-24 bg-[#f7f9fa] rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag className="w-10 h-10 text-[#2d2f31]" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Cart is Empty</h2>
-        <p className="text-[#6a6f73] mb-6">Please add some courses first.</p>
-        <Link to="/courses">
-          <button className="bg-[#a435f0] text-white font-bold py-3 px-8 hover:bg-[#8710d8] transition-colors">
+      <div className="min-h-screen bg-[#fbfcfd] flex flex-col items-center justify-center p-6">
+        <div className="glass-card bg-white/40 backdrop-blur-xl border border-gray-100/50 rounded-3xl p-16 text-center shadow-lg max-w-md animate-in fade-in zoom-in-95 duration-700">
+          <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/10 shadow-inner">
+            <ShoppingBag className="w-10 h-10 text-primary opacity-50" />
+          </div>
+          <h2 className="headline-serif text-2xl text-text-main mb-3 font-light">Nothing to Checkout</h2>
+          <p className="text-text-muted font-light mb-8">Your cart is empty. Add some courses before checking out.</p>
+          <button
+            onClick={() => navigate("/courses")}
+            className="bg-primary hover:bg-primary/90 text-white tracking-widest uppercase text-xs font-bold py-3.5 px-8 rounded-full transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5"
+          >
             Browse Courses
           </button>
-        </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#2d2f31]">
-      {/* Header */}
-      <div className="border-b border-[#d1d7dc] sticky top-0 bg-white z-40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/cart" className="flex items-center gap-2 text-[#a435f0] hover:text-[#8710d8] font-bold text-sm">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Cart
-          </Link>
-          <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-[#6a6f73]" />
-            <span className="font-bold text-[#6a6f73] text-sm hidden sm:inline">Secure Checkout</span>
+    <div className="min-h-screen bg-[#fbfcfd] text-text-main relative overflow-x-hidden flex flex-col">
+      {/* Ambient Background */}
+      <div className="absolute top-[0%] left-[20%] w-[600px] h-[600px] bg-primary opacity-[0.03] rounded-full blur-[120px] mix-blend-multiply pointer-events-none -z-10" />
+      <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-[#a12e70] opacity-[0.02] rounded-full blur-[100px] mix-blend-multiply pointer-events-none -z-10" />
+
+      {/* Hero Header */}
+      <div className="relative pt-24 pb-8 px-4 sm:px-6 z-20">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="text-center sm:text-left">
+            <h1 className="headline-serif text-3xl sm:text-4xl lg:text-5xl font-light text-text-main tracking-tight mb-2 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              Secure Checkout
+            </h1>
+            <span className="text-text-muted font-light text-sm tracking-widest uppercase">
+              {items.length} {items.length === 1 ? "Program" : "Programs"} · ₹{finalTotal.toLocaleString()}
+            </span>
           </div>
+          <button
+            onClick={() => navigate("/cart")}
+            className="flex items-center gap-2 text-[10px] tracking-widest uppercase font-bold text-primary hover:opacity-80 transition-opacity bg-white/50 backdrop-blur-md px-4 py-2.5 rounded-full border border-gray-200/50 shadow-sm"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Back to Cart
+          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full z-10 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Left Column - Order Details */}
-          <div className="space-y-8">
+          {/* Left Column - Order Items + Info */}
+          <div className="lg:col-span-2 space-y-5">
+
             {/* Course Items */}
-            <div>
-              <h2 className="text-xl font-bold mb-4">Order Details</h2>
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4 border border-[#d1d7dc] p-3">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="glass-card bg-white/60 backdrop-blur-xl border border-gray-100/50 rounded-2xl p-4 flex flex-col sm:flex-row gap-5 shadow-sm hover:shadow-md transition-all group"
+              >
+                {/* Thumbnail */}
+                <div className="flex-shrink-0 w-full sm:w-36 h-24 bg-primary/5 rounded-xl overflow-hidden relative border border-gray-100">
+                  {item.course.thumbnail_url ? (
                     <img
-                      src={item.course.thumbnail_url || "/placeholder.png"}
+                      src={item.course.thumbnail_url}
                       alt={item.course.title}
-                      className="w-20 h-14 object-cover bg-gray-100 shrink-0"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-sm line-clamp-2">{item.course.title}</h4>
-                      <p className="text-sm text-[#a435f0] font-bold mt-1">₹{item.course.price.toLocaleString()}</p>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-primary opacity-20" />
                     </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
+                  <div>
+                    <h3 className="headline-serif text-base text-text-main line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                      {item.course.title}
+                    </h3>
+                    {item.course.instructor && (
+                      <p className="text-xs text-text-muted font-light tracking-wide mt-1">
+                        By {item.course.instructor.user.name}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-gray-100/50 pt-2">
+                    <span className="text-[9px] tracking-widest uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      Included
+                    </span>
+                    <span className="font-bold text-text-main text-lg tracking-tight">
+                      {item.course.price > 0 ? `₹${item.course.price.toLocaleString()}` : "Free"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Account Info Card */}
+            <div className="glass-card bg-white/60 backdrop-blur-xl border border-gray-100/50 rounded-2xl p-5 shadow-sm">
+              <p className="text-[10px] tracking-widest uppercase font-bold text-text-muted mb-3">Billing Identity</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold text-sm shrink-0">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-text-main text-sm">{user?.name}</p>
+                  <p className="text-xs text-text-muted font-light">{user?.email}</p>
+                </div>
+                <div className="ml-auto">
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Methods Info */}
+            <div className="glass-card bg-white/40 backdrop-blur-xl border border-gray-100/50 rounded-2xl p-5 shadow-sm">
+              <p className="text-[10px] tracking-widest uppercase font-bold text-text-muted mb-3">Accepted via Razorpay</p>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { icon: <CreditCard className="w-4 h-4" />, label: "Cards" },
+                  { icon: <Smartphone className="w-4 h-4" />, label: "UPI" },
+                  { icon: <Shield className="w-4 h-4" />, label: "NetBanking" },
+                  { icon: <Tag className="w-4 h-4" />, label: "Wallets" },
+                ].map(({ icon, label }) => (
+                  <div key={label} className="flex items-center gap-1.5 text-xs text-text-muted font-light bg-white/60 border border-gray-100 rounded-full px-3 py-1.5">
+                    <span className="text-primary">{icon}</span>
+                    {label}
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Billing Info (display only - pre-filled from account) */}
-            <div className="bg-[#f7f9fa] border border-[#d1d7dc] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="font-bold text-sm">Billing to your account</span>
-              </div>
-              <p className="text-sm text-[#6a6f73]">{user?.name}</p>
-              <p className="text-sm text-[#6a6f73]">{user?.email}</p>
-            </div>
-
-            {/* Payment Info */}
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-              <p className="text-sm text-blue-700 font-semibold">💳 Powered by Razorpay</p>
-              <p className="text-xs text-blue-600 mt-1">
-                You'll be redirected to Razorpay's secure payment page. Supports UPI, Cards, Net Banking, Wallets & more.
-              </p>
-            </div>
           </div>
 
           {/* Right Column - Summary */}
-          <div>
-            <div className="bg-[#f7f9fa] p-6 border border-[#d1d7dc] sticky top-24">
-              <h2 className="text-xl font-bold mb-6">Summary</h2>
+          <div className="lg:col-span-1">
+            <div className="glass-card bg-white/70 backdrop-blur-2xl border border-primary/10 shadow-xl rounded-3xl p-8 sticky top-[100px]">
+              <h3 className="text-[10px] tracking-widest uppercase font-bold text-text-muted mb-4">Payment Summary</h3>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-[#2d2f31] text-sm">
-                  <span className="font-bold">Original Price:</span>
+              {/* Total Amount */}
+              <div className="flex items-end gap-3 mb-1">
+                <h2 className="headline-serif text-5xl font-light text-text-main tracking-tight">
+                  ₹{finalTotal.toLocaleString()}
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 mb-8">
+                <p className="text-sm text-text-muted line-through font-light">₹{(total * 2).toLocaleString()}</p>
+                <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-sm">50% off</span>
+              </div>
+
+              {/* Breakdown */}
+              <div className="space-y-2 mb-6 text-sm">
+                <div className="flex justify-between text-text-muted font-light">
+                  <span>Original Price</span>
                   <span>₹{total.toLocaleString()}</span>
                 </div>
                 {couponApplied && (
-                  <div className="flex justify-between text-green-600 text-sm">
-                    <span className="font-bold">Coupon ({couponApplied.code}):</span>
+                  <div className="flex justify-between text-emerald-600 font-light">
+                    <span>Coupon ({couponApplied.code})</span>
                     <span>-₹{couponApplied.discount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="h-px bg-[#d1d7dc] my-2" />
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total:</span>
+                <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-text-main">
+                  <span>Total</span>
                   <span>₹{finalTotal.toLocaleString()}</span>
                 </div>
               </div>
 
-              {/* Coupon Code */}
-              {!couponApplied && (
-                <div className="mb-4">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="flex-1 border border-[#d1d7dc] p-2 text-sm outline-none focus:border-[#2d2f31]"
-                    />
-                    <button
-                      onClick={() => toast.info("Coupon support coming soon!")}
-                      className="px-3 py-2 bg-white border border-[#2d2f31] text-sm font-bold hover:bg-gray-50 flex items-center gap-1"
-                    >
-                      <Tag className="w-3 h-3" /> Apply
-                    </button>
-                  </div>
-                </div>
-              )}
-              {couponApplied && (
-                <div className="mb-4 flex items-center justify-between bg-green-50 border border-green-200 p-2 text-sm">
-                  <span className="text-green-700 font-bold">{couponApplied.code} applied ✓</span>
-                  <button onClick={() => setCouponApplied(null)} className="text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              <div className="text-xs text-[#6a6f73] mb-6 text-center px-4">
-                By completing your purchase you agree to our{" "}
-                <Link to="/terms" className="underline text-[#a435f0]">Terms of Service</Link>.
-              </div>
-
+              {/* Pay Button */}
               <button
                 onClick={handlePayment}
                 disabled={processing || !scriptLoaded}
-                className="w-full py-4 bg-[#a435f0] text-white font-bold text-md hover:bg-[#8710d8] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                className="w-full bg-primary text-white font-bold tracking-widest uppercase text-xs py-4 rounded-xl hover:bg-primary/90 transition-all shadow-md flex items-center justify-center gap-2 mb-5 group hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {processing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Opening Payment...
-                  </>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Opening Payment...</>
                 ) : !scriptLoaded ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading...
-                  </>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Loading Gateway...</>
                 ) : (
-                  `Pay ₹${finalTotal.toLocaleString()} with Razorpay`
+                  <>
+                    Pay ₹{finalTotal.toLocaleString()}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
                 )}
               </button>
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#6a6f73]">
+              {/* Trust Badge */}
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-text-muted tracking-wide mb-6">
                 <Lock className="w-3 h-3" />
-                <span>256-bit SSL secured</span>
+                <span>256-bit SSL · Secured by Razorpay</span>
               </div>
+
+              {/* Coupon Code */}
+              <div className="border-t border-gray-100/50 pt-6">
+                <p className="text-[10px] tracking-widest uppercase font-bold text-text-muted mb-3 ml-1">Promotional Code</p>
+                {couponApplied ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 text-sm">
+                    <span className="text-emerald-700 font-bold">{couponApplied.code} ✓</span>
+                    <button onClick={() => setCouponApplied(null)} className="text-gray-400 hover:text-gray-600 ml-2">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Access Code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="flex-1 pl-4 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white/50 focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm font-light transition-all shadow-sm"
+                    />
+                    <button
+                      onClick={() => toast.info("Coupon support coming soon!")}
+                      className="bg-text-main text-white font-bold tracking-widest text-[10px] uppercase px-4 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-sm whitespace-nowrap"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Terms */}
+              <p className="text-[10px] text-text-muted font-light text-center mt-5 leading-relaxed">
+                By completing your purchase you agree to our{" "}
+                <Link to="/terms" className="underline text-primary">Terms of Service</Link>.
+              </p>
             </div>
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
