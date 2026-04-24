@@ -1,11 +1,15 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 import Razorpay from 'razorpay';
 
 @Injectable()
 export class RazorpayService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async getSettings(franchiseId: string) {
     const settings = await this.prisma.razorpaySetting.findUnique({
@@ -166,6 +170,35 @@ export class RazorpayService {
         })
       ] : [])
     ]);
+
+    // Send purchase confirmation emails (fire-and-forget, non-blocking)
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: payments[0].user_id },
+        select: { email: true, name: true, franchise_id: true },
+      });
+
+      if (user) {
+        const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+        const courseIds = payments.map((p) => p.course_id);
+        const courses = await this.prisma.course.findMany({
+          where: { id: { in: courseIds } },
+          select: { title: true },
+        });
+        const courseTitle = courses.length === 1
+          ? courses[0].title
+          : `${courses.length} Courses`;
+
+        this.mailService.sendCoursePurchaseEmail(
+          { email: user.email, name: user.name, franchise_id: user.franchise_id },
+          courseTitle,
+          `₹${totalAmount.toLocaleString('en-IN')}`,
+        );
+      }
+    } catch (emailError) {
+      // Don't fail the payment verification if email sending fails
+      console.error('Failed to send purchase confirmation email:', emailError);
+    }
 
     return { success: true };
   }
