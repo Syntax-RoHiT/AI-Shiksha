@@ -46,8 +46,12 @@ export class CouponsController {
 
   // Public endpoint for students to validate coupons during checkout
   @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Post('validate')
-  validateCoupon(@Req() req, @Body() body: { code: string, courseId: string }) {
-    return this.couponsService.validate(req.user.franchise_id, body.code, body.courseId, req.user.id);
+  validateCoupon(@Req() req, @Body() body: { code: string, courseId?: string, courseIds?: string[] }) {
+    if (body.courseIds && body.courseIds.length > 0) {
+      return this.couponsService.validateBatch(req.user.franchise_id, body.code, body.courseIds, req.user.id);
+    }
+    return this.couponsService.validate(req.user.franchise_id, body.code, body.courseId || '', req.user.id);
   }
 }

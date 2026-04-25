@@ -27,7 +27,7 @@ export class AssistantService {
     private readonly rateLimitService: RateLimitService,
   ) { }
 
-  async chat(userId: string, tenantId: string | null, chatDto: ChatDto, requestDomain?: string | null) {
+  async chat(userId: string, tenantId: string | null, chatDto: ChatDto, requestDomain?: string | null, userRole?: string) {
     const start = Date.now();
     const { courseId, message } = chatDto;
 
@@ -138,21 +138,25 @@ export class AssistantService {
         }
         courseTitle = course.title;
 
-        // 1b. Validate Enrollment (Strict: must be active)
-        const enrollment = await this.prisma.enrollment.findUnique({
-          where: {
-            student_id_course_id: {
-              student_id: userId,
-              course_id: courseId,
+        // 1b. Validate Enrollment (Strict: must be active) - Bypass for Admins/Instructors
+        const isAdminOrInstructor = ['ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'].includes(userRole?.toUpperCase() || '');
+        
+        if (!isAdminOrInstructor) {
+          const enrollment = await this.prisma.enrollment.findUnique({
+            where: {
+              student_id_course_id: {
+                student_id: userId,
+                course_id: courseId,
+              },
             },
-          },
-          select: { status: true },
-        });
+            select: { status: true },
+          });
 
-        if (!enrollment || enrollment.status !== 'active') {
-          throw new ForbiddenException(
-            'You must have an active enrollment in this course to use the AI assistant.',
-          );
+          if (!enrollment || enrollment.status !== 'active') {
+            throw new ForbiddenException(
+              'You must have an active enrollment in this course to use the AI assistant.',
+            );
+          }
         }
 
         // 1c. Find/Create Course Conversation

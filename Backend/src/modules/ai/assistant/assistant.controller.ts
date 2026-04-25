@@ -23,6 +23,6 @@ export class AssistantController {
       || (req.headers['x-franchise-domain'] as string)
       || req.hostname
       || null;
-    return this.assistantService.chat(req.user.userId, tenantId, chatDto, requestDomain);
+    return this.assistantService.chat(req.user.userId, tenantId, chatDto, requestDomain, req.user.role);
   }
 }

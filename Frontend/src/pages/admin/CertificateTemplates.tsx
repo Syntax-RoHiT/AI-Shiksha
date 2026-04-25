@@ -515,20 +515,21 @@ export default function CertificateTemplatesPage() {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    {/* Mini Preview using simple scaling of the Canvas logic? 
-                                        Or just a placeholder if too expensive. 
-                                        Ideally we'd generate a thumbnail on save, but for now let's show a colored box.
-                                    */}
-                                    <div
-                                        className="w-full aspect-[4/3] rounded border bg-gray-50 relative overflow-hidden flex items-center justify-center text-muted-foreground text-xs"
-                                        style={{
+                                    {/* Mini Preview using simple scaling of the Canvas logic */}
+                                    <div className="w-full aspect-[4/3] rounded border bg-gray-50 relative overflow-hidden flex items-center justify-center pointer-events-none"
+                                         style={{ 
                                             backgroundColor: template.template_config?.canvas?.backgroundColor || '#fff',
-                                            backgroundImage: template.template_config?.canvas?.backgroundImage ? `url(${template.template_config.canvas.backgroundImage})` : 'none',
-                                            backgroundSize: 'cover'
-                                        }}
+                                         }}
                                     >
-                                        {!template.template_config?.canvas?.backgroundImage && "Preview"}
-                                        <div className="absolute inset-0 bg-black/5" />
+                                        <div className="transform scale-[0.35] origin-center">
+                                            <CertificateCanvas
+                                                config={template.template_config || DEFAULT_CONFIG}
+                                                selectedElementId={null}
+                                                onSelectElement={() => {}}
+                                                onUpdateElement={() => {}}
+                                                zoom={1}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="flex gap-2">

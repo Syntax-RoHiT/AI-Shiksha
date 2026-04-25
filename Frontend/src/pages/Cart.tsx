@@ -179,16 +179,10 @@ export default function Cart() {
 
                 <div className="pt-6 border-t border-gray-100/50">
                   <p className="text-[10px] tracking-widest uppercase font-bold text-text-muted mb-3 ml-1">Promotional Override</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Access Code"
-                      className="flex-1 w-full pl-4 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white/50 focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm font-light transition-all shadow-sm"
-                    />
-                    <button className="bg-text-main text-white font-bold tracking-widest text-[10px] uppercase px-4 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-sm">
-                      Apply
-                    </button>
-                  </div>
+                  <p className="text-xs text-text-muted mb-3">You can apply your promotional code during checkout.</p>
+                  <button onClick={handleCheckout} className="text-primary font-bold text-[10px] uppercase tracking-widest hover:underline">
+                    Proceed to enter code
+                  </button>
                 </div>
               </div>
             </div>

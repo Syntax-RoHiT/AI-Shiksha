@@ -119,4 +119,76 @@ export class CouponsService {
       coupon_id: coupon.id
     };
   }
+
+  async validateBatch(franchiseId: string, code: string, courseIds: string[], userId: string) {
+    const coupon = await this.prisma.coupon.findFirst({
+      where: { code, franchise_id: franchiseId, is_active: true }
+    });
+
+    if (!coupon) throw new NotFoundException('Invalid or expired coupon');
+
+    const now = new Date();
+    if (coupon.start_date && now < coupon.start_date) {
+      throw new BadRequestException('Coupon is not yet valid');
+    }
+    if (coupon.end_date && now > coupon.end_date) {
+      throw new BadRequestException('Coupon has expired');
+    }
+
+    if (coupon.usage_limit && coupon.times_used >= coupon.usage_limit) {
+      throw new BadRequestException('Coupon usage limit reached');
+    }
+
+    if (coupon.course_id && !courseIds.includes(coupon.course_id)) {
+      throw new BadRequestException('This coupon is not applicable for any courses in your cart');
+    }
+
+    const previousUsage = await this.prisma.payment.count({
+      where: { coupon_id: coupon.id, user_id: userId, payment_status: 'success' }
+    });
+
+    if (previousUsage > 0) {
+       throw new BadRequestException('You have already used this coupon');
+    }
+
+    // Filter which courses get the discount if coupon is course-specific
+    const eligibleCourseIds = coupon.course_id ? [coupon.course_id] : courseIds;
+    
+    const courses = await this.prisma.course.findMany({ 
+      where: { id: { in: eligibleCourseIds } } 
+    });
+    
+    if (courses.length === 0) throw new NotFoundException('Applicable courses not found in cart');
+
+    const originalPrice = courses.reduce((sum, c) => sum + c.price, 0);
+    const cartTotal = await this.prisma.course.findMany({ where: { id: { in: courseIds } } })
+                           .then(all => all.reduce((sum, c) => sum + c.price, 0));
+
+    if (coupon.min_order_value && cartTotal < coupon.min_order_value) {
+      throw new BadRequestException(`Minimum cart value of ₹${coupon.min_order_value} required`);
+    }
+
+    let discountAmount = 0;
+    if (coupon.discount_type === 'PERCENTAGE') {
+      discountAmount = (originalPrice * coupon.discount_value) / 100;
+      if (coupon.max_discount && discountAmount > coupon.max_discount) {
+        discountAmount = coupon.max_discount;
+      }
+    } else {
+      // FIXED_AMOUNT
+      discountAmount = coupon.discount_value;
+      // Cap at total price of eligible items
+      if (discountAmount > originalPrice) discountAmount = originalPrice;
+    }
+
+    const finalPrice = Math.max(0, cartTotal - discountAmount);
+
+    return {
+      valid: true,
+      original_price: cartTotal,
+      discount_amount: discountAmount,
+      final_price: finalPrice,
+      coupon_id: coupon.id
+    };
+  }
 }

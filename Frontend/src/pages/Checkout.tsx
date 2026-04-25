@@ -10,6 +10,7 @@ import { useFranchise } from "../contexts/FranchiseContext";
 import { razorpayService } from "@/lib/api/razorpayService";
 import { toast } from "sonner";
 import Footer from "@/components/marketing/Footer";
+import api from "@/lib/api";
 
 declare global {
   interface Window { Razorpay: any; }
@@ -42,6 +43,24 @@ export default function Checkout() {
   }, []);
 
   const finalTotal = couponApplied ? Math.max(0, total - couponApplied.discount) : total;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    try {
+      const courseIds = items.map(i => i.course.id);
+      const res = await api.post('/coupons/validate', { code: couponCode, courseIds });
+      
+      setCouponApplied({
+        code: couponCode,
+        discount: res.data.discount_amount,
+        id: res.data.coupon_id
+      });
+      toast.success("Coupon applied successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Invalid or expired coupon");
+      setCouponApplied(null);
+    }
+  };
 
   const handlePayment = async () => {
     if (!scriptLoaded) { toast.error("Payment gateway is loading. Please wait."); return; }
@@ -312,7 +331,7 @@ export default function Checkout() {
                       className="flex-1 pl-4 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white/50 focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm font-light transition-all shadow-sm"
                     />
                     <button
-                      onClick={() => toast.info("Coupon support coming soon!")}
+                      onClick={handleApplyCoupon}
                       className="bg-text-main text-white font-bold tracking-widest text-[10px] uppercase px-4 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-sm whitespace-nowrap"
                     >
                       Apply

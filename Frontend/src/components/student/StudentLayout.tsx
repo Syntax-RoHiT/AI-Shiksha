@@ -27,7 +27,7 @@ interface StudentLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/student" },
-  { icon: Search, label: "Browse Courses", href: "/student/catalog" },
+  { icon: Search, label: "Browse Courses", href: "/courses" },
   { icon: BookOpen, label: "My Learning", href: "/student/learning" },
   { icon: FileText, label: "Assignments", href: "/student/assignments" },
   { icon: MessageSquare, label: "Messages", href: "/student/messages" },

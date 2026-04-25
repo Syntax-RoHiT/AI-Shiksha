@@ -171,7 +171,7 @@ export class RazorpayService {
       ] : [])
     ]);
 
-    // Send purchase confirmation emails (fire-and-forget, non-blocking)
+    // Send purchase confirmation emails
     try {
       const user = await this.prisma.user.findUnique({
         where: { id: payments[0].user_id },
@@ -189,10 +189,15 @@ export class RazorpayService {
           ? courses[0].title
           : `${courses.length} Courses`;
 
-        this.mailService.sendCoursePurchaseEmail(
+        await this.mailService.sendCoursePurchaseEmail(
           { email: user.email, name: user.name, franchise_id: user.franchise_id },
           courseTitle,
           `₹${totalAmount.toLocaleString('en-IN')}`,
+        );
+        
+        await this.mailService.sendCourseEnrollmentEmail(
+          { email: user.email, name: user.name, franchise_id: user.franchise_id },
+          courseTitle
         );
       }
     } catch (emailError) {

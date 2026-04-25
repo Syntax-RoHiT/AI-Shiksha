@@ -20,11 +20,11 @@ export class MailService {
         const franchise = franchiseId
             ? await this.prisma.franchise.findUnique({
                 where: { id: franchiseId },
-                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true },
+                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true, domain: true },
             })
             : await this.prisma.franchise.findFirst({
                 where: { domain: 'localhost' },
-                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true },
+                select: { name: true, logo_url: true, primary_color: true, support_email: true, lms_name: true, domain: true },
             });
 
         const apiBase = (process.env.API_URL || process.env.FRONTEND_URL || 'https://iconsafetyinstitute.com').replace(/\/$/, '');
@@ -35,11 +35,16 @@ export class MailService {
             ? (rawLogoUrl.startsWith('http') ? rawLogoUrl : `${apiBase}${rawLogoUrl}`)
             : null;
 
+        const frontendUrl = franchise?.domain 
+            ? (franchise.domain === 'localhost' ? 'http://localhost:5173' : `https://${franchise.domain}`) 
+            : apiBase;
+
         return {
             brandName: franchise?.lms_name || franchise?.name || 'AI Shiksha',
             brandLogo,
             primaryColor: franchise?.primary_color || '#4f46e5',
             supportEmail: franchise?.support_email || undefined,
+            frontendUrl,
         };
     }
 
