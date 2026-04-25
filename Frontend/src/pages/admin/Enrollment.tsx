@@ -572,10 +572,7 @@ export default function EnrollmentPage() {
                                         <Badge variant="outline" className={cn("rounded-none uppercase tracking-widest text-[10px] px-2 py-1 border shrink-0", getStatusColor(enrollment.status))}>
                                             {enrollment.status}
                                         </Badge>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Progress</span>
-                                            <span className="text-xs font-black text-zinc-700 dark:text-zinc-300">{enrollment.progress}%</span>
-                                        </div>
+
                                     </div>
                                 </div>
 
