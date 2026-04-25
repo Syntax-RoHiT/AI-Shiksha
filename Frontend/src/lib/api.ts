@@ -590,7 +590,7 @@ export const Support = {
         const response = await api.get(`/support/tickets/${id}`);
         return response.data;
     },
-    addMessage: async (id: string, data: { message: string }) => {
+    addMessage: async (id: string, data: { message: string; image_url?: string }) => {
         const response = await api.post(`/support/tickets/${id}/messages`, data);
         return response.data;
     },
