@@ -562,7 +562,7 @@ export default function Support() {
                         <div className="p-4 border-t border-gray-100 bg-gray-50 text-center">
                             <div className="mx-auto w-fit px-4 py-2 rounded-full bg-green-50 border border-green-100 flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                <span className="text-sm font-medium text-green-700">This ticket has been resolved.</span>
+                                <span className="text-sm font-medium text-green-900">This ticket has been resolved.</span>
                             </div>
                         </div>
                     )}

@@ -472,7 +472,7 @@ export default function TicketsPage() {
             <div className="p-4 border-t border-border bg-muted/20 text-center">
               <div className="mx-auto w-fit px-4 py-2 rounded-full bg-accent/10 border border-accent/20 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-accent" />
-                <span className="text-sm font-medium text-accent">This ticket has been resolved.</span>
+                <span className="text-sm font-medium text-gray-900">This ticket has been resolved.</span>
               </div>
             </div>
           )}
