@@ -45,12 +45,8 @@ export class TenantMiddleware implements NestMiddleware {
             });
 
             if (franchise) {
-                // If it's the auto-created system franchise (localhost), treat as System Context
-                if (isSystemDomain) {
-                    (req as any).tenantId = null;
-                } else {
-                    (req as any).tenantId = franchise.id;
-                }
+                // We always attach the actual franchise ID, even for the system domain.
+                (req as any).tenantId = franchise.id;
                 (req as any).tenantBranding = franchise;
             } else {
                 // If it's not localhost and no franchise is found, it's an invalid franchise domain.
