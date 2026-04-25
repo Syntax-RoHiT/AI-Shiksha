@@ -109,7 +109,7 @@ export default function Support() {
             setTickets([createdTicket, ...tickets]);
             toast({
                 title: "Ticket Created",
-                description: `Support team has been notified. ID: TICK-₹{createdTicket.id.split('-')[0]}`,
+                description: `Support team has been notified. ID: TICK-${createdTicket.id.split('-')[0]}`,
             });
 
             setNewTicket({ subject: "", description: "", priority: "MEDIUM" });
@@ -377,8 +377,8 @@ export default function Support() {
                                             <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
                                             <div className="flex flex-wrap gap-2 mt-2">
                                                 <Badge variant="outline" className="font-normal text-xs bg-gray-50">TICK-{ticket.id.split('-')[0]}</Badge>
-                                                <Badge variant="outline" className={`font-normal text-xs border ₹{getStatusColor(ticket.status)}`}>{ticket.status.toUpperCase()}</Badge>
-                                                <Badge variant="outline" className={`font-normal text-xs border ₹{getPriorityColor(ticket.priority)}`}>{ticket.priority}</Badge>
+                                                <Badge variant="outline" className={`font-normal text-xs border ${getStatusColor(ticket.status)}`}>{ticket.status.toUpperCase()}</Badge>
+                                                <Badge variant="outline" className={`font-normal text-xs border ${getPriorityColor(ticket.priority)}`}>{ticket.priority}</Badge>
                                             </div>
                                         </div>
                                     </div>
@@ -445,7 +445,7 @@ export default function Support() {
                                 </SheetDescription>
                             </div>
                             {selectedTicket && (
-                                <Badge variant="outline" className={`₹{getStatusColor(selectedTicket.status)}`}>
+                                <Badge variant="outline" className={`${getStatusColor(selectedTicket.status)}`}>
                                     {selectedTicket.status.replace("_", " ").toUpperCase()}
                                 </Badge>
                             )}
@@ -466,7 +466,7 @@ export default function Support() {
                                     {selectedTicket.messages?.map((msg) => (
                                         <div
                                             key={msg.id}
-                                            className={`flex gap-3 max-w-[85%] ₹{!msg.is_admin ? "ml-auto flex-row-reverse" : "mr-auto"}`}
+                                            className={`flex gap-3 max-w-[85%] ${!msg.is_admin ? "ml-auto flex-row-reverse" : "mr-auto"}`}
                                         >
                                             <Avatar className="h-8 w-8 shrink-0">
                                                 {!msg.is_admin ? (
@@ -478,7 +478,7 @@ export default function Support() {
                                                 )}
                                             </Avatar>
 
-                                            <div className={`space-y-1.5 flex flex-col ₹{!msg.is_admin ? "items-end" : "items-start"}`}>
+                                            <div className={`space-y-1.5 flex flex-col ${!msg.is_admin ? "items-end" : "items-start"}`}>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-sm font-medium text-gray-900">
                                                         {msg.is_admin ? "Support Team" : "You"}
@@ -488,7 +488,7 @@ export default function Support() {
                                                     </span>
                                                 </div>
                                                 <div
-                                                    className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ₹{!msg.is_admin
+                                                    className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${!msg.is_admin
                                                         ? "bg-blue-600 text-white rounded-tr-sm"
                                                         : "bg-white border border-gray-100 rounded-tl-sm text-gray-800"
                                                         }`}

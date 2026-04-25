@@ -366,7 +366,7 @@ export default function TicketsPage() {
                   {selectedTicket.messages?.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex gap-3 max-w-[85%] ₹{msg.is_admin ? "ml-auto flex-row-reverse" : "mr-auto"}`}
+                      className={`flex gap-3 max-w-[85%] ${msg.is_admin ? "ml-auto flex-row-reverse" : "mr-auto"}`}
                     >
                       <Avatar className="h-8 w-8 shrink-0">
                         {msg.is_admin ? (
@@ -378,7 +378,7 @@ export default function TicketsPage() {
                         )}
                       </Avatar>
 
-                      <div className={`space-y-1.5 flex flex-col ₹{msg.is_admin ? "items-end" : "items-start"}`}>
+                      <div className={`space-y-1.5 flex flex-col ${msg.is_admin ? "items-end" : "items-start"}`}>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">
                             {msg.sender?.name || (msg.is_admin ? "Admin" : "Student")}
@@ -388,7 +388,7 @@ export default function TicketsPage() {
                           </span>
                         </div>
                         <div
-                          className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ₹{msg.is_admin
+                          className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.is_admin
                             ? "bg-lms-blue text-white rounded-tr-sm"
                             : "bg-white border border-gray-200 rounded-tl-sm text-gray-800"
                             }`}
