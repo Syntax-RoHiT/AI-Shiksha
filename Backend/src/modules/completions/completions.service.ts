@@ -325,7 +325,7 @@ export class CompletionsService {
             this.mailService.sendSupportNotification(
                 { email: student.email, name: student.name, franchise_id: student.franchise_id },
                 `Congratulations! You completed ${course.title}`,
-                `Hi ${student.name},\n\nYou have successfully completed the course "${course.title}". Keep up the great work!`,
+                `You have successfully completed the course "${course.title}". Keep up the great work!`,
             ).catch(err => console.error('Failed to send completion email:', err));
         }
 

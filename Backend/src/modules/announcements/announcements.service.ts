@@ -64,7 +64,7 @@ export class AnnouncementsService {
             this.mailService.sendSupportNotification(
                 { email: author.email, name: author.name, franchise_id: author.franchise_id },
                 `Announcement Published: "${announcement.title}"`,
-                `Hi ${author.name},\n\nYour announcement "${announcement.title}" has been published and sent to all enrolled students.\n\nContent:\n${announcement.content}`,
+                `Your announcement "${announcement.title}" has been published and sent to all enrolled students.\n\nContent:\n${announcement.content}`,
             ).catch(err => console.error("Error sending announcement confirmation email:", err));
         }
 
