@@ -25,9 +25,14 @@ export class AdminService {
     const totalRevenue = totalRevenueResult._sum.amount || 0;
 
     // Calculate real completion rate
-    const totalProgress = await this.prisma.courseProgress.count();
+    const totalProgress = await this.prisma.courseProgress.count({
+      where: franchiseId ? { user: { franchise_id: franchiseId } } : undefined
+    });
     const completedProgress = await this.prisma.courseProgress.count({
-      where: { completed: true },
+      where: { 
+        completed: true,
+        ...(franchiseId ? { user: { franchise_id: franchiseId } } : {})
+      },
     });
     const completionRate =
       totalProgress > 0
@@ -53,7 +58,7 @@ export class AdminService {
       },
       {
         label: 'Total Revenue',
-        value: `$${totalRevenue.toLocaleString()}`,
+        value: `₹${totalRevenue.toLocaleString('en-IN')}`,
         change: '+0%',
         icon: 'DollarSign',
         gradient: 'from-chart-3/15 to-chart-3/5',
