@@ -317,12 +317,12 @@ export default function TicketsPage() {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full sm:max-w-xl md:max-w-2xl flex flex-col p-0">
-          <SheetHeader className="p-6 border-b border-border/50 pb-4">
+        <SheetContent className="w-full sm:max-w-xl md:max-w-2xl flex flex-col p-0 bg-white text-gray-900">
+          <SheetHeader className="p-6 border-b border-gray-100 pb-4 bg-white">
             <div className="flex items-center justify-between">
               <div>
-                <SheetTitle className="text-lg pb-1">{selectedTicket?.subject}</SheetTitle>
-                <SheetDescription>
+                <SheetTitle className="text-lg pb-1 text-gray-900">{selectedTicket?.subject}</SheetTitle>
+                <SheetDescription className="text-gray-500">
                   Ticket ID: TICK-{selectedTicket?.id?.split('-')[0]} • Created {selectedTicket && new Date(selectedTicket.created_at).toLocaleDateString()}
                 </SheetDescription>
               </div>
@@ -350,7 +350,7 @@ export default function TicketsPage() {
                       <span className="text-xs text-muted-foreground">Original Request</span>
                     </div>
                   </div>
-                  <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed border border-border/50 text-foreground">
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm leading-relaxed border border-gray-100 text-gray-800">
                     {selectedTicket.description}
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export default function TicketsPage() {
                         <div
                           className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ₹{msg.is_admin
                             ? "bg-lms-blue text-white rounded-tr-sm"
-                            : "bg-background border border-border rounded-tl-sm text-foreground"
+                            : "bg-white border border-gray-200 rounded-tl-sm text-gray-800"
                             }`}
                         >
                           {msg.message}

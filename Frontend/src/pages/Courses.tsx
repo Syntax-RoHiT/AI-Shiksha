@@ -268,10 +268,10 @@ export default function Courses() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-                    <span className="text-lg font-bold text-foreground">${course.price}</span>
+                    <span className="text-lg font-bold text-foreground">₹{course.price}</span>
                     {course.revenue > 0 && (
                       <span className="text-sm text-lms-emerald">
-                        ${course.revenue.toLocaleString()} earned
+                        ₹{course.revenue.toLocaleString()} earned
                       </span>
                     )}
                   </div>
@@ -325,9 +325,9 @@ export default function Courses() {
                         <span className="text-sm text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="py-4 px-4 font-medium">${course.price}</td>
+                    <td className="py-4 px-4 font-medium">₹{course.price}</td>
                     <td className="py-4 px-4 text-lms-emerald font-medium">
-                      ${course.revenue.toLocaleString()}
+                      ₹{course.revenue.toLocaleString()}
                     </td>
                     <td className="py-4 px-4 text-right">
                       <DropdownMenu>

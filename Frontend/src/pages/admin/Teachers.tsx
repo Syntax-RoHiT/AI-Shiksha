@@ -177,7 +177,7 @@ export default function TeachersPage() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{teacher.courses}</TableCell>
                     <TableCell className="hidden sm:table-cell">{teacher.students.toLocaleString()}</TableCell>
-                    <TableCell className="hidden md:table-cell">${teacher.revenue.toLocaleString()}</TableCell>
+                    <TableCell className="hidden md:table-cell">₹{teacher.revenue.toLocaleString()}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       {teacher.rating > 0 && (
                         <div className="flex items-center gap-1">

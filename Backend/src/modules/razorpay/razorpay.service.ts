@@ -66,7 +66,8 @@ export class RazorpayService {
       key_secret: settings.key_secret,
     });
 
-    if (data.amount === 0) {
+    // Handle free orders (100% discount coupons)
+    if (data.amount < 1) {
       const orderId = `order_free_${Date.now()}_${userId.slice(0, 8)}`;
       await this.prisma.payment.createMany({
         data: data.courseIds.map((courseId) => ({
