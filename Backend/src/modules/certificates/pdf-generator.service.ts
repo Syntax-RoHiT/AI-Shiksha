@@ -184,16 +184,16 @@ export class PdfGeneratorService {
 
         // Replace variables in template elements
         const processedElements = templateConfig.elements.map((element) => {
-            let content = element.content;
+            let content = element.content || '';
 
             // Replace placeholders with actual data
-            content = content.replace('{student_name}', certData.studentName);
-            content = content.replace('{course_name}', certData.courseName);
-            content = content.replace('{instructor_name}', certData.instructorName);
-            content = content.replace('{completion_date}', certData.completionDate);
-            content = content.replace('{completion_time}', certData.completionTime);
-            content = content.replace('{certificate_number}', certData.certificateNumber);
-            content = content.replace('{qr_validation_url}', certData.qrValidationUrl);
+            content = content.replace('{student_name}', certData.studentName || '');
+            content = content.replace('{course_name}', certData.courseName || '');
+            content = content.replace('{instructor_name}', certData.instructorName || '');
+            content = content.replace('{completion_date}', certData.completionDate || '');
+            content = content.replace('{completion_time}', certData.completionTime || '');
+            content = content.replace('{certificate_number}', certData.certificateNumber || '');
+            content = content.replace('{qr_validation_url}', certData.qrValidationUrl || '');
 
             return { ...element, content };
         });
@@ -312,7 +312,9 @@ export class PdfGeneratorService {
                     '--disable-setuid-sandbox',
                     '--disable-dev-shm-usage',
                     '--disable-gpu',
-                    '--disable-software-rasterizer'
+                    '--disable-software-rasterizer',
+                    '--no-zygote',
+                    '--single-process'
                 ],
             });
 

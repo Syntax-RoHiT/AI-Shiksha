@@ -48,7 +48,14 @@ export class CertificatesController {
         @Res() res,
     ) {
         const userId = req.user.userId;
-        return this.certificatesService.downloadCertificateByCourse(courseId, userId, res, req.user.franchise_id);
+        try {
+            await this.certificatesService.downloadCertificateByCourse(courseId, userId, res, req.user.franchise_id);
+        } catch (error) {
+            console.error('Error generating certificate by course:', error);
+            if (!res.headersSent) {
+                return res.status(500).send(error.message || 'Failed to generate certificate');
+            }
+        }
     }
 
     @Get(':id/download')
@@ -60,10 +67,15 @@ export class CertificatesController {
         @Request() req,
         @Res() res,
     ) {
-        // const userId = req.user?.id || 1; 
         const userId = req.user.userId;
-        const result = await this.certificatesService.downloadCertificate(id, userId, res, req.user.franchise_id);
-        return result;
+        try {
+            await this.certificatesService.downloadCertificate(id, userId, res, req.user.franchise_id);
+        } catch (error) {
+            console.error('Error generating certificate by id:', error);
+            if (!res.headersSent) {
+                return res.status(500).send(error.message || 'Failed to generate certificate');
+            }
+        }
     }
 
     @Get('validate/:userId/:courseSlug')
