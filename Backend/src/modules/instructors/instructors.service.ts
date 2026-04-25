@@ -313,7 +313,8 @@ export class InstructorsService {
       avatar_url: e.user.avatar_url,
       courseTitle: e.course.title,
       enrolledAt: e.enrolled_at,
-      progress: e.progress_percentage || 0
+      progress: e.progress_percentage || 0,
+      status: e.status || 'in_progress'
     }));
   }
 

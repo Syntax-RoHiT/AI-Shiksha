@@ -348,7 +348,7 @@ function TeacherStudents() {
                           student.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                           'bg-gray-50 text-gray-700 border-gray-200'
                       }>
-                        {student.status.replace('_', ' ')}
+                        {student.status?.replace('_', ' ') || 'Unknown'}
                       </Badge>
                     </TableCell>
                   </TableRow>

@@ -92,13 +92,6 @@ export function CourseBuilderWizard() {
             await Courses.update(courseId!, data);
             setCourse({ ...course, ...data });
             toast.success("Certificate settings saved");
-            // Trigger publish flow if user clicked "Save & Publish"
-            // We can ask for confirmation or just publish
-            if (canPublish()) {
-                handlePublish();
-            } else {
-                toast.warning("Course saved, but cannot be published yet. Please check all fields.");
-            }
         } catch (error) {
             console.error(error);
             toast.error("Failed to save certificate settings");
@@ -126,7 +119,15 @@ export function CourseBuilderWizard() {
         setPublishing(true);
         try {
             const isTeacher = user?.role === 'teacher';
-            if (isTeacher && course?.status !== 'PUBLISHED') {
+            
+            // If already pending or published, just save and exit
+            if (course?.status === 'PENDING_APPROVAL' || course?.status === 'PUBLISHED') {
+                toast.success("Course changes saved successfully!");
+                navigate(isTeacher ? '/dashboard/my-courses' : '/dashboard/courses');
+                return;
+            }
+
+            if (isTeacher) {
                 await CourseApproval.submitForApproval(courseId!);
                 toast.success("Course sent for approval successfully!");
             } else {
@@ -161,7 +162,7 @@ export function CourseBuilderWizard() {
                 onSave={handlePublish}
                 saving={publishing}
                 disabled={!canPublish()}
-                buttonText={course?.status === 'PUBLISHED' ? 'Update Course' : (user?.role === 'teacher' ? 'Send for Approval' : 'Publish Course')}
+                buttonText={course?.status === 'PUBLISHED' ? 'Update Course' : course?.status === 'PENDING_APPROVAL' ? 'Save Changes' : (user?.role === 'teacher' ? 'Send for Approval' : 'Publish Course')}
                 onBack={() => navigate(user?.role === 'teacher' ? '/dashboard/my-courses' : '/dashboard/courses')}
                 onPreview={() => window.open(`/dashboard/courses/${courseId}/preview`, '_blank')}
             >

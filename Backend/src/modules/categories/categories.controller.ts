@@ -26,7 +26,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.ADMIN, Role.FRANCHISE_ADMIN)
+  @Roles(Role.ADMIN, Role.FRANCHISE_ADMIN, Role.INSTRUCTOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category (Admin only)' })
   create(@Request() req, @Body() createCategoryDto: CreateCategoryDto) {

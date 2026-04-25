@@ -275,7 +275,7 @@ function TeacherCourses() {
                 {/* Thumbnail */}
                 <div className="relative w-full md:w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
                   <img
-                    src={(course.thumbnail_url && !course.thumbnail_url.startsWith('blob:')) ? course.thumbnail_url : 'https://placehold.co/1280x720?text=Course+Thumbnail'}
+                    src={((course.thumbnail || course.thumbnail_url) && !(course.thumbnail || course.thumbnail_url).startsWith('blob:')) ? (course.thumbnail || course.thumbnail_url) : 'https://placehold.co/1280x720?text=Course+Thumbnail'}
                     alt={course.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

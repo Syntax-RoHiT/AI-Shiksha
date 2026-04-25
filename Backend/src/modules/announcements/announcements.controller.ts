@@ -62,7 +62,7 @@ export class AnnouncementsController {
     }
 
     @Get('student')
-    @Roles(Role.STUDENT)
+    @Roles(Role.STUDENT, Role.INSTRUCTOR, Role.ADMIN, Role.SUPER_ADMIN, Role.FRANCHISE_ADMIN)
     findActiveForStudent(@Req() req: any) {
         const franchiseId = req.user.franchise_id || null;
         return this.announcementsService.findActiveForStudent(franchiseId);
