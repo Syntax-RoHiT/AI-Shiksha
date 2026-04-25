@@ -218,9 +218,7 @@ export default function TeachersPage() {
                               <><ShieldCheck className="h-4 w-4 mr-2" />Verify Instructor</>
                             )}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {}}>
-                            View Profile
-                          </DropdownMenuItem>
+
                           <DropdownMenuItem 
                             className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                             onClick={async () => {

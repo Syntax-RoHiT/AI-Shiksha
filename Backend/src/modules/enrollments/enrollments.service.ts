@@ -307,7 +307,7 @@ export class EnrollmentsService {
         amount: course.price || 0,
         currency: 'INR',
         payment_provider: 'Offline Enrollment',
-        payment_status: 'success',
+        payment_status: 'completed',
         transaction_id: `MANUAL-${Date.now()}`,
         franchise_id: franchiseId,
       }
@@ -397,7 +397,7 @@ export class EnrollmentsService {
               amount: course.price || 0,
               currency: 'INR',
               payment_provider: 'Offline Enrollment',
-              payment_status: 'success',
+              payment_status: 'completed',
               transaction_id: `BULK-${Date.now()}-${studentId.substring(0,4)}`,
               franchise_id: franchiseId,
             }

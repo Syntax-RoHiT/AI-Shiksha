@@ -38,7 +38,9 @@ export function StudentNavbar() {
     const navigate = useNavigate();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-    const [hasViewedAnnouncements, setHasViewedAnnouncements] = useState(false);
+    const [hasViewedAnnouncements, setHasViewedAnnouncements] = useState(() => {
+        return localStorage.getItem('announcements_viewed') === 'true';
+    });
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
     // Search state
@@ -69,6 +71,14 @@ export function StudentNavbar() {
             setAnnouncementsLoading(true);
             const data = await announcementsApi.getStudentActive();
             setAnnouncements(data);
+            
+            // If new announcements are found and they are different from what was last seen, reset the badge
+            const lastSeenId = localStorage.getItem('last_announcement_id');
+            if (data.length > 0 && data[0].id !== lastSeenId) {
+                setHasViewedAnnouncements(false);
+                localStorage.setItem('announcements_viewed', 'false');
+                localStorage.setItem('last_announcement_id', data[0].id);
+            }
         } catch (error) {
             console.error('Error loading announcements:', error);
         } finally {
@@ -194,7 +204,10 @@ export function StudentNavbar() {
                             variant="outline" 
                             size="icon" 
                             className="relative bg-white border-gray-200 hover:bg-gray-50 h-10 w-10 rounded-full shadow-sm"
-                            onClick={() => setHasViewedAnnouncements(true)}
+                            onClick={() => {
+                                setHasViewedAnnouncements(true);
+                                localStorage.setItem('announcements_viewed', 'true');
+                            }}
                         >
                             <Bell className="h-5 w-5 text-gray-600" />
                             {announcements.length > 0 && !hasViewedAnnouncements && (

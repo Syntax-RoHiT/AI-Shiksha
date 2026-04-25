@@ -311,9 +311,9 @@ export class InstructorsService {
       name: e.user.name,
       email: e.user.email,
       avatar_url: e.user.avatar_url,
-      course_title: e.course.title,
-      enrolled_at: e.enrolled_at,
-      progress_percentage: e.progress_percentage
+      courseTitle: e.course.title,
+      enrolledAt: e.enrolled_at,
+      progress: e.progress_percentage || 0
     }));
   }
 
