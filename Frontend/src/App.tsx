@@ -49,8 +49,6 @@ import TeachersPage from "./pages/admin/Teachers";
 import CategoriesPage from "./pages/admin/Categories";
 import CourseApprovalPage from "./pages/admin/CourseApproval";
 import AIControlPage from "./pages/admin/AIControl";
-import RevenuePage from "./pages/admin/Revenue";
-import AddBankDetailsPage from "./pages/admin/AddBankDetails";
 import PayoutsPage from "./pages/admin/Payouts";
 import CouponsPage from "./pages/admin/Coupons";
 import TicketsPage from "./pages/admin/Tickets";
@@ -73,7 +71,6 @@ import Coupons from "./pages/admin/Coupons";
 import MyCertificatesPage from "./pages/student/MyCertificates";
 import AIAssistant from "./pages/student/AIAssistant";
 import Leaderboard from "./pages/student/Leaderboard";
-import Transactions from "./pages/student/Transactions";
 import Support from "./pages/student/Support";
 import { EnrolledCourseView } from "./pages/course/EnrolledCourseView";
 import { ManageTerms } from "./pages/admin/ManageTerms";
@@ -186,7 +183,6 @@ const App = () => (
                     <Route path="/dashboard/certificates" element={<Certificates />} />
                     <Route path="/dashboard/ai-assistant" element={<AIAssistant />} />
                     <Route path="/dashboard/leaderboard" element={<Leaderboard />} />
-                    <Route path="/dashboard/transactions" element={<Transactions />} />
                     <Route path="/dashboard/support" element={<Support />} />
                     <Route path="/dashboard/users" element={<UsersPage />} />
                     <Route path="/dashboard/moderation" element={<Moderation />} />
@@ -209,11 +205,8 @@ const App = () => (
                       <Route path="/dashboard/payments/razorpay" element={<RazorpaySettings />} />
                       <Route path="/dashboard/payments/transactions" element={<AdminTransactions />} />
                       <Route path="/dashboard/coupons" element={<Coupons />} />
-                      <Route path="/dashboard/revenue" element={<RevenuePage />} />
-                      <Route path="/dashboard/add-bank-details" element={<AddBankDetailsPage />} />
                       <Route path="/dashboard/payouts" element={<PayoutsPage />} />
                       <Route path="/dashboard/coupons" element={<CouponsPage />} />
-                      <Route path="/dashboard/subscriptions" element={<RevenuePage />} />
 
                       <Route path="/dashboard/enrollment" element={<EnrollmentPage />} />
                       <Route path="/dashboard/completion" element={<CompletionPage />} />

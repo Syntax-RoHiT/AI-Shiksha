@@ -14,29 +14,25 @@ export class AdminController {
 
   @Get('stats')
   getStats(@Request() req) {
-    const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
-    const franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
+    const franchiseId = req.user?.franchise_id || req.tenantId || req.tenantBranding?.id;
     return this.adminService.getPlatformStats(franchiseId);
   }
 
   @Get('analytics/user-growth')
   getUserGrowth(@Request() req) {
-    const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
-    const franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
+    const franchiseId = req.user?.franchise_id || req.tenantId || req.tenantBranding?.id;
     return this.adminService.getUserGrowth(franchiseId);
   }
 
   @Get('analytics/revenue')
   getRevenue(@Request() req) {
-    const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
-    const franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
+    const franchiseId = req.user?.franchise_id || req.tenantId || req.tenantBranding?.id;
     return this.adminService.getRevenueData(franchiseId);
   }
 
   @Get('pending-actions')
   getPendingActions(@Request() req) {
-    const isSuperAdmin = req.user?.role === Role.SUPER_ADMIN;
-    const franchiseId = isSuperAdmin ? undefined : (req.user?.franchise_id || undefined);
+    const franchiseId = req.user?.franchise_id || req.tenantId || req.tenantBranding?.id;
     return this.adminService.getPendingActions(franchiseId);
   }
 

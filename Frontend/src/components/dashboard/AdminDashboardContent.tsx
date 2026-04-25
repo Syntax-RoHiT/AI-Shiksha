@@ -40,7 +40,7 @@ export function AdminDashboardContent() {
   const quickActions = [
     { label: "Manage Users", icon: Users, href: "/dashboard/users", gradient: "from-blue-500 to-cyan-400", shadow: "shadow-blue-500/20" },
     { label: "Manage Courses", icon: BookOpen, href: "/dashboard/courses", gradient: "from-indigo-500 to-purple-500", shadow: "shadow-indigo-500/20" },
-    { label: "Transactions", icon: DollarSign, href: "/dashboard/transactions", gradient: "from-emerald-400 to-teal-500", shadow: "shadow-emerald-500/20" },
+    { label: "Transactions", icon: DollarSign, href: "/dashboard/payments/transactions", gradient: "from-emerald-400 to-teal-500", shadow: "shadow-emerald-500/20" },
     { label: "Manage Teachers", icon: GraduationCap, href: "/dashboard/teachers", gradient: "from-violet-500 to-fuchsia-500", shadow: "shadow-violet-500/20" },
     { label: "Manage Students", icon: UserCog, href: "/dashboard/students", gradient: "from-teal-400 to-emerald-400", shadow: "shadow-teal-500/20" },
     { label: "Approvals", icon: CheckCircle, href: "/dashboard/course-approval", gradient: "from-amber-400 to-orange-500", shadow: "shadow-amber-500/20" },
