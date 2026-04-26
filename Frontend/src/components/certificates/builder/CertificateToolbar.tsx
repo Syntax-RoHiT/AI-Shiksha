@@ -59,7 +59,7 @@ export function CertificateToolbar({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white border-l w-80 shadow-lg overflow-y-auto">
+        <div className="flex flex-col h-full bg-white border-l w-full md:w-80 shadow-lg overflow-y-auto border-t md:border-t-0">
             <div className="p-4 border-b">
                 <h3 className="font-semibold text-lg">Builder Tools</h3>
             </div>

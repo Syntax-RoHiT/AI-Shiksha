@@ -267,7 +267,7 @@ function TeacherCourses() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-1">
             {filteredCourses.map((course) => (
               <div key={course.id} className="group bg-white rounded-2xl p-4 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
                 {/* Thumbnail */}

@@ -12,7 +12,7 @@ export function TeacherDashboardContent() {
   const { data, isLoading } = useInstructorDashboard();
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground animate-pulse font-medium">Loading dashboard data...</div>;
+    return <div className="p-4 md:p-8 text-center text-muted-foreground animate-pulse font-medium">Loading dashboard data...</div>;
   }
 
   const { stats, topCourses, recentStudents } = data || { stats: [], topCourses: [], recentStudents: [] };
@@ -34,7 +34,7 @@ export function TeacherDashboardContent() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
         {stats?.map((stat) => {
           const IconComponent = (LucideIcons as any)[stat.icon] || LucideIcons.HelpCircle;
           return (

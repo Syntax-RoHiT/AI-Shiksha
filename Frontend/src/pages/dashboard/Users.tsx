@@ -306,25 +306,25 @@ export default function UsersPage() {
 
   return (
     <AdminDashboardLayout title="User Management" subtitle="Manage platform users and permissions">
-      <div className="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8">
+      <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8">
         
         {/* Dynamic Header */}
-        <div className="relative overflow-hidden rounded-none bg-zinc-950 p-8 shadow-2xl border border-white/10 group">
+        <div className="relative overflow-hidden rounded-none bg-zinc-950 p-5 md:p-8 shadow-2xl border border-white/10 group">
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-rose-500/10 to-orange-500/20 opacity-50 transition-opacity duration-1000 group-hover:opacity-70"></div>
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-500/30 blur-3xl transition-transform duration-1000 group-hover:scale-110"></div>
           
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+          <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            <div className="space-y-2 text-center xl:text-left">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white">
                 Global Users
               </h2>
-              <p className="text-sm md:text-lg text-white/60 font-medium max-w-xl">
+              <p className="text-sm md:text-lg text-white/60 font-medium max-w-xl mx-auto xl:mx-0">
                 Manage roles, permissions, and accounts across the entire platform.
               </p>
             </div>
             
             {/* Actions Container */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full xl:w-auto">
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                 <Input
@@ -483,7 +483,7 @@ export default function UsersPage() {
         </div>
 
         {/* Floating Glass Stats */}
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="relative group rounded-none bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
             <div className="relative p-6 flex flex-col h-full z-10">

@@ -135,14 +135,16 @@ export function UnifiedMobileSidebar() {
             <HelpCircle className="h-5 w-5" /><span>Help</span>
           </Link>
         </SheetClose>
-        <SheetClose asChild>
-          <button
+        <div className="pt-2">
+          <Button
             onClick={() => { logout(); navigate("/login"); }}
-            className="flex w-full items-center gap-3 px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+            variant="destructive"
+            className="w-full justify-start gap-3 rounded-lg h-11 font-medium"
           >
-            <LogOut className="h-5 w-5" /><span>Log out</span>
-          </button>
-        </SheetClose>
+            <LogOut className="h-5 w-5" />
+            <span>Log Out</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -377,7 +377,7 @@ export default function CertificateTemplatesPage() {
 
     return (
         <AdminDashboardLayout title="Certificate Templates" subtitle="Create and manage certificate templates">
-            <div className="space-y-6">
+            <div className="p-3 md:p-0 space-y-6">
                 {/* Header with Create Button */}
                 <div className="flex justify-between items-center">
                     <div>
@@ -460,7 +460,7 @@ export default function CertificateTemplatesPage() {
                                 />
 
                                 {/* Main Canvas Area */}
-                                <div className="flex-1 overflow-auto flex items-center justify-center p-8 relative">
+                                <div className="flex-1 overflow-auto flex items-start md:items-center justify-center p-4 md:p-8 relative min-h-[300px]">
                                     <div className="shadow-2xl ring-1 ring-black/5">
                                         <CertificateCanvas
                                             config={config}
@@ -493,7 +493,7 @@ export default function CertificateTemplatesPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {templates.map((template) => (
                             <Card key={template.id} className={template.is_default ? "border-primary" : ""}>
                                 <CardHeader>

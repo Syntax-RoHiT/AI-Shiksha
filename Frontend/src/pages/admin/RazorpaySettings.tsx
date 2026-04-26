@@ -93,7 +93,7 @@ export default function RazorpaySettings() {
 
   return (
     <AdminDashboardLayout title="Payment Gateway Configuration" subtitle="Manage your Razorpay API keys and payment preferences.">
-      <div className="p-6 space-y-8 max-w-5xl mx-auto">
+      <div className="p-3 md:p-6 space-y-8 max-w-5xl mx-auto">
         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-white dark:bg-zinc-950">
             <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-4 sm:px-8 py-6">

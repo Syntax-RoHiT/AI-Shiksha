@@ -324,28 +324,28 @@ export function AdminMobileSidebar() {
         ))}
       </div>
 
-      {/* User */}
-      <div className="border-t border-white/10 p-3">
+      {/* User & Logout */}
+      <div className="border-t border-white/10 p-4 space-y-3 flex-shrink-0">
         <div className="flex items-center gap-3 px-2 py-2">
-          <Avatar className="h-9 w-9 border-2 border-white/20">
+          <Avatar className="h-10 w-10 border-2 border-white/20">
             <AvatarImage src={user.avatar_url} />
             <AvatarFallback className="bg-primary text-white text-sm">
               {user.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium text-white">{user.name}</p>
-            <p className="truncate text-xs text-white/50">Administrator</p>
+            <p className="truncate text-sm font-bold text-white">{user.name}</p>
+            <p className="truncate text-[10px] uppercase tracking-widest text-white/40">Administrator</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLogout}
-            className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
+        <Button
+          onClick={handleLogout}
+          variant="destructive"
+          className="w-full justify-start gap-3 rounded-none h-11 font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-500/20"
+        >
+          <LogOut className="h-4 w-4" />
+          Log Out System
+        </Button>
       </div>
     </div>
   );

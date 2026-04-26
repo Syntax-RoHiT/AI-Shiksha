@@ -53,10 +53,10 @@ export default function AdminTransactions() {
 
   return (
     <AdminDashboardLayout title="Transactions" subtitle="View and manage all payment transactions for your franchise.">
-      <div className="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8">
+      <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8">
         
         {/* Dynamic Header */}
-        <div className="relative overflow-hidden rounded-none bg-zinc-950 p-8 shadow-2xl border border-white/10 group">
+        <div className="relative overflow-hidden rounded-none bg-zinc-950 p-5 md:p-8 shadow-2xl border border-white/10 group">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-blue-500/20 opacity-50 transition-opacity duration-1000 group-hover:opacity-70"></div>
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/30 blur-3xl transition-transform duration-1000 group-hover:scale-110"></div>
           

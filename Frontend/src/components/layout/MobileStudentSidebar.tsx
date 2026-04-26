@@ -161,14 +161,15 @@ export function MobileStudentSidebar({ open, onClose }: MobileStudentSidebarProp
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-white/10 p-3 flex-shrink-0">
-          <button
+        <div className="border-t border-white/10 p-4 flex-shrink-0">
+          <Button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-200 w-full"
+            variant="destructive"
+            className="w-full justify-start gap-3 rounded-xl h-11 font-semibold"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             <span>Log Out</span>
-          </button>
+          </Button>
         </div>
       </aside>
     </>
