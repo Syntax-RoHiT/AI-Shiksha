@@ -108,7 +108,7 @@ export default function FranchisesPage() {
   // ------------------------------------------------------------------
   return (
     <AdminDashboardLayout title="Franchise Network" subtitle="Manage all academies and server configuration">
-      <div className="space-y-8 animate-fade-in">
+      <div className="space-y-8 animate-fade-in p-4 md:p-8">
 
         {/* 1. Statistics Overview */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3">

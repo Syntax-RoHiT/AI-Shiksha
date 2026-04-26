@@ -28,7 +28,7 @@ export function UnifiedTopBar({ title, subtitle }: UnifiedTopBarProps) {
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[280px]">
+        <SheetContent side="left" className="p-0 w-[280px] z-[60]">
           <UnifiedMobileSidebar />
         </SheetContent>
       </Sheet>

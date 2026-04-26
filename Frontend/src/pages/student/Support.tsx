@@ -192,7 +192,7 @@ export default function Support() {
 
     return (
         <UnifiedDashboard title="Support Center" subtitle="We're here to help you">
-            <div className="max-w-6xl mx-auto p-6 font-sans space-y-8">
+            <div className="max-w-6xl mx-auto p-4 sm:p-6 font-sans space-y-8">
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -227,10 +227,10 @@ export default function Support() {
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <TabsList className="bg-white border border-gray-200 p-1 rounded-full">
-                            <TabsTrigger value="create" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">New Ticket</TabsTrigger>
-                            <TabsTrigger value="recent" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">Recent Tickets</TabsTrigger>
-                            <TabsTrigger value="closed" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">Closed Tickets</TabsTrigger>
+                        <TabsList className="bg-white border border-gray-200 p-1 flex-wrap sm:flex-nowrap h-auto rounded-2xl sm:rounded-full justify-start w-full sm:w-auto gap-1">
+                            <TabsTrigger value="create" className="rounded-xl sm:rounded-full px-4 sm:px-6 flex-1 sm:flex-none data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">New Ticket</TabsTrigger>
+                            <TabsTrigger value="recent" className="rounded-xl sm:rounded-full px-4 sm:px-6 flex-1 sm:flex-none data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">Recent</TabsTrigger>
+                            <TabsTrigger value="closed" className="rounded-xl sm:rounded-full px-4 sm:px-6 flex-1 sm:flex-none data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white">Closed</TabsTrigger>
                         </TabsList>
                     </div>
 

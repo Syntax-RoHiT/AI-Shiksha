@@ -64,7 +64,7 @@ function StudentCourses() {
 
   return (
     <UnifiedDashboard title="My Courses" subtitle="Manage your learning journey">
-      <div className="p-6 max-w-7xl mx-auto space-y-8 font-sans">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 sm:space-y-8 font-sans">
 
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -80,25 +80,24 @@ function StudentCourses() {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-            <TabsList className="bg-transparent p-0 gap-2">
-              <TabsTrigger value="all" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">All</TabsTrigger>
-              <TabsTrigger value="in-progress" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">In Progress</TabsTrigger>
-              <TabsTrigger value="completed" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">Completed</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="flex gap-2 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search courses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-50 border-0 focus-visible:ring-1 focus-visible:ring-lms-blue/20 rounded-full"
-              />
-            </div>
+        <div className="flex flex-col gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+          <div className="overflow-x-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="bg-transparent p-0 gap-1 flex-nowrap">
+                <TabsTrigger value="all" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">All</TabsTrigger>
+                <TabsTrigger value="in-progress" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">In Progress</TabsTrigger>
+                <TabsTrigger value="completed" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">Completed</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-gray-50 border-0 focus-visible:ring-1 focus-visible:ring-lms-blue/20 rounded-full"
+            />
           </div>
         </div>
 
@@ -217,7 +216,7 @@ function TeacherCourses() {
 
   return (
     <UnifiedDashboard title="My Courses" subtitle="Manage courses you are teaching">
-      <div className="p-6 max-w-7xl mx-auto space-y-8 font-sans">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 sm:space-y-8 font-sans">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <div>
@@ -232,25 +231,24 @@ function TeacherCourses() {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-            <TabsList className="bg-transparent p-0 gap-2">
-              <TabsTrigger value="all" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">All</TabsTrigger>
-              <TabsTrigger value="published" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">Published</TabsTrigger>
-              <TabsTrigger value="draft" className="rounded-full px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all">Draft / Pending</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="flex gap-2 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search your courses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-50 border-0 focus-visible:ring-1 focus-visible:ring-lms-blue/20 rounded-full"
-              />
-            </div>
+        <div className="flex flex-col gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+          <div className="overflow-x-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="bg-transparent p-0 gap-1 flex-nowrap">
+                <TabsTrigger value="all" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">All</TabsTrigger>
+                <TabsTrigger value="published" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">Published</TabsTrigger>
+                <TabsTrigger value="draft" className="rounded-full px-4 sm:px-6 data-[state=active]:bg-[#1F1F1F] data-[state=active]:text-white text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap">Draft / Pending</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search your courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-gray-50 border-0 focus-visible:ring-1 focus-visible:ring-lms-blue/20 rounded-full"
+            />
           </div>
         </div>
 
@@ -271,9 +269,9 @@ function TeacherCourses() {
         ) : (
           <div className="space-y-4">
             {filteredCourses.map((course) => (
-              <div key={course.id} className="group bg-white rounded-2xl p-4 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
+              <div key={course.id} className="group bg-white rounded-2xl p-4 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
                 {/* Thumbnail */}
-                <div className="relative w-full md:w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
+                <div className="relative w-full sm:w-40 md:w-48 aspect-video sm:aspect-auto sm:h-28 md:h-32 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
                   <img
                     src={((course.thumbnail || course.thumbnail_url) && !(course.thumbnail || course.thumbnail_url).startsWith('blob:')) ? (course.thumbnail || course.thumbnail_url) : 'https://placehold.co/1280x720?text=Course+Thumbnail'}
                     alt={course.title}
@@ -316,7 +314,7 @@ function TeacherCourses() {
                 </div>
 
                 {/* Progress & Action */}
-                <div className="w-full md:w-48 flex-shrink-0 flex flex-col gap-3 justify-center">
+                <div className="w-full sm:w-40 md:w-48 flex-shrink-0 flex flex-row sm:flex-col gap-2 sm:gap-3 justify-start sm:justify-center">
                     <Link to={`/dashboard/courses/${course.id}/edit`} className="w-full">
                         <Button variant="outline" className="w-full rounded-full border-gray-200 hover:border-lms-blue hover:text-lms-blue group-hover:border-lms-blue group-hover:text-lms-blue transition-all">
                             Edit Course

@@ -531,7 +531,7 @@ export default function EnrollmentPage() {
                             <div key={enrollment.id} className="group p-4 md:p-6 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                                 
                                 {/* Left: Checkbox & Student */}
-                                <div className="flex items-center gap-4 flex-1 min-w-[250px]">
+                                <div className="flex items-center gap-4 flex-1 min-w-0 xl:min-w-[250px]">
                                     <Checkbox
                                         checked={selectedEnrollments.includes(enrollment.id)}
                                         onCheckedChange={() => {
@@ -556,8 +556,8 @@ export default function EnrollmentPage() {
                                 </div>
 
                                 {/* Middle: Course & Status */}
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1 min-w-[350px] border-y xl:border-y-0 border-black/5 dark:border-white/5 py-4 xl:py-0 xl:px-6">
-                                    <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1 min-w-0 xl:min-w-[350px] border-y xl:border-y-0 border-black/5 dark:border-white/5 py-4 xl:py-0 xl:px-6">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0 xl:min-w-[200px]">
                                         <div className="h-10 w-10 shrink-0 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-none flex items-center justify-center">
                                             <PlayCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                                         </div>
@@ -577,7 +577,7 @@ export default function EnrollmentPage() {
                                 </div>
 
                                 {/* Right: Meta & Actions */}
-                                <div className="flex items-center justify-between xl:justify-end gap-4 shrink-0 min-w-[180px]">
+                                <div className="flex items-center justify-between xl:justify-end gap-4 shrink-0 min-w-0 xl:min-w-[180px]">
                                     <div className="flex flex-col items-start xl:items-end gap-1">
                                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Enrolled Date</span>
                                         <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">

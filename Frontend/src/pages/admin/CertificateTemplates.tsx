@@ -393,7 +393,7 @@ export default function CertificateTemplatesPage() {
                                 Create Template
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                        <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
 
                             {/* Toolbar Header */}
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 py-3 border-b bg-gray-50/50 gap-4">

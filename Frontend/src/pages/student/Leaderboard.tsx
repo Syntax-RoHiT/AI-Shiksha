@@ -67,7 +67,7 @@ export default function Leaderboard() {
                 ) : (
                     <>
                         {/* Top 3 Podium */}
-                        <div className="flex flex-col md:flex-row justify-center items-end gap-6 mb-12">
+                        <div className="flex flex-col md:flex-row justify-center items-center md:items-end gap-8 md:gap-6 mb-12">
 
                             {/* Rank 2 */}
                             <div className="order-2 md:order-1 flex flex-col items-center">
@@ -133,8 +133,8 @@ export default function Leaderboard() {
 
                                 <div className="divide-y divide-gray-50">
                                     {leaderboard.map((student) => (
-                                        <div key={student.id} className={`flex items-center px-6 py-4 hover:bg-slate-50 transition-colors ${student.name === user?.name ? "bg-blue-50/60" : ""}`}>
-                                            <div className="w-12 text-center">
+                                        <div key={student.id} className={`flex items-center px-4 sm:px-6 py-4 hover:bg-slate-50 transition-colors ${student.name === user?.name ? "bg-blue-50/60" : ""}`}>
+                                            <div className="w-8 sm:w-12 text-center shrink-0">
                                                 <span className={`text-sm font-bold ${student.rank === 1 ? "text-yellow-500" :
                                                     student.rank === 2 ? "text-gray-500" :
                                                         student.rank === 3 ? "text-amber-600" :
@@ -144,22 +144,22 @@ export default function Leaderboard() {
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center gap-4 flex-1">
-                                                <Avatar className="h-10 w-10 border border-gray-100">
+                                            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 mr-2">
+                                                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border border-gray-100 shrink-0">
                                                     <AvatarImage src={student.avatar || ""} />
                                                     <AvatarFallback className="bg-gray-100 text-gray-600 font-medium text-xs">
                                                         {student.name.substring(0, 2).toUpperCase()}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <div>
-                                                    <p className={`text-sm font-semibold ${student.name === user?.name ? "text-lms-blue" : "text-[#1F1F1F]"}`}>
+                                                <div className="min-w-0">
+                                                    <p className={`text-sm font-semibold truncate ${student.name === user?.name ? "text-lms-blue" : "text-[#1F1F1F]"}`}>
                                                         {student.name} {student.name === user?.name && "(You)"}
                                                     </p>
                                                     <p className="text-xs text-gray-400">Level {Math.floor(student.xp / 1000) + 1} Student</p>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-8">
+                                            <div className="flex items-center shrink-0">
                                                 <div className="text-right">
                                                     <p className="text-sm font-bold text-[#1F1F1F]">{student.xp.toLocaleString()}</p>
                                                     <p className="text-[10px] text-gray-400 uppercase tracking-wider">XP Earned</p>

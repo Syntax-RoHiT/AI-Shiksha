@@ -18,15 +18,15 @@ export function TeacherDashboardContent() {
   const { stats, topCourses, recentStudents } = data || { stats: [], topCourses: [], recentStudents: [] };
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-5 md:space-y-6 lg:space-y-8">
       {/* Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 to-primary/5 p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden">
         <div className="relative z-10">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Welcome back, {user?.name}!</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">Welcome back, {user?.name}!</h2>
           <p className="text-sm md:text-base text-muted-foreground mt-1">Here's what is happening with your courses today.</p>
         </div>
-        <Link to="/dashboard/courses/new" className="relative z-10">
-          <Button className="bg-primary hover:bg-primary/90 gap-2 shadow-sm rounded-full px-6">
+        <Link to="/dashboard/courses/new" className="relative z-10 self-start sm:self-auto">
+          <Button className="bg-primary hover:bg-primary/90 gap-2 shadow-sm rounded-full px-5 sm:px-6">
             <Plus className="h-4 w-4" />
             <span>Create New Course</span>
           </Button>
@@ -34,7 +34,7 @@ export function TeacherDashboardContent() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         {stats?.map((stat) => {
           const IconComponent = (LucideIcons as any)[stat.icon] || LucideIcons.HelpCircle;
           return (

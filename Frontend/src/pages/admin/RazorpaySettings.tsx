@@ -96,7 +96,7 @@ export default function RazorpaySettings() {
       <div className="p-6 space-y-8 max-w-5xl mx-auto">
         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-white dark:bg-zinc-950">
-            <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-8 py-6">
+            <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-4 sm:px-8 py-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
                   <CreditCard className="h-5 w-5" />
@@ -109,7 +109,7 @@ export default function RazorpaySettings() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-4 sm:p-8 space-y-8">
               {/* Status Section */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
                 <div className="space-y-1">
@@ -212,7 +212,7 @@ export default function RazorpaySettings() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="px-8 py-6 bg-zinc-50/50 dark:bg-zinc-900/50 border-t flex justify-end gap-3 rounded-b-xl">
+            <CardFooter className="px-4 sm:px-8 py-6 bg-zinc-50/50 dark:bg-zinc-900/50 border-t flex flex-col sm:flex-row justify-end gap-3 rounded-b-xl">
               <Button 
                 type="button" 
                 variant="outline" 

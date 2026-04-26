@@ -549,8 +549,8 @@ export default function UsersPage() {
         <div className="bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="border-b border-black/5 dark:border-white/5 bg-white/40 dark:bg-zinc-950/40 p-0">
-              <TabsList className="bg-transparent h-14 p-0 w-full justify-start rounded-none">
+            <div className="border-b border-black/5 dark:border-white/5 bg-white/40 dark:bg-zinc-950/40 p-0 overflow-x-auto hidden-scrollbar">
+              <TabsList className="bg-transparent h-14 p-0 w-max min-w-full justify-start rounded-none">
                 <TabsTrigger value="all" className="rounded-none h-full data-[state=active]:bg-black/5 dark:data-[state=active]:bg-white/5 data-[state=active]:border-b-2 data-[state=active]:border-red-500 data-[state=active]:shadow-none font-bold uppercase tracking-widest text-xs px-6">
                   All ({allUsers.length})
                 </TabsTrigger>
@@ -623,7 +623,7 @@ export default function UsersPage() {
                       <div key={user.id} className="group p-4 md:p-6 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
                         
                         {/* Left: Checkbox & Info */}
-                        <div className="flex items-center gap-4 flex-1 min-w-[300px]">
+                        <div className="flex items-center gap-4 flex-1 min-w-0 md:min-w-[300px]">
                           <Checkbox
                             checked={selectedUsers.includes(user.id)}
                             onCheckedChange={() => handleSelectUser(user.id)}

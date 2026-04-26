@@ -142,18 +142,18 @@ export default function Transactions() {
                                 return (
                                     <div
                                         key={trx.id}
-                                        className="group grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-3 md:gap-4 items-center px-5 py-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                                        className="group grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-3 md:gap-4 items-center px-5 py-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                                     >
                                         {/* Course */}
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 col-span-2 md:col-span-1">
                                             <div className="h-9 w-9 shrink-0 rounded-none bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
                                                 <CreditCard className="h-4 w-4 text-indigo-500" />
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-sm text-zinc-900 dark:text-white line-clamp-1" title={trx.courseName}>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-sm text-zinc-900 dark:text-white truncate" title={trx.courseName}>
                                                     {trx.courseName}
                                                 </p>
-                                                <p className="text-[10px] text-zinc-400 uppercase tracking-widest">{trx.paymentMethod}</p>
+                                                <p className="text-[10px] text-zinc-400 uppercase tracking-widest truncate">{trx.paymentMethod}</p>
                                             </div>
                                         </div>
 
@@ -170,7 +170,7 @@ export default function Transactions() {
                                         </div>
 
                                         {/* Amount */}
-                                        <div>
+                                        <div className="col-span-1 md:col-span-1">
                                             <span className="md:hidden text-[10px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">Amount</span>
                                             <p className="text-sm font-black text-zinc-900 dark:text-white">{formatCurrency(trx.amount)}</p>
                                             <Badge variant="outline" className={cn("rounded-none text-[9px] px-1.5 py-0.5 border uppercase tracking-wider font-bold mt-1 flex items-center gap-1 w-fit", statusConfig.className)}>
@@ -180,7 +180,7 @@ export default function Transactions() {
                                         </div>
 
                                         {/* Invoice Download */}
-                                        <div className="flex items-center">
+                                        <div className="flex items-center justify-end md:justify-start col-span-1 md:col-span-1">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"

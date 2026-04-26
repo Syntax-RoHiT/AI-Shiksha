@@ -102,9 +102,9 @@ export default function Coupons() {
 
   return (
     <AdminDashboardLayout title="Coupons" subtitle="Create and manage discount codes for your franchise.">
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
         <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-white dark:bg-zinc-950">
-          <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle>Active Coupons</CardTitle>
               <CardDescription>All your franchise's discount codes.</CardDescription>
@@ -129,7 +129,7 @@ export default function Coupons() {
                       <Input id="code" value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} placeholder="e.g. SUMMER50" maxLength={20} required />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <Label htmlFor="type">Discount Type</Label>
                         <Select value={formData.discount_type} onValueChange={(v) => setFormData({...formData, discount_type: v})}>
@@ -148,7 +148,7 @@ export default function Coupons() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <Label htmlFor="min_order" className="text-xs">Min Order Value (₹) Optional</Label>
                         <Input id="min_order" type="number" min="0" value={formData.min_order_value} onChange={e => setFormData({...formData, min_order_value: parseFloat(e.target.value)})} />
@@ -176,7 +176,7 @@ export default function Coupons() {
                       </Select>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        <div className="grid gap-2">
                         <Label htmlFor="limit" className="text-xs">Usage Limit (Total)</Label>
                         <Input id="limit" type="number" min="1" value={formData.usage_limit} onChange={e => setFormData({...formData, usage_limit: parseInt(e.target.value)})} />
@@ -205,12 +205,12 @@ export default function Coupons() {
              <Table>
               <TableHeader className="bg-zinc-50 dark:bg-zinc-900">
                 <TableRow>
-                  <TableHead className="pl-6">Code</TableHead>
+                  <TableHead className="pl-4 sm:pl-6">Code</TableHead>
                   <TableHead>Discount</TableHead>
                   <TableHead>Linked Course</TableHead>
                   <TableHead>Usage</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right pr-6">Actions</TableHead>
+                  <TableHead className="text-right pr-4 sm:pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,7 +229,7 @@ export default function Coupons() {
                 ) : (
                   coupons.map((coupon) => (
                     <TableRow key={coupon.id}>
-                      <TableCell className="pl-6 font-mono font-bold tracking-tight">{coupon.code}</TableCell>
+                      <TableCell className="pl-4 sm:pl-6 font-mono font-bold tracking-tight">{coupon.code}</TableCell>
                       <TableCell>
                         <span className="font-medium text-emerald-600 dark:text-emerald-400">
                            {coupon.discount_type === 'PERCENTAGE' ? `${coupon.discount_value}%` : `₹${coupon.discount_value}`} OFF
@@ -246,7 +246,7 @@ export default function Coupons() {
                           {coupon.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right pr-6">
+                      <TableCell className="text-right pr-4 sm:pr-6">
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(coupon.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950">
                           <Trash2 className="h-4 w-4" />
                         </Button>

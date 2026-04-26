@@ -59,6 +59,7 @@ import {
   Award,
   CheckSquare,
   Landmark,
+  PanelBottom,
 } from "lucide-react";
 import { cn, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,7 @@ const adminNavItems: NavItem[] = [
       { icon: BookOpen, label: "All Courses", href: "/dashboard/courses" },
       { icon: FileText, label: "Assignments", href: "/dashboard/assignments" },
       { icon: HelpCircle, label: "Quizzes", href: "/dashboard/quizzes" },
+      { icon: MessagesSquare, label: "Q/A", href: "/dashboard/qa" },
       { icon: Plus, label: "Add Course", href: "/dashboard/courses/new" },
       { icon: Folder, label: "Categories", href: "/dashboard/categories" },
       { icon: UserCog, label: "Enrollment", href: "/dashboard/enrollment" },
@@ -116,12 +118,12 @@ const adminNavItems: NavItem[] = [
   },
   {
     icon: DollarSign,
-    label: "Revenue",
+    label: "Payments",
     children: [
-      { icon: TrendingUp, label: "Transactions", href: "/dashboard/revenue" },
+      { icon: CreditCard, label: "Razorpay", href: "/dashboard/payments/razorpay" },
+      { icon: Receipt, label: "Transactions", href: "/dashboard/payments/transactions" },
       { icon: Tag, label: "Coupons", href: "/dashboard/coupons" },
-      { icon: Landmark, label: "Add Bank Details", href: "/dashboard/add-bank-details" },
-    ],
+    ]
   },
   {
     icon: Bot,
@@ -134,10 +136,16 @@ const adminNavItems: NavItem[] = [
     href: "/dashboard/franchises",
   },
   {
+    icon: Building2,
+    label: "Franchise Settings",
+    href: "/dashboard/franchises",
+  },
+  {
     icon: MessageSquare,
     label: "Communication",
     children: [
       { icon: Megaphone, label: "Announcements", href: "/dashboard/announcements" },
+      { icon: MessageSquare, label: "Student Feedback", href: "/dashboard/feedback" },
       { icon: Ticket, label: "Support Tickets", href: "/dashboard/tickets" },
     ],
   },
@@ -153,6 +161,16 @@ const adminNavItems: NavItem[] = [
       { icon: Palette, label: "Platform", href: "/dashboard/platform-settings" },
       { icon: Search, label: "SEO Settings", href: "/dashboard/seo-settings" },
     ],
+  },
+  {
+    icon: FileText,
+    label: "Policy Pages",
+    href: "/dashboard/policy-pages",
+  },
+  {
+    icon: PanelBottom,
+    label: "Footer Settings",
+    href: "/dashboard/footer-settings",
   },
   {
     icon: User,
@@ -225,7 +243,19 @@ export function AdminMobileSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
-          {adminNavItems.map((item) => {
+          {adminNavItems
+            .filter((item) => {
+              // "Franchise" (full management) is only for super_admin
+              if (item.label === "Franchise" && user.role !== "super_admin") {
+                return false;
+              }
+              // "Franchise Settings" is only for franchise_admin
+              if (item.label === "Franchise Settings" && user.role !== "franchise_admin") {
+                return false;
+              }
+              return true;
+            })
+            .map((item) => {
             if (item.children) {
               const isOpen = openGroups.includes(item.label);
               return (

@@ -99,7 +99,7 @@ export function MobileStudentSidebar({ open, onClose }: MobileStudentSidebarProp
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/60 md:hidden transition-opacity duration-300",
+          "fixed inset-0 z-[60] bg-black/60 md:hidden transition-opacity duration-300",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -108,7 +108,7 @@ export function MobileStudentSidebar({ open, onClose }: MobileStudentSidebarProp
       {/* Slide-in panel */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-screen w-72 flex flex-col md:hidden",
+          "fixed left-0 top-0 z-[60] h-screen w-72 flex flex-col md:hidden",
           "bg-gradient-to-b from-[hsl(220,50%,15%)] to-[hsl(220,50%,12%)]",
           "transition-transform duration-300 ease-in-out shadow-2xl",
           open ? "translate-x-0" : "-translate-x-full"
