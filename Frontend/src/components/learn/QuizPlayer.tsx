@@ -52,6 +52,7 @@ export default function QuizPlayer({ quizId, onComplete }: QuizPlayerProps) {
     // Result State
     const [result, setResult] = useState<any>(null);
     const [attemptsUsed, setAttemptsUsed] = useState(0);
+    const [bestSubmission, setBestSubmission] = useState<any>(null);
 
     useEffect(() => {
         loadQuiz();
@@ -112,7 +113,14 @@ export default function QuizPlayer({ quizId, onComplete }: QuizPlayerProps) {
                 questions: activeQuestions
             });
 
-        } catch (error) {
+            // ── Key fix: if the student already has a passing submission,
+            // show the pass result screen immediately instead of the start screen.
+            const passingSubmission = submissions.find((s: any) => s.passed);
+            if (passingSubmission) {
+                setBestSubmission(passingSubmission);
+                setResult(passingSubmission); // jump straight to result view
+            }
+} catch (error) {
             console.error("Failed to load quiz:", error);
             toast({
                 title: "Error",
@@ -203,67 +211,131 @@ export default function QuizPlayer({ quizId, onComplete }: QuizPlayerProps) {
 
     // Result View
     if (result) {
+        const isPassed = result.passed;
+        const isPreloaded = !!bestSubmission && result === bestSubmission; // came from a previous session
+        const correctCount = result.correct_answers ?? result.correctAnswers ?? null;
+        const totalQuestions = result.total_questions ?? result.totalQuestions ?? (quiz?.questions?.length ?? null);
+        const attemptsLeft = quiz ? Math.max(0, quiz.attempts_allowed - attemptsUsed) : 0;
+
         return (
-            <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                <Card className={cn("border-t-4", result.passed ? "border-t-green-500" : "border-t-red-500")}>
-                    <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-2xl">
-                            {result.passed ? "Congratulations! 🎉" : "Not quite there yet"}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6 text-center pt-6">
-                        <div className="flex justify-center">
+            <div className="max-w-2xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 py-4">
+                {/* Already passed banner */}
+                {isPreloaded && isPassed && (
+                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        You already passed this quiz — your best result is shown below.
+                    </div>
+                )}
+
+                <Card className={cn("border-t-4 shadow-xl shadow-black/5 rounded-2xl overflow-hidden", isPassed ? "border-t-emerald-500" : "border-t-red-500")}>
+                    {/* Header */}
+                    <CardHeader className="text-center pb-4 pt-8 bg-gradient-to-b from-muted/20 to-transparent">
+                        <div className="flex justify-center mb-4">
                             <div className={cn(
-                                "w-24 h-24 rounded-full flex items-center justify-center border-4 text-3xl font-bold",
-                                result.passed
-                                    ? "border-green-100 bg-green-50 text-green-600"
-                                    : "border-red-100 bg-red-50 text-red-600"
+                                "w-28 h-28 rounded-full flex flex-col items-center justify-center border-4 shadow-inner",
+                                isPassed
+                                    ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+                                    : "border-red-200 bg-red-50 text-red-600"
                             )}>
-                                {result.score}%
+                                <span className="text-3xl font-black leading-none">{result.score}%</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-widest mt-1 opacity-70">Score</span>
                             </div>
                         </div>
+                        <CardTitle className="text-2xl font-bold">
+                            {isPassed ? "🎉 Quiz Passed!" : "Quiz Not Passed"}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {isPassed
+                                ? "Excellent work! You've successfully cleared this quiz."
+                                : `You need ${quiz?.passing_score}% to pass. Keep practicing!`}
+                        </p>
+                    </CardHeader>
 
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                            <div className="p-2 bg-muted/30 rounded-lg">
-                                <div className="text-xs text-muted-foreground mb-1">Passing</div>
-                                <div className="font-semibold text-sm">{quiz.passing_score}%</div>
+                    <CardContent className="space-y-4 px-6 pb-6">
+                        {/* Stats row */}
+                        <div className={cn("grid gap-3", correctCount !== null ? "grid-cols-4" : "grid-cols-3")}>
+                            {/* Score */}
+                            <div className="flex flex-col items-center p-3 bg-muted/30 rounded-xl text-center">
+                                <span className="text-2xl font-black text-gray-900">{result.score}%</span>
+                                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Your Score</span>
                             </div>
-                            <div className="p-2 bg-muted/30 rounded-lg">
-                                <div className="text-xs text-muted-foreground mb-1">Status</div>
-                                <Badge variant={result.passed ? "default" : "destructive"} className="text-xs">
-                                    {result.passed ? "PASSED" : "FAILED"}
+                            {/* Marks */}
+                            {correctCount !== null && (
+                                <div className="flex flex-col items-center p-3 bg-muted/30 rounded-xl text-center">
+                                    <span className="text-2xl font-black text-gray-900">{correctCount}/{totalQuestions}</span>
+                                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Correct</span>
+                                </div>
+                            )}
+                            {/* Passing */}
+                            <div className="flex flex-col items-center p-3 bg-muted/30 rounded-xl text-center">
+                                <span className="text-2xl font-black text-gray-900">{quiz?.passing_score}%</span>
+                                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Required</span>
+                            </div>
+                            {/* Status */}
+                            <div className="flex flex-col items-center p-3 bg-muted/30 rounded-xl text-center">
+                                <Badge
+                                    className={cn(
+                                        "text-xs font-bold uppercase tracking-wide border-0 mt-1",
+                                        isPassed ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                    )}
+                                >
+                                    {isPassed ? "PASSED" : "FAILED"}
                                 </Badge>
-                            </div>
-                            <div className="p-2 bg-muted/30 rounded-lg">
-                                <div className="text-xs text-muted-foreground mb-1">Attempts</div>
-                                <div className="font-semibold text-sm">{attemptsUsed}/{quiz.attempts_allowed}</div>
+                                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">Status</span>
                             </div>
                         </div>
 
-                        {/* Attempts Limit Message */}
-                        {!result.passed && attemptsUsed >= quiz.attempts_allowed && (
-                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+                        {/* Attempts info */}
+                        <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
+                            <span>Attempts used: <strong className="text-gray-700">{attemptsUsed}</strong> / {quiz?.attempts_allowed}</span>
+                            {attemptsLeft > 0 && !isPassed && (
+                                <span className="text-amber-600 font-medium">{attemptsLeft} attempt{attemptsLeft !== 1 ? 's' : ''} remaining</span>
+                            )}
+                        </div>
+
+                        {/* Max attempts message */}
+                        {!isPassed && attemptsUsed >= (quiz?.attempts_allowed ?? Infinity) && (
+                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">
                                 Maximum attempts reached. You cannot retry this quiz.
                             </div>
                         )}
                     </CardContent>
-                    <CardFooter className="justify-center gap-4 pb-6">
-                        {(!result.passed && attemptsUsed < quiz.attempts_allowed) && (
-                            <Button variant="outline" size="sm" onClick={() => {
+
+                    <CardFooter className="justify-center gap-3 pb-6 border-t bg-muted/10 pt-4">
+                        {/* Retry if failed and attempts remain */}
+                        {!isPassed && attemptsUsed < (quiz?.attempts_allowed ?? Infinity) && (
+                            <Button variant="outline" size="sm" className="rounded-full gap-2" onClick={() => {
                                 setResult(null);
+                                setBestSubmission(null);
                                 setStarted(false);
                                 setAnswers({});
                                 setCurrentQuestionIndex(0);
-                                loadQuiz(); // Reload to update attempts and questions set
+                                loadQuiz();
                             }}>
-                                <RotateCcw className="w-3 h-3 mr-2" />
+                                <RotateCcw className="w-3.5 h-3.5" />
                                 Retry Quiz
                             </Button>
                         )}
-                        {result.passed && (
-                            <Button size="sm" onClick={() => onComplete()}>
+                        {/* Continue if passed */}
+                        {isPassed && (
+                            <Button size="sm" className="rounded-full gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100" onClick={() => onComplete()}>
+                                <CheckCircle2 className="w-4 h-4" />
                                 Continue Learning
-                                <ChevronRight className="w-3 h-3 ml-2" />
+                                <ChevronRight className="w-3.5 h-3.5" />
+                            </Button>
+                        )}
+                        {/* Retake for practice if passed and attempts remain */}
+                        {isPassed && attemptsLeft > 0 && (
+                            <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground gap-2" onClick={() => {
+                                setResult(null);
+                                setBestSubmission(null);
+                                setStarted(false);
+                                setAnswers({});
+                                setCurrentQuestionIndex(0);
+                                loadQuiz();
+                            }}>
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                Retake for Practice
                             </Button>
                         )}
                     </CardFooter>
