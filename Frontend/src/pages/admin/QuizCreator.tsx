@@ -61,7 +61,25 @@ export default function QuizCreator() {
             setRandomize(quiz.randomize_questions);
             setShowAnswers(quiz.show_answers);
             setAutoGrade(quiz.auto_grade);
-            setQuestions(quiz.questions || []);
+            // Map backend format → frontend format:
+            // Backend always stores correct_answers as a JSON array.
+            // Frontend QuizBuilder uses:
+            //   - correct_answer (string) for MCQ and TRUE_FALSE
+            //   - correct_answers (string[]) for MULTIPLE
+            const mappedQuestions = (quiz.questions || []).map((q: any) => {
+                if (q.type === 'MCQ' || q.type === 'TRUE_FALSE') {
+                    return {
+                        ...q,
+                        correct_answer: Array.isArray(q.correct_answers) && q.correct_answers.length > 0
+                            ? q.correct_answers[0]
+                            : (q.correct_answer || undefined),
+                        correct_answers: undefined,
+                    };
+                }
+                // MULTIPLE — keep correct_answers array as-is
+                return { ...q, correct_answer: undefined };
+            });
+            setQuestions(mappedQuestions);
         } catch (error) {
             console.error("Failed to fetch quiz:", error);
             toast({
@@ -107,10 +125,27 @@ export default function QuizCreator() {
                 randomize_questions: randomize,
                 show_answers: showAnswers,
                 auto_grade: autoGrade,
-                questions: questions.map((q, index) => ({
-                    ...q,
-                    order_index: index // Re-index strictly if needed, or trust current state
-                })),
+                questions: questions.map((q, index) => {
+                    // Map frontend format → backend format:
+                    // Backend DTO only knows correct_answers (array).
+                    // For MCQ/TRUE_FALSE: wrap correct_answer into [correct_answer].
+                    // For MULTIPLE: pass correct_answers array directly.
+                    const { correct_answer, correct_answers, id, ...rest } = q;
+                    let backendCorrectAnswers: string[] | undefined;
+                    if (q.type === 'MCQ' || q.type === 'TRUE_FALSE') {
+                        backendCorrectAnswers = correct_answer ? [correct_answer] : [];
+                    } else if (q.type === 'MULTIPLE') {
+                        backendCorrectAnswers = correct_answers || [];
+                    } else {
+                        // FILL_BLANK: correct_answer is a plain string answer
+                        backendCorrectAnswers = correct_answer ? [correct_answer] : [];
+                    }
+                    return {
+                        ...rest,
+                        order_index: index,
+                        correct_answers: backendCorrectAnswers,
+                    };
+                }),
             };
 
             if (isEditMode) {

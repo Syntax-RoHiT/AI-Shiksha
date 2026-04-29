@@ -225,7 +225,7 @@ export const EnrolledCourseView = () => {
     );
 
     return (
-        <div className="min-h-screen bg-white font-sans antialiased">
+        <div className="min-h-screen bg-white font-sans antialiased overflow-x-hidden">
 
             {/* ─── Breadcrumb Nav (non-sticky) ─── */}
             <nav className="bg-white border-b border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
@@ -249,9 +249,9 @@ export const EnrolledCourseView = () => {
             </nav>
 
             {/* ─── Hero ─── */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-[#EEF2FF] via-white to-[#F0F9FF] py-10">
-                <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-100/50 blur-3xl" />
-                <div className="pointer-events-none absolute top-10 right-0 w-80 h-80 rounded-full bg-indigo-100/40 blur-3xl" />
+            <section className="relative overflow-hidden bg-gradient-to-br from-[#EEF2FF] via-white to-[#F0F9FF] py-8 md:py-10">
+                <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64 rounded-full bg-blue-100/50 blur-3xl" />
+                <div className="pointer-events-none absolute top-10 right-0 w-56 h-56 rounded-full bg-indigo-100/40 blur-3xl" />
 
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-10 items-center">
@@ -274,7 +274,7 @@ export const EnrolledCourseView = () => {
 
                         {/* Title & subtitle */}
                         <div className="space-y-2">
-                            <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] leading-snug tracking-tight">{course.title}</h1>
+                            <h1 className="text-2xl md:text-4xl font-extrabold text-[#111827] leading-snug tracking-tight">{course.title}</h1>
                             {course.subtitle && (
                                 <p className="text-lg text-gray-500 leading-relaxed">{course.subtitle}</p>
                             )}
@@ -480,9 +480,9 @@ export const EnrolledCourseView = () => {
                         {/* Curriculum */}
                         {sections.length > 0 && (
                             <section>
-                                <div className="flex items-baseline justify-between mb-4">
+                                <div className="flex items-baseline justify-between mb-4 flex-wrap gap-2">
                                     <h2 className="text-xl font-bold text-[#111827]">Course Content</h2>
-                                    <span className="text-sm text-gray-400">{sections.length} sections · {total} lessons · {totalDuration()}</span>
+                                    <span className="text-sm text-gray-400 whitespace-nowrap">{sections.length} sections · {total} lessons · {totalDuration()}</span>
                                 </div>
                                 <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm bg-white">
                                     {sections.map((section: any, si: number) => (
@@ -536,14 +536,14 @@ export const EnrolledCourseView = () => {
                         {course.instructor?.user && (
                             <section>
                                 <h2 className="text-xl font-bold text-[#111827] mb-4">Your Instructor</h2>
-                                <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-7 flex items-start gap-6">
-                                    <Avatar className="h-16 w-16 flex-shrink-0 border-2 border-gray-100 shadow-sm">
+                                <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-5 md:p-7 flex flex-col sm:flex-row items-start gap-4 md:gap-6">
+                                    <Avatar className="h-14 w-14 md:h-16 md:w-16 flex-shrink-0 border-2 border-gray-100 shadow-sm">
                                         {course.instructor.user.avatar_url && <AvatarImage src={course.instructor.user.avatar_url} />}
                                         <AvatarFallback className="bg-[#0056D2] text-white text-lg font-bold">{instructorInitials}</AvatarFallback>
                                     </Avatar>
-                                    <div>
+                                    <div className="min-w-0">
                                         <h3 className="text-lg font-bold text-[#0056D2]">{course.instructor.user.name}</h3>
-                                        <p className="text-sm text-gray-500 mb-2">{course.instructor.user.email}</p>
+                                        <p className="text-sm text-gray-500 mb-2 truncate">{course.instructor.user.email}</p>
                                         {course.instructor.bio && (
                                             <p className="text-sm text-gray-600 leading-relaxed">{course.instructor.bio}</p>
                                         )}
