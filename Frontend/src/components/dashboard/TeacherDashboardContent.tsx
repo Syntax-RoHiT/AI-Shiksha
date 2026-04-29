@@ -34,7 +34,7 @@ export function TeacherDashboardContent() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         {stats?.map((stat) => {
           const IconComponent = (LucideIcons as any)[stat.icon] || LucideIcons.HelpCircle;
           return (

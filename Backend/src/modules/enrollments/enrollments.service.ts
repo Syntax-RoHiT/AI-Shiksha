@@ -722,19 +722,35 @@ export class EnrollmentsService {
 
     if (whereClause.AND.length === 0) delete whereClause.AND;
 
+    // Re-fetch enrollments BEFORE the update to get their payment_id, student_id, course_id
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: whereClause,
+      select: { id: true, student_id: true, course_id: true, payment_id: true },
+    });
+
     const result = await this.prisma.enrollment.updateMany({
       where: whereClause,
       data: updates,
     });
 
+    // If enrollment_date updated, sync the linked payment record's created_at
+    // so AdminTransactions and Student Dashboard show the correct transaction date.
+    if (dto.enrollment_date) {
+      const newEnrollDate = new Date(dto.enrollment_date);
+      const paymentIds = enrollments
+        .map(e => e.payment_id)
+        .filter((id): id is string => !!id);
+
+      if (paymentIds.length > 0) {
+        await this.prisma.payment.updateMany({
+          where: { id: { in: paymentIds } },
+          data: { created_at: newEnrollDate },
+        });
+      }
+    }
+
     // If completion date updated, sync with CourseProgress and Certificate
     if (dto.completion_date) {
-      // Re-fetch strictly to handle only those updated
-      const enrollments = await this.prisma.enrollment.findMany({
-        where: whereClause,
-        select: { student_id: true, course_id: true },
-      });
-
       const newDate = new Date(dto.completion_date);
 
       for (const enrollment of enrollments) {

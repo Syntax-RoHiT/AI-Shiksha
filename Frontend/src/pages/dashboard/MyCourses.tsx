@@ -299,7 +299,7 @@ function TeacherCourses() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 mt-3 text-xs text-black font-medium">
+                  <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-black font-medium">
                     <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
                       <Users className="h-3.5 w-3.5 text-gray-500" />
                       <span className="text-gray-700">{course.enrollments?.length || 0} Students</span>
@@ -314,7 +314,7 @@ function TeacherCourses() {
                 </div>
 
                 {/* Progress & Action */}
-                <div className="w-full sm:w-40 md:w-48 flex-shrink-0 flex flex-row sm:flex-col gap-2 sm:gap-3 justify-start sm:justify-center">
+                <div className="w-full sm:w-40 md:w-48 flex-shrink-0 flex flex-row sm:flex-col gap-2 sm:gap-3 justify-start sm:justify-center flex-wrap">
                     <Link to={`/dashboard/courses/${course.id}/edit`} className="w-full">
                         <Button variant="outline" className="w-full rounded-full border-gray-200 hover:border-lms-blue hover:text-lms-blue group-hover:border-lms-blue group-hover:text-lms-blue transition-all">
                             Edit Course

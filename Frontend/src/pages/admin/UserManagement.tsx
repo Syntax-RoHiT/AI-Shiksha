@@ -1,249 +1,84 @@
 import { AdminDashboardLayout } from "@/components/layout/AdminDashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
-  Search,
-  Filter,
-  MoreVertical,
-  UserPlus,
-  Download,
-  Shield,
-  GraduationCap,
-  Users,
-  Sparkles,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Wand2,
-  Copy,
-  Check,
-  Eye,
-  EyeOff,
-  Loader2,
-  Trash2,
-  AlertTriangle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Search, UserPlus, Shield, GraduationCap, Users, MoreHorizontal,
+  Wand2, Copy, Check, Eye, EyeOff, Loader2, Trash2, AlertTriangle, Calendar,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { adminService } from "@/services/admin.service";
+import { useState, useEffect, useMemo } from "react";
 import { Users as UsersAPI } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
-const students = [
-  { id: 1, name: "Emma Wilson", email: "emma@example.com", courses: 5, status: "active", joined: "Jan 15, 2024", spent: "₹249" },
-  { id: 2, name: "James Chen", email: "james@example.com", courses: 3, status: "active", joined: "Feb 2, 2024", spent: "₹149" },
-  { id: 3, name: "Sarah Johnson", email: "sarah@example.com", courses: 8, status: "active", joined: "Dec 10, 2023", spent: "₹499" },
-  { id: 4, name: "Michael Brown", email: "michael@example.com", courses: 2, status: "inactive", joined: "Mar 5, 2024", spent: "₹79" },
-  { id: 5, name: "Lisa Anderson", email: "lisa@example.com", courses: 4, status: "suspended", joined: "Jan 22, 2024", spent: "₹199" },
-];
-
-const teachers = [
-  { id: 1, name: "Dr. John Smith", email: "john@example.com", courses: 12, students: 2840, status: "verified", earnings: "₹45,200" },
-  { id: 2, name: "Prof. Maria Garcia", email: "maria@example.com", courses: 8, students: 1560, status: "verified", earnings: "₹28,400" },
-  { id: 3, name: "Alex Thompson", email: "alex@example.com", courses: 3, students: 420, status: "pending", earnings: "₹5,600" },
-  { id: 4, name: "Jennifer Lee", email: "jennifer@example.com", courses: 6, students: 890, status: "verified", earnings: "₹15,800" },
-  { id: 5, name: "Robert Wilson", email: "robert@example.com", courses: 2, students: 150, status: "rejected", earnings: "₹0" },
-];
-
-const admins = [
-  { id: 1, name: "Admin User", email: "admin@lms.com", role: "Super Admin", lastLogin: "2 hours ago" },
-  { id: 2, name: "Support Team", email: "support@lms.com", role: "Support Admin", lastLogin: "30 mins ago" },
-  { id: 3, name: "Content Mod", email: "content@lms.com", role: "Content Moderator", lastLogin: "1 day ago" },
-];
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "active":
-    case "verified":
-      return <Badge className="bg-lms-emerald/10 text-lms-emerald border-0"><CheckCircle className="h-3 w-3 mr-1" />{status}</Badge>;
-    case "inactive":
-    case "rejected":
-      return <Badge className="bg-lms-rose/10 text-lms-rose border-0"><XCircle className="h-3 w-3 mr-1" />{status}</Badge>;
-    case "pending":
-      return <Badge className="bg-lms-amber/10 text-lms-amber border-0"><Clock className="h-3 w-3 mr-1" />{status}</Badge>;
-    case "suspended":
-      return <Badge className="bg-lms-rose/10 text-lms-rose border-0">{status}</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-};
-
-function AddUserModalContent({ onSuccess }: { onSuccess: () => void }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "",
-  });
+/* ─── Add User Dialog ─────────────────────────────────────────────────────── */
+function AddUserDialog({ onSuccess }: { onSuccess: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", role: "" });
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [show, setShow] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const generatePassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#₹%^&*";
-    let newPassword = "";
-    for (let i = 0; i < 12; i++) {
-      newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setPassword(newPassword);
-    setConfirmPassword(newPassword);
+  const generate = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    setPassword(Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join(""));
+    setConfirm("");
     setCopied(false);
   };
 
-  const copyPassword = () => {
-    navigator.clipboard.writeText(password);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const copy = () => { navigator.clipboard.writeText(password); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
-  const handleSubmit = async () => {
-    // Validation
-    if (!formData.name || !formData.email || !formData.role) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      toast({
-        title: "Invalid Password",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast({
-        title: "Password Mismatch",
-        description: "Passwords do not match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
+  const submit = async () => {
+    if (!form.name || !form.email || !form.role) return toast({ title: "Missing fields", variant: "destructive" });
+    if (password.length < 6) return toast({ title: "Password too short", variant: "destructive" });
+    if (password !== confirm) return toast({ title: "Passwords don't match", variant: "destructive" });
+    setLoading(true);
     try {
-      const createdName = formData.name; // capture before reset
-      const newUser = await UsersAPI.create({
-        ...formData,
-        password,
-      });
-
-      // Reset form
-      setFormData({ name: "", email: "", role: "STUDENT" });
-      setPassword("");
-      setConfirmPassword("");
-
-      // Refresh user list then close modal
+      await UsersAPI.create({ ...form, password });
+      toast({ title: "User Created" });
+      setForm({ name: "", email: "", role: "" });
+      setPassword(""); setConfirm("");
       await onSuccess();
-      setIsOpen(false);
-
-      toast({
-        title: "User Created",
-        description: `Successfully created user account for ${createdName}.`,
-      });
-    } catch (error: any) {
-      console.error("Failed to create user:", error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create user",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+      setOpen(false);
+    } catch (e: any) {
+      toast({ title: "Error", description: e.response?.data?.message || "Failed to create user", variant: "destructive" });
+    } finally { setLoading(false); }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-lms-blue hover:bg-lms-blue/90">
-          <UserPlus className="h-4 w-4" />
-          Add User
+        <Button className="gap-2 rounded-none bg-violet-600 hover:bg-violet-700 text-white h-12 px-6 font-bold shadow-lg">
+          <UserPlus className="h-4 w-4" /> Add User
         </Button>
       </DialogTrigger>
-      <DialogContent
-        className="sm:max-w-[500px]"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
+      <DialogContent className="sm:max-w-[480px] rounded-none">
         <DialogHeader>
-          <DialogTitle className="text-xl">Add New User</DialogTitle>
-          <DialogDescription>
-            Create a new user account. Fill in the details below.
-          </DialogDescription>
+          <DialogTitle className="text-xl font-black uppercase tracking-widest">Add New User</DialogTitle>
+          <DialogDescription>Create a new user account for the platform.</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-5 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="role">Role *</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value })}
-              >
-                <SelectTrigger id="role" className="w-full">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent className="z-[100]">
+        <div className="grid gap-4 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label>Full Name *</Label><Input placeholder="John Doe" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="rounded-none" /></div>
+            <div className="space-y-1.5">
+              <Label>Role *</Label>
+              <Select value={form.role} onValueChange={v => setForm({ ...form, role: v })}>
+                <SelectTrigger className="rounded-none"><SelectValue placeholder="Select role" /></SelectTrigger>
+                <SelectContent>
                   <SelectItem value="STUDENT">Student</SelectItem>
                   <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
                   <SelectItem value="ADMIN">Administrator</SelectItem>
@@ -251,96 +86,26 @@ function AddUserModalContent({ onSuccess }: { onSuccess: () => void }) {
               </Select>
             </div>
           </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email Address *</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+          <div className="space-y-1.5"><Label>Email *</Label><Input type="email" placeholder="john@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="rounded-none" /></div>
+          <div className="space-y-3 border border-black/10 dark:border-white/10 p-4 bg-zinc-50 dark:bg-zinc-900/50">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Security</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={generatePassword}
-                className="h-8 gap-2 text-lms-blue border-lms-blue/20 hover:bg-lms-blue/10"
-              >
-                <Wand2 className="h-3.5 w-3.5" />
-                Generate Strong Password
-              </Button>
+              <Label className="font-bold">Password</Label>
+              <Button type="button" variant="outline" size="sm" onClick={generate} className="h-7 gap-1.5 rounded-none text-xs"><Wand2 className="h-3 w-3" />Generate</Button>
             </div>
-
-            <div className="grid gap-3">
-              <div className="relative">
-                <Label htmlFor="password" className="sr-only">Password</Label>
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password (min 6 characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-20"
-                />
-                <div className="absolute right-0 top-0 h-full flex items-center pr-1 gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                  {password && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      onClick={copyPassword}
-                      title="Copy Password"
-                    >
-                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+            <div className="relative">
+              <Input type={show ? "text" : "password"} placeholder="Min 6 characters" value={password} onChange={e => setPassword(e.target.value)} className="pr-16 rounded-none" />
+              <div className="absolute right-0 top-0 h-full flex items-center pr-1 gap-0.5">
+                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShow(!show)}>{show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                {password && <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={copy}>{copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}</Button>}
               </div>
             </div>
+            <Input type="password" placeholder="Confirm password" value={confirm} onChange={e => setConfirm(e.target.value)} className="rounded-none" />
           </div>
         </div>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-lms-blue hover:bg-lms-blue/90 w-full sm:w-auto"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+          <Button variant="outline" onClick={() => setOpen(false)} className="rounded-none">Cancel</Button>
+          <Button onClick={submit} disabled={loading} className="rounded-none bg-violet-600 hover:bg-violet-700">
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Create Account
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -348,521 +113,253 @@ function AddUserModalContent({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-function EditJoiningDateDialog({ user, isOpen, setIsOpen, onSuccess }: any) {
+/* ─── Edit Joining Date Dialog ────────────────────────────────────────────── */
+function EditDateDialog({ user, isOpen, setIsOpen, onSuccess }: any) {
   const [date, setDate] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-        setDate(user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : "");
-    }
+    if (user) setDate(user.created_at ? new Date(user.created_at).toISOString().split("T")[0] : "");
   }, [user]);
 
-  const handleSubmit = async () => {
+  const submit = async () => {
     if (!date) return;
-    setIsSubmitting(true);
+    setLoading(true);
     try {
       await UsersAPI.updateJoiningDate(user.id, date);
-      toast({ title: "Success", description: "Joining date updated" });
+      toast({ title: "Date updated" });
       setIsOpen(false);
       onSuccess();
-    } catch (e) {
-      toast({ title: "Error", description: "Failed to update date", variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch { toast({ title: "Error", description: "Failed to update date", variant: "destructive" }); }
+    finally { setLoading(false); }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent>
+      <DialogContent className="rounded-none sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Edit Joining Date</DialogTitle>
-          <DialogDescription>Update the date when this user joined the platform.</DialogDescription>
+          <DialogTitle className="font-black uppercase tracking-widest">Edit Joining Date</DialogTitle>
+          <DialogDescription>Update when this user joined the platform.</DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Joining Date</Label>
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
+        <div className="py-3 space-y-2">
+          <Label>Joining Date</Label>
+          <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="rounded-none" />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Save Date
-          </Button>
+          <Button variant="outline" onClick={() => setIsOpen(false)} className="rounded-none">Cancel</Button>
+          <Button onClick={submit} disabled={loading} className="rounded-none">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
+/* ─── Role badge colours ──────────────────────────────────────────────────── */
+const roleConfig: Record<string, { label: string; className: string }> = {
+  STUDENT: { label: "Student", className: "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  INSTRUCTOR: { label: "Instructor", className: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  ADMIN: { label: "Admin", className: "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400" },
+  SUPER_ADMIN: { label: "Super Admin", className: "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+  FRANCHISE_ADMIN: { label: "Franchise Admin", className: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+};
+
+/* ─── Tab selector ────────────────────────────────────────────────────────── */
+const TABS = [
+  { id: "all", label: "All Users" },
+  { id: "STUDENT", label: "Students" },
+  { id: "INSTRUCTOR", label: "Instructors" },
+  { id: "admin", label: "Admins" },
+];
+
+/* ─── Main Page ───────────────────────────────────────────────────────────── */
 export default function UserManagement() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const [editDateUser, setEditDateUser] = useState<any>(null);
-  
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
-  const loadUsers = async () => {
+  const load = async () => {
+    try { setLoading(true); setUsers(await UsersAPI.getAll()); }
+    catch { console.error("Failed to load users"); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() => {
+    let list = users;
+    if (activeTab === "STUDENT") list = list.filter(u => u.role === "STUDENT");
+    else if (activeTab === "INSTRUCTOR") list = list.filter(u => u.role === "INSTRUCTOR");
+    else if (activeTab === "admin") list = list.filter(u => ["ADMIN", "SUPER_ADMIN", "FRANCHISE_ADMIN"].includes(u.role));
+    if (search) list = list.filter(u => u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [users, activeTab, search]);
+
+  const stats = useMemo(() => ({
+    total: users.length,
+    students: users.filter(u => u.role === "STUDENT").length,
+    instructors: users.filter(u => u.role === "INSTRUCTOR").length,
+    admins: users.filter(u => ["ADMIN", "SUPER_ADMIN", "FRANCHISE_ADMIN"].includes(u.role)).length,
+  }), [users]);
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
     try {
-      setLoading(true);
-      const data = await UsersAPI.getAll();
-      setUsers(data);
-      setSelectedUsers(new Set()); // Clear selections on reload
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    } finally {
-      setLoading(false);
-    }
+      await UsersAPI.delete(deleteId);
+      toast({ title: "User deleted" });
+      await load();
+    } catch (e: any) {
+      toast({ title: "Error", description: e.response?.data?.message || "Failed to delete", variant: "destructive" });
+    } finally { setDeleting(false); setDeleteId(null); }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    setIsDeleting(true);
-    try {
-      await UsersAPI.delete(userId);
-      toast({
-        title: "User Deleted",
-        description: "User has been successfully deleted.",
-      });
-      await loadUsers();
-      setDeleteDialogOpen(false);
-      setUserToDelete(null);
-    } catch (error: any) {
-      console.error("Failed to delete user:", error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete user",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedUsers.size === 0) return;
-
-    setIsDeleting(true);
-    try {
-      await Promise.all(
-        Array.from(selectedUsers).map((id) => UsersAPI.delete(id))
-      );
-      toast({
-        title: "Users Deleted",
-        description: `Successfully deleted ${selectedUsers.size} user(s).`,
-      });
-      await loadUsers();
-      setDeleteDialogOpen(false);
-    } catch (error: any) {
-      console.error("Failed to delete users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete some users",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const toggleUserSelection = (userId: string) => {
-    const newSelection = new Set(selectedUsers);
-    if (newSelection.has(userId)) {
-      newSelection.delete(userId);
-    } else {
-      newSelection.add(userId);
-    }
-    setSelectedUsers(newSelection);
-  };
-
-  const toggleSelectAll = (usersList: any[]) => {
-    const userIds = usersList.map(u => u.id);
-    if (userIds.every(id => selectedUsers.has(id))) {
-      // Deselect all
-      const newSelection = new Set(selectedUsers);
-      userIds.forEach(id => newSelection.delete(id));
-      setSelectedUsers(newSelection);
-    } else {
-      // Select all
-      const newSelection = new Set(selectedUsers);
-      userIds.forEach(id => newSelection.add(id));
-      setSelectedUsers(newSelection);
-    }
-  };
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const students = users.filter(u => u.role === 'STUDENT').map(u => ({
-    ...u,
-    courses: 0, // Mock data as backend might not return this yet
-    status: 'active', // Mock
-    joined: new Date(u.created_at || Date.now()).toLocaleDateString(),
-    spent: '₹0' // Mock
-  }));
-  const teachers = users.filter(u => u.role === 'INSTRUCTOR').map(u => ({
-    ...u,
-    courses: 0,
-    students: 0,
-    status: 'verified',
-    earnings: '₹0'
-  }));
-  const admins = users.filter(u => ["admin", "super_admin", "franchise_admin"].includes(u.role?.toLowerCase())).map(u => ({
-    ...u,
-    role: u.role === 'super_admin' ? 'Super Admin' : u.role === 'franchise_admin' ? 'Franchise Admin' : 'Admin',
-    lastLogin: 'Recently'
-  }));
-
-  if (loading) {
-    return (
-      <AdminDashboardLayout title="User Management" subtitle="Manage students, teachers, and administrators">
-        <div>Loading users...</div>
-      </AdminDashboardLayout>
-    );
-  }
+  const statCards = [
+    { label: "Total Users", value: stats.total, icon: Users, colors: "from-blue-400 to-indigo-500", bg: "bg-blue-50 dark:bg-blue-500/10", iconColor: "text-blue-600 dark:text-blue-400", border: "border-blue-100 dark:border-blue-500/20" },
+    { label: "Students", value: stats.students, icon: GraduationCap, colors: "from-emerald-400 to-teal-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", iconColor: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-100 dark:border-emerald-500/20" },
+    { label: "Instructors", value: stats.instructors, icon: Users, colors: "from-violet-400 to-purple-500", bg: "bg-violet-50 dark:bg-violet-500/10", iconColor: "text-violet-600 dark:text-violet-400", border: "border-violet-100 dark:border-violet-500/20" },
+    { label: "Admins", value: stats.admins, icon: Shield, colors: "from-rose-400 to-pink-500", bg: "bg-rose-50 dark:bg-rose-500/10", iconColor: "text-rose-600 dark:text-rose-400", border: "border-rose-100 dark:border-rose-500/20" },
+  ];
 
   return (
-    <AdminDashboardLayout title="User Management" subtitle="Manage students, teachers, and administrators">
-      <div className="space-y-6">
-        {/* Actions Row */}
-        <div className="flex items-center justify-between">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search users..." className="pl-10 w-full" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-            <AddUserModalContent onSuccess={loadUsers} />
+    <AdminDashboardLayout title="Users" subtitle="Manage all platform users">
+      <div className="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+
+        {/* Hero Banner */}
+        <div className="relative overflow-hidden rounded-none bg-zinc-950 p-6 md:p-8 shadow-2xl border border-white/10 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-blue-500/10 to-indigo-500/20 opacity-50 group-hover:opacity-70 transition-opacity duration-1000" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-violet-500/30 blur-3xl group-hover:scale-110 transition-transform duration-1000" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">Users</h2>
+              <p className="text-sm md:text-lg text-white/60 font-medium">Manage students, instructors, and administrators.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+              <div className="relative w-full sm:w-72">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none"><Search className="h-5 w-5 text-white/40" /></div>
+                <Input placeholder="Search by name or email..." className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-none focus-visible:ring-violet-500 backdrop-blur-md font-medium" value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
+              <AddUserDialog onSuccess={load} />
+            </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-lms-blue/10">
-                  <GraduationCap className="h-6 w-6 text-lms-blue" />
+        {/* Stat Cards */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {statCards.map(c => (
+            <div key={c.label} className="relative group rounded-none bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+              <div className={`absolute inset-0 bg-gradient-to-br ${c.colors} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+              <div className="relative p-5 flex flex-col h-full z-10">
+                <div className={`w-10 h-10 rounded-none flex items-center justify-center mb-4 border ${c.bg} ${c.border} group-hover:scale-110 transition-transform duration-500`}>
+                  <c.icon className={`h-5 w-5 ${c.iconColor}`} />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{students.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Students</p>
-                </div>
+                <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{loading ? "..." : c.value}</p>
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-1">{c.label}</p>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-lms-emerald/10">
-                  <Users className="h-6 w-6 text-lms-emerald" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{teachers.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Teachers</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-accent/10">
-                  <Shield className="h-6 w-6 text-accent" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{admins.length}</p>
-                  <p className="text-sm text-muted-foreground">Admin Users</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          ))}
         </div>
 
-        {/* Bulk Actions Bar */}
-        {selectedUsers.size > 0 && (
-          <Card className="bg-muted/50 border-primary">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">
-                  {selectedUsers.size} user(s) selected
-                </p>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  className="gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete Selected
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* User List */}
+        <div className="bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+          {/* Tab Bar */}
+          <div className="border-b border-black/5 dark:border-white/5 bg-white/40 dark:bg-zinc-950/40 overflow-x-auto">
+            <div className="flex min-w-max">
+              {TABS.map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)} className={cn("px-5 py-4 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap border-b-2", activeTab === t.id ? "border-violet-500 text-violet-600 dark:text-violet-400" : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white")}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* User Tables */}
-        <Card>
-          <Tabs defaultValue="students">
-            <CardHeader className="pb-0">
-              <div className="flex items-center justify-between">
-                <TabsList>
-                  <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
-                  <TabsTrigger value="teachers">Teachers ({teachers.length})</TabsTrigger>
-                  <TabsTrigger value="admins">Admins ({admins.length})</TabsTrigger>
-                </TabsList>
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Sparkles className="h-4 w-4 text-accent" />
-                    AI Segment
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <TabsContent value="students" className="m-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={students.length > 0 && students.every(s => selectedUsers.has(s.id))}
-                          onCheckedChange={() => toggleSelectAll(students)}
-                        />
-                      </TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Courses</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Spent</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {students.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedUsers.has(student.id)}
-                            onCheckedChange={() => toggleUserSelection(student.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{student.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{student.email}</TableCell>
-                        <TableCell>{student.courses}</TableCell>
-                        <TableCell>{getStatusBadge(student.status)}</TableCell>
-                        <TableCell className="text-muted-foreground">{student.joined}</TableCell>
-                        <TableCell className="font-medium">{student.spent}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Profile</DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setEditDateUser(student)}
-                              >
-                                Edit Joining Date
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
-                                onClick={() => {
-                                  setUserToDelete(student.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
+          {/* User Rows */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+              <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs font-bold text-zinc-500 tracking-widest uppercase">Loading Users...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-4 text-center px-4">
+              <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-none flex items-center justify-center"><Users className="h-8 w-8 text-zinc-400" /></div>
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">No users found</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Try adjusting your search or tab filters.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-black/5 dark:divide-white/5">
+              {filtered.map(user => {
+                const rc = roleConfig[user.role] ?? { label: user.role, className: "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400" };
+                return (
+                  <div key={user.id} className="group p-4 md:p-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+                    {/* Avatar + Info */}
+                    <div className="flex items-center gap-4 min-w-0">
+                      <Avatar className="h-11 w-11 rounded-none border border-black/10 dark:border-white/10 shrink-0">
+                        <AvatarFallback className="bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 font-black rounded-none text-sm">
+                          {user.name?.charAt(0)?.toUpperCase() ?? "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 space-y-1">
+                        <p className="font-bold text-zinc-900 dark:text-white truncate">{user.name}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user.email}</p>
+                      </div>
+                    </div>
 
-              <TabsContent value="teachers" className="m-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={teachers.length > 0 && teachers.every(t => selectedUsers.has(t.id))}
-                          onCheckedChange={() => toggleSelectAll(teachers)}
-                        />
-                      </TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Courses</TableHead>
-                      <TableHead>Students</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Earnings</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {teachers.map((teacher) => (
-                      <TableRow key={teacher.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedUsers.has(teacher.id)}
-                            onCheckedChange={() => toggleUserSelection(teacher.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{teacher.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{teacher.email}</TableCell>
-                        <TableCell>{teacher.courses}</TableCell>
-                        <TableCell>{teacher.students.toLocaleString()}</TableCell>
-                        <TableCell>{getStatusBadge(teacher.status)}</TableCell>
-                        <TableCell className="font-medium">{teacher.earnings}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Profile</DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setEditDateUser(teacher)}
-                              >
-                                Edit Joining Date
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
-                                onClick={() => {
-                                  setUserToDelete(teacher.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-
-              <TabsContent value="admins" className="m-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Last Login</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {admins.map((admin) => (
-                      <TableRow key={admin.id}>
-                        <TableCell className="font-medium">{admin.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{admin.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{admin.role}</Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{admin.lastLogin}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>Edit Permissions</DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
-                                onClick={() => {
-                                  setUserToDelete(admin.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                disabled={admins.length <= 1}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Remove Admin
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                Confirm Deletion
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {userToDelete ? (
-                  "Are you sure you want to delete this user? This action cannot be undone."
-                ) : (
-                  `Are you sure you want to delete ${selectedUsers.size} user(s)? This action cannot be undone.`
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  if (userToDelete) {
-                    handleDeleteUser(userToDelete);
-                  } else {
-                    handleBulkDelete();
-                  }
-                }}
-                disabled={isDeleting}
-                className="bg-destructive hover:bg-destructive/90"
-              >
-                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <EditJoiningDateDialog 
-          user={editDateUser} 
-          isOpen={!!editDateUser} 
-          setIsOpen={(open: boolean) => !open && setEditDateUser(null)} 
-          onSuccess={loadUsers} 
-        />
+                    {/* Meta row */}
+                    <div className="flex items-center justify-between sm:justify-end gap-4 flex-wrap shrink-0">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <span>{user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</span>
+                      </div>
+                      <Badge className={cn("rounded-none text-[10px] font-bold uppercase tracking-widest px-2 py-1 border-0", rc.className)}>
+                        {rc.label}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-none hover:bg-black/5 dark:hover:bg-white/5 h-8 w-8 shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-none border-black/10 dark:border-white/10">
+                          <DropdownMenuItem className="rounded-none cursor-pointer" onClick={() => setEditDateUser(user)}>
+                            <Calendar className="h-4 w-4 mr-2" />Edit Joining Date
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground rounded-none cursor-pointer" onClick={() => setDeleteId(user.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" />Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={o => !o && setDeleteId(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" />Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete the user. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting} className="rounded-none">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="rounded-none bg-destructive hover:bg-destructive/90">
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Date Dialog */}
+      <EditDateDialog user={editDateUser} isOpen={!!editDateUser} setIsOpen={(o: boolean) => !o && setEditDateUser(null)} onSuccess={load} />
     </AdminDashboardLayout>
   );
 }
