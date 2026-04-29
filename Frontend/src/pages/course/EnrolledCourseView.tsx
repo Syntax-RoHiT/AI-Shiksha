@@ -178,7 +178,7 @@ export const EnrolledCourseView = () => {
             </div>
 
             {/* Body */}
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4">
                 {/* Progress */}
                 {hasStarted ? (
                     <div className="space-y-1.5">
@@ -229,16 +229,16 @@ export const EnrolledCourseView = () => {
 
             {/* ─── Breadcrumb Nav (non-sticky) ─── */}
             <nav className="bg-white border-b border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-13 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Link to="/dashboard" className="hover:text-gray-800 transition-colors">Dashboard</Link>
-                        <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-                        <Link to="/dashboard/my-courses" className="hover:text-gray-800 transition-colors">My Courses</Link>
-                        <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-                        <span className="text-gray-800 font-medium truncate max-w-[180px] sm:max-w-sm">{course.title}</span>
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-auto py-3 flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-sm text-gray-500 min-w-0 overflow-hidden">
+                        <Link to="/dashboard" className="hover:text-gray-800 transition-colors whitespace-nowrap flex-shrink-0">Dashboard</Link>
+                        <ChevronRight className="h-3.5 w-3.5 text-gray-300 flex-shrink-0" />
+                        <Link to="/dashboard/my-courses" className="hover:text-gray-800 transition-colors whitespace-nowrap flex-shrink-0">My Courses</Link>
+                        <ChevronRight className="h-3.5 w-3.5 text-gray-300 flex-shrink-0" />
+                        <span className="text-gray-800 font-medium truncate">{course.title}</span>
                     </div>
                     {hasStarted && (
-                        <div className="hidden sm:flex items-center gap-3">
+                        <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
                             <div className="w-24">
                                 <Progress value={progress} className="h-1.5 bg-gray-100 [&>div]:bg-[#0056D2]" />
                             </div>
@@ -276,7 +276,7 @@ export const EnrolledCourseView = () => {
                         <div className="space-y-2">
                             <h1 className="text-2xl md:text-4xl font-extrabold text-[#111827] leading-snug tracking-tight">{course.title}</h1>
                             {course.subtitle && (
-                                <p className="text-lg text-gray-500 leading-relaxed">{course.subtitle}</p>
+                                <p className="text-base md:text-lg text-gray-500 leading-relaxed">{course.subtitle}</p>
                             )}
                         </div>
 
@@ -311,7 +311,7 @@ export const EnrolledCourseView = () => {
                         <div className="flex gap-3 pt-1 lg:hidden">
                             <Button
                                 onClick={handleStartLearning}
-                                className="rounded-full bg-[#0056D2] hover:bg-[#004299] text-white font-bold gap-2 shadow-md shadow-blue-200 px-8 active:scale-95"
+                                className="w-full rounded-full bg-[#0056D2] hover:bg-[#004299] text-white font-bold gap-2 shadow-md shadow-blue-200 active:scale-95"
                             >
                                 <PlayCircle className="h-5 w-5" />
                                 {hasStarted ? 'Continue Learning' : 'Start Learning'}
@@ -450,11 +450,11 @@ export const EnrolledCourseView = () => {
 
 
             {/* ─── Body ─── */}
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="grid lg:grid-cols-3 gap-10">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+                <div className="grid lg:grid-cols-3 gap-6 md:gap-10">
 
                     {/* ─── Left: main content ─── */}
-                    <div className="lg:col-span-2 space-y-10">
+                    <div className="lg:col-span-2 space-y-6 md:space-y-10">
 
                         {/* Mobile card */}
                         <div className="lg:hidden">
@@ -464,8 +464,8 @@ export const EnrolledCourseView = () => {
                         {/* About */}
                         {course.description && (
                             <section>
-                                <h2 className="text-xl font-bold text-[#111827] mb-4">About this course</h2>
-                                <div className="bg-white border border-gray-100 rounded-2xl p-7 shadow-sm">
+                                <h2 className="text-xl font-bold text-[#111827] mb-3">About this course</h2>
+                                <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-7 shadow-sm overflow-hidden">
                                     <div
                                         className="prose prose-gray max-w-none text-[#374151] text-sm leading-[1.75]
                                                    prose-headings:font-bold prose-headings:text-[#111827]
@@ -489,7 +489,7 @@ export const EnrolledCourseView = () => {
                                         <div key={section.id} className={si !== 0 ? 'border-t border-gray-100' : ''}>
                                             <button
                                                 onClick={() => toggleSection(si)}
-                                                className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50/80 transition-colors text-left"
+                                                className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50/80 transition-colors text-left"
                                             >
                                                 <div className="flex items-center gap-4 min-w-0">
                                                     <span className="flex-shrink-0 h-7 w-7 rounded-full bg-[#EEF2FF] text-[#0056D2] text-xs font-bold flex items-center justify-center">
@@ -513,13 +513,13 @@ export const EnrolledCourseView = () => {
                                                         .map((item: any) => {
                                                             const Icon = getIcon(item.item_type);
                                                             return (
-                                                                <div key={item.id} className="flex items-center justify-between px-6 py-3 hover:bg-white/60 transition-colors">
-                                                                    <div className="flex items-center gap-3 min-w-0">
+                                                                <div key={item.id} className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 hover:bg-white/60 transition-colors">
+                                                                    <div className="flex items-center gap-2.5 min-w-0">
                                                                         <Icon className="h-4 w-4 text-gray-400 flex-shrink-0" />
                                                                         <span className="text-sm text-gray-700 truncate">{item.title}</span>
                                                                     </div>
                                                                     {item.duration_minutes && (
-                                                                        <span className="text-xs text-gray-400 ml-4 flex-shrink-0">{fmtDuration(item.duration_minutes)}</span>
+                                                                        <span className="text-xs text-gray-400 ml-3 flex-shrink-0">{fmtDuration(item.duration_minutes)}</span>
                                                                     )}
                                                                 </div>
                                                             );
