@@ -72,6 +72,11 @@ export default function EnrollmentPage() {
   const [courseSearch, setCourseSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Edit Date state
+  const [editDateEnrollment, setEditDateEnrollment] = useState<Enrollment | null>(null);
+  const [editDateValue, setEditDateValue] = useState("");
+  const [isSavingDate, setIsSavingDate] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -143,6 +148,21 @@ export default function EnrollmentPage() {
       loadStats();
     } catch (error) {
       toast({ title: "Error", description: "Failed to remove enrollment", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateDates = async () => {
+    if (!editDateEnrollment || !editDateValue) return;
+    setIsSavingDate(true);
+    try {
+      await Enrollments.bulkUpdateDates([editDateEnrollment.id], editDateValue);
+      toast({ title: "Success", description: "Enrollment date updated. Transaction date is now in sync." });
+      setEditDateEnrollment(null);
+      loadEnrollments();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update date", variant: "destructive" });
+    } finally {
+      setIsSavingDate(false);
     }
   };
 
@@ -597,6 +617,15 @@ export default function EnrollmentPage() {
                                             <DropdownMenuItem className="gap-2 cursor-pointer text-xs font-bold uppercase tracking-widest text-indigo-600" onClick={() => handleUpdateStatus(enrollment, 'COMPLETED')}>
                                                 <TrendingUp className="h-3 w-3" /> Set Completed
                                             </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              className="gap-2 cursor-pointer text-xs font-bold uppercase tracking-widest text-amber-600"
+                                              onClick={() => {
+                                                setEditDateEnrollment(enrollment);
+                                                setEditDateValue(enrollment.enrolled_at ? new Date(enrollment.enrolled_at).toISOString().split('T')[0] : '');
+                                              }}
+                                            >
+                                                <Calendar className="h-3 w-3" /> Edit Date
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem className="gap-2 cursor-pointer text-xs font-bold uppercase tracking-widest text-red-600 focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-500/10" onClick={() => handleDeleteEnrollment(enrollment)}>
                                                 <Trash2 className="h-3 w-3" /> Remove
                                             </DropdownMenuItem>
@@ -611,6 +640,50 @@ export default function EnrollmentPage() {
             </div>
         </div>
       </div>
+
+      {/* Edit Enrollment Date Dialog */}
+      {editDateEnrollment && (
+        <Dialog open={!!editDateEnrollment} onOpenChange={(open) => !open && setEditDateEnrollment(null)}>
+          <DialogContent className="rounded-none sm:max-w-sm border border-black/10 dark:border-white/10">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="font-black uppercase tracking-widest text-base">Edit Enrollment Date</DialogTitle>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Updates enrollment date <span className="font-bold text-amber-600">AND</span> the linked transaction date.
+              </p>
+            </DialogHeader>
+            <div className="py-3 space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Student</Label>
+                <p className="text-sm font-bold text-zinc-900 dark:text-white">{editDateEnrollment.user.name}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Course</Label>
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{editDateEnrollment.course.title}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-widest text-zinc-500">New Enrollment Date *</Label>
+                <Input
+                  type="date"
+                  value={editDateValue}
+                  onChange={(e) => setEditDateValue(e.target.value)}
+                  className="rounded-none"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDateEnrollment(null)} className="rounded-none">Cancel</Button>
+              <Button
+                onClick={handleUpdateDates}
+                disabled={isSavingDate || !editDateValue}
+                className="rounded-none bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {isSavingDate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Date
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </AdminDashboardLayout>
   );
 }
