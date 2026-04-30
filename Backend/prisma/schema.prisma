@@ -860,6 +860,9 @@ model Announcement {
   franchise_id String?
   franchise    Franchise? @relation(fields: [franchise_id], references: [id])
 
+  // Targeting: null = all roles, otherwise e.g. "STUDENT", "TEACHER", "ADMIN"
+  role_intended String?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

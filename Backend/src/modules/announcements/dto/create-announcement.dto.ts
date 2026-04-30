@@ -12,4 +12,8 @@ export class CreateAnnouncementDto {
     @IsBoolean()
     @IsOptional()
     is_active?: boolean;
+
+    @IsString()
+    @IsOptional()
+    role_intended?: string | null;
 }

@@ -11,6 +11,8 @@ export class AnnouncementsService {
     ) { }
 
     async create(userId: string, franchiseId: string | null, createAnnouncementDto: CreateAnnouncementDto) {
+        const roleIntended = createAnnouncementDto.role_intended || null;
+
         const announcement = await this.prisma.announcement.create({
             data: {
                 title: createAnnouncementDto.title,
@@ -18,13 +20,18 @@ export class AnnouncementsService {
                 is_active: createAnnouncementDto.is_active ?? true,
                 created_by: userId,
                 franchise_id: franchiseId,
+                role_intended: roleIntended,   // ← persist targeting
             },
         });
 
-        // Broadcast to specific franchise if defined, else to ALL users
+        // ── Franchise isolation: always scope to the franchise first ──
+        // Then, if a specific role was selected, further filter by that role.
         const whereUsers: any = {};
         if (franchiseId) {
             whereUsers.franchise_id = franchiseId;
+        }
+        if (roleIntended) {
+            whereUsers.role = roleIntended;   // ← THIS was the missing filter
         }
 
         const usersToNotify = await this.prisma.user.findMany({
@@ -44,7 +51,7 @@ export class AnnouncementsService {
             ? 'http://localhost:5173/dashboard'
             : `https://${franchiseDomain}/dashboard`;
 
-        // Send announcement to all users EXCEPT the author (admin)
+        // Send announcement to targeted users EXCEPT the author (admin)
         Promise.all(
             usersToNotify
                 .filter(u => u.id !== userId) // Skip the creator
@@ -61,10 +68,13 @@ export class AnnouncementsService {
 
         // Send confirmation email to admin
         if (author) {
+            const targetLabel = roleIntended
+                ? `${roleIntended.charAt(0).toUpperCase() + roleIntended.slice(1).toLowerCase()}s`
+                : 'all enrolled users';
             this.mailService.sendSupportNotification(
                 { email: author.email, name: author.name, franchise_id: author.franchise_id },
                 `Announcement Published: "${announcement.title}"`,
-                `Your announcement "${announcement.title}" has been published and sent to all enrolled students.\n\nContent:\n${announcement.content}`,
+                `Your announcement "${announcement.title}" has been published and sent to ${targetLabel}.\n\nContent:\n${announcement.content}`,
             ).catch(err => console.error("Error sending announcement confirmation email:", err));
         }
 
