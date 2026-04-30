@@ -37,7 +37,7 @@ export class QuizzesService {
         questions: {
           create: questionCreateInput,
         },
-      },
+      } as any,
       include: {
         questions: {
           orderBy: { order_index: 'asc' },
@@ -63,10 +63,10 @@ export class QuizzesService {
                   },
                 },
               },
-            },
+            } as any,
             {
               franchise_id: franchiseId,
-            },
+            } as any,
           ],
         },
         orderBy: { created_at: 'desc' },
