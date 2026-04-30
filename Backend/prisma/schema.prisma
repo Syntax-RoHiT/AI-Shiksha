@@ -85,7 +85,7 @@ model User {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   instructor_profile InstructorProfile?
   enrollments        Enrollment[]
@@ -179,7 +179,7 @@ model Course {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   // Approval Workflow
   status                    String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, PUBLISHED, REJECTED
@@ -254,7 +254,7 @@ model Category {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   courses Course[]
 
@@ -271,7 +271,7 @@ model Tag {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   courses CourseTag[]
 
@@ -344,7 +344,7 @@ model Enrollment {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   @@unique([student_id, course_id])
   @@map("enrollments")
@@ -365,7 +365,7 @@ model Payment {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   coupon_id String?
   coupon    Coupon? @relation(fields: [coupon_id], references: [id], onDelete: SetNull)
@@ -474,7 +474,7 @@ model Certificate {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   @@unique([student_id, course_id])
   @@map("certificates")
@@ -810,7 +810,7 @@ model SupportTicket {
 
   // Multi-tenant franchise
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   messages SupportTicketMessage[]
 
@@ -840,7 +840,7 @@ model StudentFeedback {
   status     String @default("NEW") // NEW, REVIEWED, RESOLVED
 
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -858,7 +858,7 @@ model Announcement {
 
   // Multi-tenant franchise constraints
   franchise_id String?
-  franchise    Franchise? @relation(fields: [franchise_id], references: [id])
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
 
   // Targeting: null = all roles, otherwise e.g. "STUDENT", "TEACHER", "ADMIN"
   role_intended String?

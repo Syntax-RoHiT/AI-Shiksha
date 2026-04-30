@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Edit, Pause, Play, Loader2, Building2 } from "lucide-react";
+import { Search, Edit, Trash2, Loader2, Building2 } from "lucide-react";
 
 interface Franchise {
     id: string;
@@ -23,11 +23,11 @@ interface Franchise {
 interface FranchisesListProps {
     franchises: Franchise[];
     isLoading: boolean;
-    onToggleSuspend: (franchise: Franchise) => void;
+    onDelete: (franchise: Franchise) => void;
     onRefresh: () => void;
 }
 
-export default function FranchisesList({ franchises, isLoading, onToggleSuspend, onRefresh }: FranchisesListProps) {
+export default function FranchisesList({ franchises, isLoading, onDelete, onRefresh }: FranchisesListProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredFranchises = franchises.filter(
@@ -127,11 +127,11 @@ export default function FranchisesList({ franchises, isLoading, onToggleSuspend,
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                                    onClick={() => onToggleSuspend(franchise)}
-                                                    title={franchise.is_active ? "Suspend Franchise" : "Activate Franchise"}
+                                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => onDelete(franchise)}
+                                                    title="Delete Franchise"
                                                 >
-                                                    {franchise.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                                     <Edit className="h-4 w-4" />

@@ -3,6 +3,7 @@ import {
     Get,
     Post,
     Patch,
+    Delete,
     Body,
     Param,
     UseGuards,
@@ -142,5 +143,15 @@ export class FranchisesController {
     @ApiOperation({ summary: 'Toggle franchise active/suspended status (SUPER_ADMIN only)' })
     toggleSuspend(@Param('id') id: string) {
         return this.franchisesService.toggleSuspend(id);
+    }
+
+    @Delete(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.SUPER_ADMIN)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Complete delete a franchise from the database (SUPER_ADMIN only)' })
+    remove(@Param('id') id: string) {
+        return this.franchisesService.remove(id);
     }
 }

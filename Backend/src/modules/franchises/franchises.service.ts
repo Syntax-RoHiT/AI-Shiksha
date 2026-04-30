@@ -680,4 +680,14 @@ export class FranchisesService {
             data: [modernTemplate, corporateTemplate],
         });
     }
+
+    /**
+     * Completely delete a franchise from the database
+     */
+    async remove(id: string) {
+        await this.findOne(id); // Ensure it exists
+        return this.prisma.franchise.delete({
+            where: { id },
+        });
+    }
 }

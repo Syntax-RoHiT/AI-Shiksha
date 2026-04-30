@@ -56,17 +56,18 @@ export default function FranchisesPage() {
     }
   };
 
-  const handleToggleSuspend = async (franchise: Franchise) => {
+  const handleDelete = async (franchise: Franchise) => {
+    if (!confirm(`Are you absolutely sure you want to completely delete the franchise "${franchise.name}" and all its data? This action cannot be undone.`)) {
+      return;
+    }
     try {
-      const response = await api.patch(`/franchises/${franchise.id}/suspend`);
-      setFranchises((prev) =>
-        prev.map((f) => (f.id === franchise.id ? { ...f, is_active: response.data.is_active } : f))
-      );
+      await api.delete(`/franchises/${franchise.id}`);
+      setFranchises((prev) => prev.filter((f) => f.id !== franchise.id));
       toast({
-        description: `Franchise "${franchise.name}" has been ${response.data.is_active ? "activated" : "suspended"}.`,
+        description: `Franchise "${franchise.name}" has been permanently deleted.`,
       });
     } catch {
-      toast({ title: "Error", description: "Failed to update franchise status.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to delete franchise.", variant: "destructive" });
     }
   };
 
@@ -161,7 +162,7 @@ export default function FranchisesPage() {
         <FranchisesList
           franchises={franchises}
           isLoading={isLoading}
-          onToggleSuspend={handleToggleSuspend}
+          onDelete={handleDelete}
           onRefresh={fetchFranchises}
         />
       </div>
