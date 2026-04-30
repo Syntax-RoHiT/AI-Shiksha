@@ -32,8 +32,9 @@ export class QuizzesController {
 
   @Post()
   @Roles(Role.INSTRUCTOR, Role.ADMIN, Role.FRANCHISE_ADMIN)
-  createQuiz(@Body() dto: CreateQuizDto) {
-    return this.quizzesService.createQuiz(dto);
+  createQuiz(@Request() req, @Body() dto: CreateQuizDto) {
+    const franchiseId = req.user?.franchise_id || null;
+    return this.quizzesService.createQuiz(dto, franchiseId);
   }
 
   @Get()

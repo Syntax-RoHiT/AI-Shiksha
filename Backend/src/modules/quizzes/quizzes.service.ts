@@ -19,7 +19,7 @@ export class QuizzesService {
 
   // ========== QUIZ CRUD ==========
 
-  async createQuiz(dto: CreateQuizDto) {
+  async createQuiz(dto: CreateQuizDto, franchiseId: string | null) {
     const { questions, ...quizData } = dto;
 
     const questionCreateInput = questions?.map((q) => ({
@@ -33,6 +33,7 @@ export class QuizzesService {
     return this.prisma.quiz.create({
       data: {
         ...quizData,
+        franchise_id: franchiseId,
         questions: {
           create: questionCreateInput,
         },
@@ -46,15 +47,9 @@ export class QuizzesService {
   }
 
   async findAll(franchiseId?: string | null) {
-    // If franchiseId is provided (franchise admin), filter quizzes that belong to
-    // section items → sections → courses of that franchise only.
-    // Also include quizzes with no section_item links yet (newly created standalone quizzes).
-    // If franchiseId is null (super admin with null franchise), show system quizzes only.
-    // If franchiseId is undefined (super admin), show all.
-
     if (franchiseId !== undefined) {
       // Fetch quizzes linked to courses belonging to the given franchise,
-      // OR quizzes that are not yet attached to any section item (standalone/newly created).
+      // OR explicitly created by/for this franchise.
       const quizzes = await this.prisma.quiz.findMany({
         where: {
           OR: [
@@ -70,10 +65,7 @@ export class QuizzesService {
               },
             },
             {
-              // Standalone quizzes not yet assigned to any section item
-              section_items: {
-                none: {},
-              },
+              franchise_id: franchiseId,
             },
           ],
         },

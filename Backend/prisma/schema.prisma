@@ -34,21 +34,21 @@ model Franchise {
   global_ai_control Boolean @default(true)
 
   // SEO Settings
-  seo_title       String?
-  seo_description String?  @db.Text
-  seo_keywords    String?
-  seo_og_title    String?
-  seo_og_description String? @db.Text
-  seo_og_image    String?
-  seo_twitter_card String? @default("summary_large_image")
-  seo_twitter_handle String?
-  seo_technical_sitemap Boolean @default(true)
-  seo_technical_robots_txt Boolean @default(true)
-  seo_technical_schema_markup Boolean @default(true)
-  seo_technical_canonical_tags Boolean @default(true)
-  seo_custom_head_scripts String? @db.Text
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  seo_title                    String?
+  seo_description              String?  @db.Text
+  seo_keywords                 String?
+  seo_og_title                 String?
+  seo_og_description           String?  @db.Text
+  seo_og_image                 String?
+  seo_twitter_card             String?  @default("summary_large_image")
+  seo_twitter_handle           String?
+  seo_technical_sitemap        Boolean  @default(true)
+  seo_technical_robots_txt     Boolean  @default(true)
+  seo_technical_schema_markup  Boolean  @default(true)
+  seo_technical_canonical_tags Boolean  @default(true)
+  seo_custom_head_scripts      String?  @db.Text
+  created_at                   DateTime @default(now())
+  updated_at                   DateTime @updatedAt
 
   users                 User[]
   courses               Course[]
@@ -67,6 +67,7 @@ model Franchise {
   pages                 Page[]
   footer_setting        FooterSetting?
   StudentFeedback       StudentFeedback[]
+  Quiz                  Quiz[]
 
   @@map("franchises")
 }
@@ -654,6 +655,9 @@ model Quiz {
   total_sets        Int @default(1)
   questions_per_set Int @default(10)
 
+  franchise_id String?
+  franchise    Franchise? @relation(fields: [franchise_id], references: [id], onDelete: Cascade)
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -722,7 +726,7 @@ model Assignment {
   deadline                DateTime?
   late_penalty_percentage Int       @default(0)
 
-  assignment_url     String? // URL for attached assignment file
+  assignment_url String? // URL for attached assignment file
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -795,14 +799,14 @@ model SectionItemProgress {
 // ============================================
 
 model SupportTicket {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   student_id  String
-  student     User   @relation("StudentTickets", fields: [student_id], references: [id], onDelete: Cascade)
+  student     User    @relation("StudentTickets", fields: [student_id], references: [id], onDelete: Cascade)
   subject     String
-  description String @db.Text
+  description String  @db.Text
   image_url   String?
-  status      String @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
-  priority    String @default("MEDIUM") // LOW, MEDIUM, HIGH
+  status      String  @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String  @default("MEDIUM") // LOW, MEDIUM, HIGH
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
