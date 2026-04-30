@@ -20,8 +20,8 @@ export class AnnouncementsService {
                 is_active: createAnnouncementDto.is_active ?? true,
                 created_by: userId,
                 franchise_id: franchiseId,
-                role_intended: roleIntended,   // ← persist targeting
-            },
+                role_intended: roleIntended,
+            } as any,
         });
 
         // ── Franchise isolation: always scope to the franchise first ──
