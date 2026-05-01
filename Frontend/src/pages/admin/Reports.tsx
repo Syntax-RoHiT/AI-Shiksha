@@ -70,6 +70,7 @@ export default function ReportsPage() {
   });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
+  const [dataTab, setDataTab] = useState<string>(activeTab);
   const activeTabRef = useRef(activeTab);
 
   useEffect(() => {
@@ -105,6 +106,7 @@ export default function ReportsPage() {
       // Only update state if the user hasn't switched tabs while fetching
       if (activeTabRef.current === requestingTab) {
         setData(res);
+        setDataTab(requestingTab);
       }
     } catch (error) {
       console.error("Failed to fetch report:", error);
@@ -326,7 +328,7 @@ export default function ReportsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.students.slice(0, 10).map((s: any) => (
+                      {data.students?.slice(0, 10).map((s: any) => (
                         <TableRow key={s.id}>
                           <TableCell>
                             <div>
@@ -392,7 +394,7 @@ export default function ReportsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.courses.map((c: any) => (
+                      {data.courses?.map((c: any) => (
                         <TableRow key={c.courseId}>
                           <TableCell className="font-medium">{c.courseName}</TableCell>
                           <TableCell>{c.totalEnrollments}</TableCell>
@@ -463,7 +465,7 @@ export default function ReportsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {data.quizSubmissions.slice(0, 5).map((q: any) => (
+                        {data.quizSubmissions?.slice(0, 5).map((q: any) => (
                           <TableRow key={q.id}>
                             <TableCell>{q.studentName}</TableCell>
                             <TableCell>{q.quizTitle}</TableCell>
@@ -499,7 +501,7 @@ export default function ReportsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.assignmentSubmissions.slice(0, 10).map((a: any) => (
+                      {data.assignmentSubmissions?.slice(0, 10).map((a: any) => (
                         <TableRow key={a.id}>
                           <TableCell>{a.studentName}</TableCell>
                           <TableCell>{a.assignmentTitle}</TableCell>
@@ -566,7 +568,7 @@ export default function ReportsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.transactions.slice(0, 10).map((t: any) => (
+                      {data.transactions?.slice(0, 10).map((t: any) => (
                         <TableRow key={t.id}>
                           <TableCell>
                             <div>
@@ -680,11 +682,11 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {loading ? (
+        {loading || (data && dataTab !== activeTab) ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : data ? (
+        ) : data && dataTab === activeTab ? (
           <>
             {renderKPIs()}
             {renderChartsAndTables()}
