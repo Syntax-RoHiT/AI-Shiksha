@@ -33,6 +33,31 @@ import {
 import { Reports } from "@/lib/api";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend
+} from "recharts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState("students");
@@ -48,6 +73,7 @@ export default function ReportsPage() {
 
   const fetchReport = async () => {
     setLoading(true);
+    setData(null);
     try {
       const params = {
         startDate: date.from ? date.from.toISOString() : undefined,
@@ -223,7 +249,7 @@ export default function ReportsPage() {
         break;
       case "revenue":
         kpis = [
-          { title: "Total Revenue", value: `₹${data.summary.totalRevenue.toLocaleString()}`, icon: DollarSign },
+          { title: "Total Revenue", value: `₹${data.summary.totalRevenue?.toLocaleString() ?? 0}`, icon: DollarSign },
           { title: "Transactions", value: data.summary.totalTransactions, icon: CreditCard },
           { title: "Failed Payments", value: data.summary.failedPayments, icon: XCircle },
           { title: "Coupon Usage", value: data.summary.couponUsage, icon: Tag },
@@ -248,6 +274,326 @@ export default function ReportsPage() {
         ))}
       </div>
     );
+  };
+
+  const renderChartsAndTables = () => {
+    switch (activeTab) {
+      case "students":
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Students by Course</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.studentsByCourse} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="courseName" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                      <Bar dataKey="count" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Enrollments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Enrolled At</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.students.slice(0, 10).map((s: any) => (
+                        <TableRow key={s.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{s.name}</p>
+                              <p className="text-xs text-muted-foreground">{s.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{s.course}</TableCell>
+                          <TableCell>{format(new Date(s.enrolledAt), "PPp")}</TableCell>
+                          <TableCell className="capitalize">{s.status.toLowerCase()}</TableCell>
+                        </TableRow>
+                      ))}
+                      {data.students.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No students found.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "courses":
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Course Completion Rates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.courses} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="courseName" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
+                      <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                      <Legend />
+                      <Bar dataKey="completionRate" name="Course Completion" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="lectureCompletionPct" name="Lecture Completion" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Course Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Enrollments</TableHead>
+                        <TableHead>Completion Rate</TableHead>
+                        <TableHead>Lecture Progress</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.courses.map((c: any) => (
+                        <TableRow key={c.courseId}>
+                          <TableCell className="font-medium">{c.courseName}</TableCell>
+                          <TableCell>{c.totalEnrollments}</TableCell>
+                          <TableCell>{c.completionRate}%</TableCell>
+                          <TableCell>{c.lectureCompletionPct}%</TableCell>
+                        </TableRow>
+                      ))}
+                      {data.courses.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No courses found.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "assessments":
+        const pieData = [
+          { name: 'Passed', value: data.summary.passRate, fill: '#10b981' },
+          { name: 'Failed', value: data.summary.failRate, fill: '#ef4444' }
+        ];
+
+        return (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quiz Pass Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[250px]">
+                    {data.summary.totalQuizAttempts > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => `${value}%`} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">No quiz attempts yet</div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Quiz Submissions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border overflow-x-auto max-h-[250px] overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Student</TableHead>
+                          <TableHead>Quiz</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {data.quizSubmissions.slice(0, 5).map((q: any) => (
+                          <TableRow key={q.id}>
+                            <TableCell>{q.studentName}</TableCell>
+                            <TableCell>{q.quizTitle}</TableCell>
+                            <TableCell>{q.score}%</TableCell>
+                            <TableCell>
+                              <span className={cn("px-2 py-1 rounded-full text-xs font-medium", q.passed ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400")}>
+                                {q.passed ? 'Passed' : 'Failed'}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Assignment Submissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Assignment</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.assignmentSubmissions.slice(0, 10).map((a: any) => (
+                        <TableRow key={a.id}>
+                          <TableCell>{a.studentName}</TableCell>
+                          <TableCell>{a.assignmentTitle}</TableCell>
+                          <TableCell>{a.courseName}</TableCell>
+                          <TableCell>{format(new Date(a.submittedAt), "PPp")}</TableCell>
+                          <TableCell>
+                            {a.graded ? (
+                              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Graded ({a.grade}/100)</span>
+                            ) : (
+                              <span className="text-amber-600 dark:text-amber-400 font-medium">Pending Eval</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {data.assignmentSubmissions.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">No assignments found.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "revenue":
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue by Course</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.courseSales} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <XAxis dataKey="courseName" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} />
+                      <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} formatter={(val: number) => `₹${val}`} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                      <Bar dataKey="revenue" name="Revenue Generated" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.transactions.slice(0, 10).map((t: any) => (
+                        <TableRow key={t.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{t.studentName}</p>
+                              <p className="text-xs text-muted-foreground">{t.studentEmail}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{t.course}</TableCell>
+                          <TableCell className="font-medium">₹{t.amount.toLocaleString()}</TableCell>
+                          <TableCell>{format(new Date(t.createdAt), "PPp")}</TableCell>
+                          <TableCell>
+                            <span className={cn("px-2 py-1 rounded-full text-xs font-medium", 
+                              t.status === 'success' || t.status === 'completed' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : 
+                              t.status === 'failed' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                              "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                            )}>
+                              {t.status}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {data.transactions.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">No transactions found.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -331,27 +677,7 @@ export default function ReportsPage() {
         ) : data ? (
           <>
             {renderKPIs()}
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="capitalize">{activeTab} Data</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                   {/* Table rendering will go here based on active tab. For now showing a placeholder message indicating data is ready for export */}
-                   <div className="p-8 text-center text-muted-foreground">
-                      Data loaded successfully. Use the export buttons above to download the full report.
-                      <br/>
-                      <span className="text-sm">Total records: {
-                        activeTab === 'students' ? data.students?.length :
-                        activeTab === 'courses' ? data.courses?.length :
-                        activeTab === 'assessments' ? (data.quizSubmissions?.length + data.assignmentSubmissions?.length) :
-                        data.transactions?.length
-                      }</span>
-                   </div>
-                </div>
-              </CardContent>
-            </Card>
+            {renderChartsAndTables()}
           </>
         ) : null}
       </div>
