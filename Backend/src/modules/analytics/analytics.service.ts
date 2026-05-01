@@ -310,9 +310,8 @@ export class AnalyticsService {
 
     const propId = cred.ga_property_id;
 
-    const [trafficRaw, acquisitionRaw, deviceRaw, countryRaw, pagesRaw, eventsRaw] =
-      await Promise.all([
-        this.runGA4Report(propId, token, {
+    const executeReports = (currentToken: string) => Promise.all([
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'date' }],
           metrics: [
@@ -323,31 +322,31 @@ export class AnalyticsService {
             { name: 'averageSessionDuration' },
           ],
         }),
-        this.runGA4Report(propId, token, {
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'sessionDefaultChannelGroup' }],
           metrics: [{ name: 'sessions' }],
         }),
-        this.runGA4Report(propId, token, {
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'deviceCategory' }],
           metrics: [{ name: 'sessions' }, { name: 'totalUsers' }],
         }),
-        this.runGA4Report(propId, token, {
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'country' }],
           metrics: [{ name: 'sessions' }],
           orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
           limit: 10,
         }),
-        this.runGA4Report(propId, token, {
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'pagePath' }, { name: 'pageTitle' }],
           metrics: [{ name: 'screenPageViews' }, { name: 'averageSessionDuration' }],
           orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
           limit: 20,
         }),
-        this.runGA4Report(propId, token, {
+        this.runGA4Report(propId, currentToken, {
           dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
           dimensions: [{ name: 'eventName' }],
           metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
@@ -355,6 +354,20 @@ export class AnalyticsService {
           limit: 20,
         }),
       ]);
+
+    let results;
+    try {
+      results = await executeReports(token);
+    } catch (err: any) {
+      if (err?.response?.status === 401 || err?.response?.data?.error?.status === 'UNAUTHENTICATED') {
+        token = await this.refreshAccessToken(franchiseId);
+        results = await executeReports(token);
+      } else {
+        throw err;
+      }
+    }
+
+    const [trafficRaw, acquisitionRaw, deviceRaw, countryRaw, pagesRaw, eventsRaw] = results;
 
     // Parse traffic
     const trafficByDay = (trafficRaw.rows || []).map((row: any) => ({
