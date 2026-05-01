@@ -160,7 +160,8 @@ export default function AnalyticsPage() {
   const fetchProperties = async () => {
     try {
       const props = await Analytics.listProperties();
-      setProperties(props);
+      // Ensure we always set an array to avoid map() crashes
+      setProperties(props.properties || []);
     } catch (error) {
       console.error("Failed to fetch properties", error);
       toast.error("Failed to load Google Analytics properties");
