@@ -68,6 +68,8 @@ export default function ReportsPage() {
     from: undefined,
     to: undefined,
   });
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
   const activeTabRef = useRef(activeTab);
 
   useEffect(() => {
