@@ -20,14 +20,6 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Accept',
-      'Authorization',
-      'X-Requested-With',
-      'custom-franchise-domain',
-      'x-franchise-domain',
-    ],
   });
 
   // Serve uploaded files
