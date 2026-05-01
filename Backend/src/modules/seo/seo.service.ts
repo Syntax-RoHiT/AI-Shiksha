@@ -13,12 +13,12 @@ export class SeoService {
     const branding = await this.franchisesService.getBrandingByDomain(domain);
     
     const title = branding.seo_title || branding.lms_name || branding.name || 'AI Shiksha';
-    const description = branding.seo_description || '';
+    const description = branding.seo_description || branding.description || '';
     const ogTitle = branding.seo_og_title || title;
     const ogDescription = branding.seo_og_description || description;
     
     // Ensure absolute URL for image
-    let ogImage = branding.seo_og_image || '';
+    let ogImage = branding.seo_og_image || branding.logo_url || '';
     if (ogImage && !ogImage.startsWith('http')) {
         // If it's a relative path (e.g. from local uploads), we need the full URL
         ogImage = `https://api.${domain}${ogImage}`; // Or wherever images are served from
