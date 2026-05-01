@@ -4,21 +4,23 @@
  * Fires a GA4 page_view event on every React Router navigation.
  * Must be rendered inside <BrowserRouter> and <FranchiseProvider>.
  *
- * Pages excluded from tracking (auth + fullscreen lesson player):
- *   /login, /signup, /forgot-password, /reset-password, /learn/*
+ * Pages EXCLUDED from tracking (private / auth / fullscreen):
+ *   /login, /signup, /forgot-password, /reset-password
+ *   /learn/*       — fullscreen lesson player
+ *   /dashboard/*   — private admin & student area (not public traffic)
  */
 
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useFranchise } from "@/contexts/FranchiseContext";
 
-// Paths that should NOT be tracked (auth pages & lesson player)
 const EXCLUDED_PREFIXES = [
   "/login",
   "/signup",
   "/forgot-password",
   "/reset-password",
   "/learn/",
+  "/dashboard",  // all admin + student dashboard pages
 ];
 
 const isExcluded = (pathname: string) =>
@@ -35,8 +37,11 @@ export function AnalyticsTracker() {
   const location = useLocation();
   const { branding } = useFranchise();
   const scriptInjected = useRef(false);
+  // GA4's own script auto-fires a page_view on the very first load.
+  // We skip our first render to avoid counting the initial page twice.
+  const isFirstRender = useRef(true);
 
-  // ── Step 1: Inject the custom head script once when branding loads ─────────
+  // ── Inject the custom head script once when branding loads ────────────────
   useEffect(() => {
     if (scriptInjected.current) return;
     if (!branding.seo_custom_head_scripts) return;
@@ -48,7 +53,7 @@ export function AnalyticsTracker() {
       document.head.appendChild(container);
     }
 
-    // createContextualFragment executes <script> tags correctly
+    // createContextualFragment correctly executes <script> tags
     const range = document.createRange();
     range.selectNode(container);
     const fragment = range.createContextualFragment(branding.seo_custom_head_scripts);
@@ -57,11 +62,16 @@ export function AnalyticsTracker() {
     scriptInjected.current = true;
   }, [branding.seo_custom_head_scripts]);
 
-  // ── Step 2: Fire page_view on every route change ──────────────────────────
+  // ── Fire page_view only on subsequent SPA navigations ────────────────────
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return; // skip — GA4 script already sent the first page_view
+    }
+
     if (isExcluded(location.pathname)) return;
 
-    // Wait a tick so the new page's <title> has updated
+    // Small delay so the page <title> has updated before we send
     const timer = setTimeout(() => {
       if (typeof window.gtag === "function") {
         window.gtag("event", "page_view", {
