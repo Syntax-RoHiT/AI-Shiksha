@@ -1,9 +1,8 @@
 /**
  * AnalyticsTracker.tsx
  *
- * Injects GA4 with send_page_view: false (disables GA4's automatic
- * Enhanced Measurement history tracking), then manually fires page_view
- * ONLY for allowed public pages.
+ * Injects GA4 with send_page_view: false (disables GA4 Enhanced Measurement
+ * auto history tracking), then manually fires page_view ONLY for public pages.
  *
  * Pages EXCLUDED from tracking:
  *   /login, /signup, /forgot-password, /reset-password
@@ -28,11 +27,19 @@ const EXCLUDED_PREFIXES = [
 const isExcluded = (pathname: string) =>
   EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p));
 
-// ── Extract GA4 measurement ID from raw script HTML ──────────────────────--
-// Supports: ?id=G-XXXXXXXX  (from gtag.js src URL)
+// ── Extract GA4 Measurement ID from raw script HTML ─────────────────────────
 function extractMeasurementId(html: string): string | null {
   const match = html.match(/[?&]id=(G-[A-Z0-9]+)/i);
   return match ? match[1] : null;
+}
+
+function sendPageView(path: string) {
+  if (typeof window.gtag !== "function") return;
+  window.gtag("event", "page_view", {
+    page_path: path,
+    page_title: document.title,
+    page_location: window.location.origin + path,
+  });
 }
 
 declare global {
@@ -46,17 +53,18 @@ export function AnalyticsTracker() {
   const location = useLocation();
   const { branding } = useFranchise();
   const scriptInjected = useRef(false);
-  const measurementId = useRef<string | null>(null);
-  const isFirstRender = useRef(true);
+  // Track the last path we sent a page_view for — prevents double-firing
+  const lastSentPath = useRef<string | null>(null);
 
-  // ── Inject GA4 with send_page_view:false ───────────────────────────────────
+  // ── Inject GA4 script and fire the FIRST page_view ─────────────────────────
   useEffect(() => {
     if (scriptInjected.current) return;
     if (!branding.seo_custom_head_scripts) return;
 
     const id = extractMeasurementId(branding.seo_custom_head_scripts);
+
     if (!id) {
-      // Fallback: inject raw script as-is (non-GA4 tags e.g. GTM, Hotjar)
+      // Non-GA4 script (e.g. GTM, Hotjar) — inject raw and exit
       let container = document.getElementById("custom-head-scripts");
       if (!container) {
         container = document.createElement("div");
@@ -72,62 +80,60 @@ export function AnalyticsTracker() {
       return;
     }
 
-    measurementId.current = id;
-
-    // 1. Load the gtag.js async script
-    if (!document.querySelector(`script[src*="${id}"]`)) {
-      const gtagScript = document.createElement("script");
-      gtagScript.async = true;
-      gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
-      document.head.appendChild(gtagScript);
-    }
-
-    // 2. Initialize dataLayer and gtag function
+    // 1. Initialize dataLayer & gtag stub BEFORE loading the script
+    //    This queues all gtag() calls until gtag.js finishes loading.
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function (...args: any[]) {
-      window.dataLayer!.push(args);
-    };
+    if (typeof window.gtag !== "function") {
+      window.gtag = function (...args: any[]) {
+        window.dataLayer!.push(args);
+      };
+    }
     window.gtag("js", new Date());
 
-    // 3. Configure with send_page_view: false
-    //    This disables BOTH the initial auto page_view AND
-    //    GA4 Enhanced Measurement's history-change tracking.
-    window.gtag("config", id, {
-      send_page_view: false,
-    });
+    // 2. Configure with send_page_view: false
+    //    This disables BOTH the auto initial page_view AND
+    //    Enhanced Measurement's history-change tracking.
+    window.gtag("config", id, { send_page_view: false });
+
+    // 3. Load gtag.js async — all queued calls above will execute once it loads
+    if (!document.querySelector(`script[src*="gtag/js"]`)) {
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+      document.head.appendChild(script);
+    }
 
     scriptInjected.current = true;
+
+    // 4. Fire the FIRST page_view for the current page (if it's public)
+    //    Uses a timeout so gtag.js has started loading and the stub is ready.
+    const currentPath = window.location.pathname + window.location.search;
+    if (!isExcluded(window.location.pathname)) {
+      setTimeout(() => {
+        sendPageView(currentPath);
+        lastSentPath.current = currentPath;
+      }, 300);
+    } else {
+      lastSentPath.current = currentPath; // mark as "handled" even if excluded
+    }
   }, [branding.seo_custom_head_scripts]);
 
-  // ── Manually fire page_view on every route change ─────────────────────────
+  // ── Fire page_view on subsequent SPA navigations ───────────────────────────
   useEffect(() => {
-    // Skip the very first render (we don't fire on load — gtag config handles that)
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    const currentPath = location.pathname + location.search;
 
-      // Fire the initial page_view manually for the first page ONLY if it's public
-      setTimeout(() => {
-        if (!isExcluded(location.pathname) && typeof window.gtag === "function") {
-          window.gtag("event", "page_view", {
-            page_path: location.pathname + location.search,
-            page_title: document.title,
-            page_location: window.location.href,
-          });
-        }
-      }, 200); // wait for gtag.js to finish loading
+    // Skip if this path was already handled (e.g. the initial load above)
+    if (lastSentPath.current === currentPath) return;
+
+    if (isExcluded(location.pathname)) {
+      lastSentPath.current = currentPath;
       return;
     }
 
-    if (isExcluded(location.pathname)) return;
+    lastSentPath.current = currentPath;
 
     const timer = setTimeout(() => {
-      if (typeof window.gtag === "function") {
-        window.gtag("event", "page_view", {
-          page_path: location.pathname + location.search,
-          page_title: document.title,
-          page_location: window.location.href,
-        });
-      }
+      sendPageView(currentPath);
     }, 100);
 
     return () => clearTimeout(timer);
