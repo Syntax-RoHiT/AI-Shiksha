@@ -49,6 +49,14 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     const [imageDialogOpen, setImageDialogOpen] = useState(false);
     const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
     const [aiModalOpen, setAiModalOpen] = useState(false);
+    const [webGPUExists, setWebGPUExists] = useState(false);
+
+    useEffect(() => {
+        if ('gpu' in navigator) {
+            setWebGPUExists(true);
+        }
+    }, []);
+
 
     const editor = useEditor({
         extensions: [
@@ -266,15 +274,21 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
                 <div className="flex-1" />
 
                 {/* AI Assistant Button */}
-                <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setAiModalOpen(true)}
-                    className="h-8 gap-2 px-3 text-purple-600 bg-purple-50 hover:bg-purple-100 hover:text-purple-700 rounded-full border border-purple-100 transition-all shadow-sm hover:shadow"
-                >
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-medium">AI Agent</span>
-                </Button>
+                {webGPUExists ? (
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setAiModalOpen(true)}
+                        className="h-8 gap-2 px-3 text-purple-600 bg-purple-50 hover:bg-purple-100 hover:text-purple-700 rounded-full border border-purple-100 transition-all shadow-sm hover:shadow"
+                    >
+                        <Sparkles className="h-4 w-4" />
+                        <span className="text-xs font-medium">AI Agent</span>
+                    </Button>
+                ) : (
+                    <div className="h-8 flex items-center px-3 text-xs text-gray-500 bg-gray-50 rounded-full border border-gray-100">
+                        Use Chrome Browser to use AI Features
+                    </div>
+                )}
             </div>
 
             {/* Editor Content */}
